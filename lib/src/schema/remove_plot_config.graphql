@@ -1,0 +1,5 @@
+mutation DeletePlotConfig($id: Int!) {
+  deletePlotConfiguration(configurationId: $id) {
+    status
+  }
+}

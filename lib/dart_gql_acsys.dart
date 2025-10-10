@@ -1,8 +1,6 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
+/// Write Dart clients that access the Fermilab control system.
 library;
 
-export 'src/dart_gql_acsys_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
+export 'src/status.dart';
+export 'src/device_values.dart';
+export 'src/acsys_service.dart';

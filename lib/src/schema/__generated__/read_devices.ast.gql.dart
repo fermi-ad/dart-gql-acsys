@@ -1,0 +1,179 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint
+
+// ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:gql/ast.dart' as _i1;
+
+const ReadDevices = _i1.OperationDefinitionNode(
+  type: _i1.OperationType.query,
+  name: _i1.NameNode(value: 'ReadDevices'),
+  variableDefinitions: [
+    _i1.VariableDefinitionNode(
+      variable: _i1.VariableNode(name: _i1.NameNode(value: 'devList')),
+      type: _i1.ListTypeNode(
+        type: _i1.NamedTypeNode(
+          name: _i1.NameNode(value: 'String'),
+          isNonNull: true,
+        ),
+        isNonNull: true,
+      ),
+      defaultValue: _i1.DefaultValueNode(value: null),
+      directives: [],
+    ),
+  ],
+  directives: [],
+  selectionSet: _i1.SelectionSetNode(
+    selections: [
+      _i1.FieldNode(
+        name: _i1.NameNode(value: 'acceleratorData'),
+        alias: null,
+        arguments: [
+          _i1.ArgumentNode(
+            name: _i1.NameNode(value: 'deviceList'),
+            value: _i1.VariableNode(name: _i1.NameNode(value: 'devList')),
+          ),
+        ],
+        directives: [],
+        selectionSet: _i1.SelectionSetNode(
+          selections: [
+            _i1.FieldNode(
+              name: _i1.NameNode(value: 'refId'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            _i1.FieldNode(
+              name: _i1.NameNode(value: 'data'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: _i1.SelectionSetNode(
+                selections: [
+                  _i1.FieldNode(
+                    name: _i1.NameNode(value: 'timestamp'),
+                    alias: null,
+                    arguments: [],
+                    directives: [],
+                    selectionSet: null,
+                  ),
+                  _i1.FieldNode(
+                    name: _i1.NameNode(value: 'result'),
+                    alias: null,
+                    arguments: [],
+                    directives: [],
+                    selectionSet: _i1.SelectionSetNode(
+                      selections: [
+                        _i1.InlineFragmentNode(
+                          typeCondition: _i1.TypeConditionNode(
+                            on: _i1.NamedTypeNode(
+                              name: _i1.NameNode(value: 'StatusReply'),
+                              isNonNull: false,
+                            ),
+                          ),
+                          directives: [],
+                          selectionSet: _i1.SelectionSetNode(
+                            selections: [
+                              _i1.FieldNode(
+                                name: _i1.NameNode(value: 'status'),
+                                alias: null,
+                                arguments: [],
+                                directives: [],
+                                selectionSet: null,
+                              ),
+                            ],
+                          ),
+                        ),
+                        _i1.InlineFragmentNode(
+                          typeCondition: _i1.TypeConditionNode(
+                            on: _i1.NamedTypeNode(
+                              name: _i1.NameNode(value: 'Scalar'),
+                              isNonNull: false,
+                            ),
+                          ),
+                          directives: [],
+                          selectionSet: _i1.SelectionSetNode(
+                            selections: [
+                              _i1.FieldNode(
+                                name: _i1.NameNode(value: 'scalarValue'),
+                                alias: null,
+                                arguments: [],
+                                directives: [],
+                                selectionSet: null,
+                              ),
+                            ],
+                          ),
+                        ),
+                        _i1.InlineFragmentNode(
+                          typeCondition: _i1.TypeConditionNode(
+                            on: _i1.NamedTypeNode(
+                              name: _i1.NameNode(value: 'ScalarArray'),
+                              isNonNull: false,
+                            ),
+                          ),
+                          directives: [],
+                          selectionSet: _i1.SelectionSetNode(
+                            selections: [
+                              _i1.FieldNode(
+                                name: _i1.NameNode(value: 'scalarArrayValue'),
+                                alias: null,
+                                arguments: [],
+                                directives: [],
+                                selectionSet: null,
+                              ),
+                            ],
+                          ),
+                        ),
+                        _i1.InlineFragmentNode(
+                          typeCondition: _i1.TypeConditionNode(
+                            on: _i1.NamedTypeNode(
+                              name: _i1.NameNode(value: 'Text'),
+                              isNonNull: false,
+                            ),
+                          ),
+                          directives: [],
+                          selectionSet: _i1.SelectionSetNode(
+                            selections: [
+                              _i1.FieldNode(
+                                name: _i1.NameNode(value: 'textValue'),
+                                alias: null,
+                                arguments: [],
+                                directives: [],
+                                selectionSet: null,
+                              ),
+                            ],
+                          ),
+                        ),
+                        _i1.InlineFragmentNode(
+                          typeCondition: _i1.TypeConditionNode(
+                            on: _i1.NamedTypeNode(
+                              name: _i1.NameNode(value: 'TextArray'),
+                              isNonNull: false,
+                            ),
+                          ),
+                          directives: [],
+                          selectionSet: _i1.SelectionSetNode(
+                            selections: [
+                              _i1.FieldNode(
+                                name: _i1.NameNode(value: 'textArrayValue'),
+                                alias: null,
+                                arguments: [],
+                                directives: [],
+                                selectionSet: null,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+);
+const document = _i1.DocumentNode(definitions: [ReadDevices]);

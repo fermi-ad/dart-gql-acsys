@@ -8,8 +8,19 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  # path: ^1.8.0
+  ferry: ^0.16.0
+  gql_http_link: ^1.1.0
+  gql_websocket_link: ^2.0.0
+  gql_code_builder: ^0.13.0
+  web_socket_channel: ^2.0.0
+  built_collection: ^5.1.1
+  built_value: ^8.4.4
+  collection: ^1.17.0 # Use the latest version
+  pure_dart_ui: ^0.1.10
 
 dev_dependencies:
   lints: ^5.0.0
   test: ^1.24.0
+  ferry_generator: ^0.12.0
+  build_runner: ^2.4.6
+
