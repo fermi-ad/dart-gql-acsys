@@ -67,3 +67,14 @@ $ dart run
 ```
 
 Enjoy the outdoor temperature!
+
+## Additional information
+
+If the GraphQL schema changes, you need to rebuild the supporting files. After
+running the build command, it's good to run the formatter over the code so it's
+consistent with the rest of the project.
+
+```shell
+$ dart run build_runner build --delete-conflicting-outputs
+$ dart format lib
+```
