@@ -55,6 +55,8 @@ sealed class DeviceValue {
         return ListEquality().equals(v, o);
       case ((DevTimeSeries(values: var v), DevTimeSeries(values: var o))):
         return ListEquality().equals(v, o);
+      case ((DevStatusCode(status: var v), DevStatusCode(status: var o))):
+        return v == o;
       default:
         return false;
     }
@@ -68,7 +70,14 @@ sealed class DeviceValue {
     DevScalarArray(value: var v) => v.hashCode,
     DevTextArray(value: var v) => v.hashCode,
     DevTimeSeries(values: var v) => v.hashCode,
+    DevStatusCode(status: var v) => v.hashCode,
   };
+}
+
+final class DevStatusCode extends DeviceValue {
+  final int status;
+
+  const DevStatusCode(this.status);
 }
 
 /// Represents a raw, byte array.

@@ -723,7 +723,7 @@ extension on GStreamDataData_acceleratorData_data_result {
     GStreamDataData_acceleratorData_data_result__asTextArray val =>
       DevTextArray(val.textArrayValue.toList()),
     GStreamDataData_acceleratorData_data_result__asStatusReply val =>
-      throw ACSysStatusException("", status: val.status),
+      DevStatusCode(val.status),
     _ => throw ACSysTypeException("unexpected data type, $runtimeType"),
   };
 }
@@ -741,7 +741,7 @@ extension on GReadDevicesData_acceleratorData_data_result {
     GReadDevicesData_acceleratorData_data_result__asTextArray val =>
       DevTextArray(val.textArrayValue.toList()),
     GReadDevicesData_acceleratorData_data_result__asStatusReply val =>
-      throw ACSysStatusException("", status: val.status),
+      DevStatusCode(val.status),
     _ => throw ACSysTypeException("unexpected data type, $runtimeType"),
   };
 }
@@ -789,5 +789,7 @@ extension on DeviceValue {
       GDevValueBuilder()..textArrayVal = ListBuilder(v),
     DevTimeSeries(values: var v) =>
       GDevValueBuilder()..timeSeriesVal = ListBuilder(v),
+    DevStatusCode() =>
+      throw ACSysGraphQLException("can't send DevStatusCode types"),
   };
 }
