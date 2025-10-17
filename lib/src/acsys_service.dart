@@ -66,6 +66,13 @@ class ACSysGraphQLException extends ACSysException {
   const ACSysGraphQLException(String message) : super("GraphQL: $message");
 }
 
+class ACSysStatusException extends ACSysException {
+  final int status;
+
+  const ACSysStatusException(String message, {required this.status})
+    : super("ACNET status: [${status & 255} ${status ~/ 256}]");
+}
+
 final class Reading {
   final int refId;
   final Status status;
@@ -715,6 +722,8 @@ extension on GStreamDataData_acceleratorData_data_result {
     ),
     GStreamDataData_acceleratorData_data_result__asTextArray val =>
       DevTextArray(val.textArrayValue.toList()),
+    GStreamDataData_acceleratorData_data_result__asStatusReply val =>
+      throw ACSysStatusException("", status: val.status),
     _ => throw ACSysTypeException("unexpected data type, $runtimeType"),
   };
 }
@@ -731,6 +740,8 @@ extension on GReadDevicesData_acceleratorData_data_result {
     ),
     GReadDevicesData_acceleratorData_data_result__asTextArray val =>
       DevTextArray(val.textArrayValue.toList()),
+    GReadDevicesData_acceleratorData_data_result__asStatusReply val =>
+      throw ACSysStatusException("", status: val.status),
     _ => throw ACSysTypeException("unexpected data type, $runtimeType"),
   };
 }
