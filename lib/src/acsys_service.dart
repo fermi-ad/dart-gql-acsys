@@ -723,7 +723,7 @@ extension on GStreamDataData_acceleratorData_data_result {
     GStreamDataData_acceleratorData_data_result__asTextArray val =>
       DevTextArray(val.textArrayValue.toList()),
     GStreamDataData_acceleratorData_data_result__asStatusReply val =>
-      DevStatusCode(val.status),
+      DevStatusCode(Status.fromInt(val.status)),
     _ => throw ACSysTypeException("unexpected data type, $runtimeType"),
   };
 }
@@ -741,7 +741,7 @@ extension on GReadDevicesData_acceleratorData_data_result {
     GReadDevicesData_acceleratorData_data_result__asTextArray val =>
       DevTextArray(val.textArrayValue.toList()),
     GReadDevicesData_acceleratorData_data_result__asStatusReply val =>
-      DevStatusCode(val.status),
+      DevStatusCode(Status.fromInt(val.status)),
     _ => throw ACSysTypeException("unexpected data type, $runtimeType"),
   };
 }

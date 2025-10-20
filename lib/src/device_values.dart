@@ -28,6 +28,7 @@
 library;
 
 import 'package:collection/collection.dart';
+import 'status.dart';
 
 /// Use this type to indicate any device type is allowed.
 ///
@@ -75,9 +76,12 @@ sealed class DeviceValue {
 }
 
 final class DevStatusCode extends DeviceValue {
-  final int status;
+  final Status status;
 
   const DevStatusCode(this.status);
+
+  @override
+  String toString() => "[${status.facility} ${status.error}]";
 }
 
 /// Represents a raw, byte array.
