@@ -3,8 +3,8 @@ library;
 extension type Status._(int code) {
   const Status.fromInt(int value) : code = value;
 
-  int get facility => code ~/ 256;
-  int get error => code & 255;
+  int get facility => code & 255;
+  int get error => code ~/ 256;
 
   bool get success => error >= 0;
   bool get warning => error > 0;
