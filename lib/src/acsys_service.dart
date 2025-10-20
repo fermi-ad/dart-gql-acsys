@@ -81,7 +81,7 @@ final class Reading {
 
   const Reading({
     required this.refId,
-    this.status = Status.okay,
+    this.status = Status.SUCCESS,
     required this.timestamp,
     this.value,
   });
