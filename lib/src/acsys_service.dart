@@ -75,15 +75,13 @@ class ACSysStatusException extends ACSysException {
 
 final class Reading {
   final int refId;
-  final Status status;
   final DateTime timestamp;
-  final DeviceValue? value;
+  final DeviceValue value;
 
   const Reading({
     required this.refId,
-    this.status = Status.SUCCESS,
     required this.timestamp,
-    this.value,
+    required this.value,
   });
 }
 
