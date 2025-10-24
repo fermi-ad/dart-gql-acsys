@@ -28,6 +28,7 @@
 library;
 
 import 'package:collection/collection.dart';
+import 'status.dart';
 
 /// Use this type to indicate any device type is allowed.
 ///
@@ -55,6 +56,8 @@ sealed class DeviceValue {
         return ListEquality().equals(v, o);
       case ((DevTimeSeries(values: var v), DevTimeSeries(values: var o))):
         return ListEquality().equals(v, o);
+      case ((DevStatusCode(status: var v), DevStatusCode(status: var o))):
+        return v == o;
       default:
         return false;
     }
@@ -68,7 +71,17 @@ sealed class DeviceValue {
     DevScalarArray(value: var v) => v.hashCode,
     DevTextArray(value: var v) => v.hashCode,
     DevTimeSeries(values: var v) => v.hashCode,
+    DevStatusCode(status: var v) => v.hashCode,
   };
+}
+
+final class DevStatusCode extends DeviceValue {
+  final Status status;
+
+  const DevStatusCode(this.status);
+
+  @override
+  String toString() => "[${status.facility} ${status.error}]";
 }
 
 /// Represents a raw, byte array.
@@ -170,42 +183,37 @@ extension TimeSeriesToDeviceValue on List<(DateTime, double)> {
 // The `FromDeviceValue` extension allows us to convert a `DeviceValue` into a
 // primitive type.
 
-extension FromDevValToDouble on DeviceValue {
+extension FromDeviceValue on DeviceValue {
+  Status? toStatus() => switch (this) {
+    DevStatusCode(status: var value) => value,
+    _ => null,
+  };
+
   double? toDouble() => switch (this) {
     DevScalar(value: var value) => value,
     _ => null,
   };
-}
 
-extension FromDevValToText on DeviceValue {
   String? toText() => switch (this) {
     DevText(value: var value) => value,
     _ => null,
   };
-}
 
-extension FromDevValToRaw on DeviceValue {
   List<int>? toRaw() => switch (this) {
     DevRaw(value: var value) => value,
     _ => null,
   };
-}
 
-extension FromDevValToDoubleArray on DeviceValue {
   List<double>? toDoubleArray() => switch (this) {
     DevScalarArray(value: var value) => value,
     _ => null,
   };
-}
 
-extension FromDevValToTextArray on DeviceValue {
   List<String>? toTextArray() => switch (this) {
     DevTextArray(value: var value) => value,
     _ => null,
   };
-}
 
-extension FromDevValToTimeSeries on DeviceValue {
   List<(double, double)>? toTimeSeries() => switch (this) {
     DevTimeSeries(values: var values) => values,
     _ => null,

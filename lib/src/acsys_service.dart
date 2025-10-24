@@ -66,17 +66,22 @@ class ACSysGraphQLException extends ACSysException {
   const ACSysGraphQLException(String message) : super("GraphQL: $message");
 }
 
+class ACSysStatusException extends ACSysException {
+  final int status;
+
+  const ACSysStatusException(String message, {required this.status})
+    : super("ACNET status: [${status & 255} ${status ~/ 256}]");
+}
+
 final class Reading {
   final int refId;
-  final Status status;
   final DateTime timestamp;
-  final DeviceValue? value;
+  final DeviceValue value;
 
   const Reading({
     required this.refId,
-    this.status = Status.okay,
     required this.timestamp,
-    this.value,
+    required this.value,
   });
 }
 
@@ -715,6 +720,8 @@ extension on GStreamDataData_acceleratorData_data_result {
     ),
     GStreamDataData_acceleratorData_data_result__asTextArray val =>
       DevTextArray(val.textArrayValue.toList()),
+    GStreamDataData_acceleratorData_data_result__asStatusReply val =>
+      DevStatusCode(Status.fromInt(val.status)),
     _ => throw ACSysTypeException("unexpected data type, $runtimeType"),
   };
 }
@@ -731,6 +738,8 @@ extension on GReadDevicesData_acceleratorData_data_result {
     ),
     GReadDevicesData_acceleratorData_data_result__asTextArray val =>
       DevTextArray(val.textArrayValue.toList()),
+    GReadDevicesData_acceleratorData_data_result__asStatusReply val =>
+      DevStatusCode(Status.fromInt(val.status)),
     _ => throw ACSysTypeException("unexpected data type, $runtimeType"),
   };
 }
@@ -778,5 +787,7 @@ extension on DeviceValue {
       GDevValueBuilder()..textArrayVal = ListBuilder(v),
     DevTimeSeries(values: var v) =>
       GDevValueBuilder()..timeSeriesVal = ListBuilder(v),
+    DevStatusCode() =>
+      throw ACSysGraphQLException("can't send DevStatusCode types"),
   };
 }
