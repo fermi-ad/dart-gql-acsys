@@ -67,10 +67,10 @@ class ACSysGraphQLException extends ACSysException {
 }
 
 class ACSysStatusException extends ACSysException {
-  final int status;
+  final Status status;
 
-  const ACSysStatusException(String message, {required this.status})
-    : super("ACNET status: [${status & 255} ${status ~/ 256}]");
+  ACSysStatusException(String message, {required this.status})
+    : super("ACNET status: [${status.facility} ${status.error}]");
 }
 
 final class Reading {
