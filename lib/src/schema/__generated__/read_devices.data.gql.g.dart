@@ -26,6 +26,9 @@ _$gReadDevicesDataAcceleratorDataDataResultAsScalarSerializer =
 Serializer<GReadDevicesData_acceleratorData_data_result__asScalarArray>
 _$gReadDevicesDataAcceleratorDataDataResultAsScalarArraySerializer =
     new _$GReadDevicesData_acceleratorData_data_result__asScalarArraySerializer();
+Serializer<GReadDevicesData_acceleratorData_data_result__asRaw>
+_$gReadDevicesDataAcceleratorDataDataResultAsRawSerializer =
+    new _$GReadDevicesData_acceleratorData_data_result__asRawSerializer();
 Serializer<GReadDevicesData_acceleratorData_data_result__asText>
 _$gReadDevicesDataAcceleratorDataDataResultAsTextSerializer =
     new _$GReadDevicesData_acceleratorData_data_result__asTextSerializer();
@@ -546,6 +549,82 @@ class _$GReadDevicesData_acceleratorData_data_result__asScalarArraySerializer
                   value,
                   specifiedType: const FullType(BuiltList, const [
                     const FullType(double),
+                  ]),
+                )!
+                as BuiltList<Object?>,
+          );
+          break;
+      }
+    }
+
+    return result.build();
+  }
+}
+
+class _$GReadDevicesData_acceleratorData_data_result__asRawSerializer
+    implements
+        StructuredSerializer<
+          GReadDevicesData_acceleratorData_data_result__asRaw
+        > {
+  @override
+  final Iterable<Type> types = const [
+    GReadDevicesData_acceleratorData_data_result__asRaw,
+    _$GReadDevicesData_acceleratorData_data_result__asRaw,
+  ];
+  @override
+  final String wireName = 'GReadDevicesData_acceleratorData_data_result__asRaw';
+
+  @override
+  Iterable<Object?> serialize(
+    Serializers serializers,
+    GReadDevicesData_acceleratorData_data_result__asRaw object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    final result = <Object?>[
+      '__typename',
+      serializers.serialize(
+        object.G__typename,
+        specifiedType: const FullType(String),
+      ),
+      'rawValue',
+      serializers.serialize(
+        object.rawValue,
+        specifiedType: const FullType(BuiltList, const [const FullType(int)]),
+      ),
+    ];
+
+    return result;
+  }
+
+  @override
+  GReadDevicesData_acceleratorData_data_result__asRaw deserialize(
+    Serializers serializers,
+    Iterable<Object?> serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    final result =
+        new GReadDevicesData_acceleratorData_data_result__asRawBuilder();
+
+    final iterator = serialized.iterator;
+    while (iterator.moveNext()) {
+      final key = iterator.current! as String;
+      iterator.moveNext();
+      final Object? value = iterator.current;
+      switch (key) {
+        case '__typename':
+          result.G__typename =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )!
+                  as String;
+          break;
+        case 'rawValue':
+          result.rawValue.replace(
+            serializers.deserialize(
+                  value,
+                  specifiedType: const FullType(BuiltList, const [
+                    const FullType(int),
                   ]),
                 )!
                 as BuiltList<Object?>,
@@ -1727,6 +1806,157 @@ class GReadDevicesData_acceleratorData_data_result__asScalarArrayBuilder
       } catch (e) {
         throw new BuiltValueNestedFieldError(
           r'GReadDevicesData_acceleratorData_data_result__asScalarArray',
+          _$failedField,
+          e.toString(),
+        );
+      }
+      rethrow;
+    }
+    replace(_$result);
+    return _$result;
+  }
+}
+
+class _$GReadDevicesData_acceleratorData_data_result__asRaw
+    extends GReadDevicesData_acceleratorData_data_result__asRaw {
+  @override
+  final String G__typename;
+  @override
+  final BuiltList<int> rawValue;
+
+  factory _$GReadDevicesData_acceleratorData_data_result__asRaw([
+    void Function(GReadDevicesData_acceleratorData_data_result__asRawBuilder)?
+    updates,
+  ]) =>
+      (new GReadDevicesData_acceleratorData_data_result__asRawBuilder()
+            ..update(updates))
+          ._build();
+
+  _$GReadDevicesData_acceleratorData_data_result__asRaw._({
+    required this.G__typename,
+    required this.rawValue,
+  }) : super._() {
+    BuiltValueNullFieldError.checkNotNull(
+      G__typename,
+      r'GReadDevicesData_acceleratorData_data_result__asRaw',
+      'G__typename',
+    );
+    BuiltValueNullFieldError.checkNotNull(
+      rawValue,
+      r'GReadDevicesData_acceleratorData_data_result__asRaw',
+      'rawValue',
+    );
+  }
+
+  @override
+  GReadDevicesData_acceleratorData_data_result__asRaw rebuild(
+    void Function(GReadDevicesData_acceleratorData_data_result__asRawBuilder)
+    updates,
+  ) => (toBuilder()..update(updates)).build();
+
+  @override
+  GReadDevicesData_acceleratorData_data_result__asRawBuilder toBuilder() =>
+      new GReadDevicesData_acceleratorData_data_result__asRawBuilder()
+        ..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is GReadDevicesData_acceleratorData_data_result__asRaw &&
+        G__typename == other.G__typename &&
+        rawValue == other.rawValue;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, G__typename.hashCode);
+    _$hash = $jc(_$hash, rawValue.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(
+            r'GReadDevicesData_acceleratorData_data_result__asRaw',
+          )
+          ..add('G__typename', G__typename)
+          ..add('rawValue', rawValue))
+        .toString();
+  }
+}
+
+class GReadDevicesData_acceleratorData_data_result__asRawBuilder
+    implements
+        Builder<
+          GReadDevicesData_acceleratorData_data_result__asRaw,
+          GReadDevicesData_acceleratorData_data_result__asRawBuilder
+        > {
+  _$GReadDevicesData_acceleratorData_data_result__asRaw? _$v;
+
+  String? _G__typename;
+  String? get G__typename => _$this._G__typename;
+  set G__typename(String? G__typename) => _$this._G__typename = G__typename;
+
+  ListBuilder<int>? _rawValue;
+  ListBuilder<int> get rawValue => _$this._rawValue ??= new ListBuilder<int>();
+  set rawValue(ListBuilder<int>? rawValue) => _$this._rawValue = rawValue;
+
+  GReadDevicesData_acceleratorData_data_result__asRawBuilder() {
+    GReadDevicesData_acceleratorData_data_result__asRaw._initializeBuilder(
+      this,
+    );
+  }
+
+  GReadDevicesData_acceleratorData_data_result__asRawBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      _G__typename = $v.G__typename;
+      _rawValue = $v.rawValue.toBuilder();
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(GReadDevicesData_acceleratorData_data_result__asRaw other) {
+    ArgumentError.checkNotNull(other, 'other');
+    _$v = other as _$GReadDevicesData_acceleratorData_data_result__asRaw;
+  }
+
+  @override
+  void update(
+    void Function(GReadDevicesData_acceleratorData_data_result__asRawBuilder)?
+    updates,
+  ) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  GReadDevicesData_acceleratorData_data_result__asRaw build() => _build();
+
+  _$GReadDevicesData_acceleratorData_data_result__asRaw _build() {
+    _$GReadDevicesData_acceleratorData_data_result__asRaw _$result;
+    try {
+      _$result =
+          _$v ??
+          new _$GReadDevicesData_acceleratorData_data_result__asRaw._(
+            G__typename: BuiltValueNullFieldError.checkNotNull(
+              G__typename,
+              r'GReadDevicesData_acceleratorData_data_result__asRaw',
+              'G__typename',
+            ),
+            rawValue: rawValue.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'rawValue';
+        rawValue.build();
+      } catch (e) {
+        throw new BuiltValueNestedFieldError(
+          r'GReadDevicesData_acceleratorData_data_result__asRaw',
           _$failedField,
           e.toString(),
         );

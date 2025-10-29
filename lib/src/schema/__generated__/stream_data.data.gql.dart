@@ -124,6 +124,7 @@ abstract class GStreamDataData_acceleratorData_data_result {
           'Scalar': GStreamDataData_acceleratorData_data_result__asScalar,
           'ScalarArray':
               GStreamDataData_acceleratorData_data_result__asScalarArray,
+          'Raw': GStreamDataData_acceleratorData_data_result__asRaw,
           'Text': GStreamDataData_acceleratorData_data_result__asText,
           'TextArray': GStreamDataData_acceleratorData_data_result__asTextArray,
         },
@@ -314,6 +315,47 @@ abstract class GStreamDataData_acceleratorData_data_result__asScalarArray
     Map<String, dynamic> json,
   ) => _i1.serializers.deserializeWith(
     GStreamDataData_acceleratorData_data_result__asScalarArray.serializer,
+    json,
+  );
+}
+
+abstract class GStreamDataData_acceleratorData_data_result__asRaw
+    implements
+        Built<
+          GStreamDataData_acceleratorData_data_result__asRaw,
+          GStreamDataData_acceleratorData_data_result__asRawBuilder
+        >,
+        GStreamDataData_acceleratorData_data_result {
+  GStreamDataData_acceleratorData_data_result__asRaw._();
+
+  factory GStreamDataData_acceleratorData_data_result__asRaw([
+    void Function(GStreamDataData_acceleratorData_data_result__asRawBuilder b)
+    updates,
+  ]) = _$GStreamDataData_acceleratorData_data_result__asRaw;
+
+  static void _initializeBuilder(
+    GStreamDataData_acceleratorData_data_result__asRawBuilder b,
+  ) => b..G__typename = 'Raw';
+
+  @override
+  @BuiltValueField(wireName: '__typename')
+  String get G__typename;
+  BuiltList<int> get rawValue;
+  static Serializer<GStreamDataData_acceleratorData_data_result__asRaw>
+  get serializer => _$gStreamDataDataAcceleratorDataDataResultAsRawSerializer;
+
+  @override
+  Map<String, dynamic> toJson() =>
+      (_i1.serializers.serializeWith(
+            GStreamDataData_acceleratorData_data_result__asRaw.serializer,
+            this,
+          )
+          as Map<String, dynamic>);
+
+  static GStreamDataData_acceleratorData_data_result__asRaw? fromJson(
+    Map<String, dynamic> json,
+  ) => _i1.serializers.deserializeWith(
+    GStreamDataData_acceleratorData_data_result__asRaw.serializer,
     json,
   );
 }
