@@ -126,6 +126,7 @@ abstract class GReadDevicesData_acceleratorData_data_result {
       'Scalar': GReadDevicesData_acceleratorData_data_result__asScalar,
       'ScalarArray':
           GReadDevicesData_acceleratorData_data_result__asScalarArray,
+      'Raw': GReadDevicesData_acceleratorData_data_result__asRaw,
       'Text': GReadDevicesData_acceleratorData_data_result__asText,
       'TextArray': GReadDevicesData_acceleratorData_data_result__asTextArray,
     },
@@ -316,6 +317,47 @@ abstract class GReadDevicesData_acceleratorData_data_result__asScalarArray
     Map<String, dynamic> json,
   ) => _i1.serializers.deserializeWith(
     GReadDevicesData_acceleratorData_data_result__asScalarArray.serializer,
+    json,
+  );
+}
+
+abstract class GReadDevicesData_acceleratorData_data_result__asRaw
+    implements
+        Built<
+          GReadDevicesData_acceleratorData_data_result__asRaw,
+          GReadDevicesData_acceleratorData_data_result__asRawBuilder
+        >,
+        GReadDevicesData_acceleratorData_data_result {
+  GReadDevicesData_acceleratorData_data_result__asRaw._();
+
+  factory GReadDevicesData_acceleratorData_data_result__asRaw([
+    void Function(GReadDevicesData_acceleratorData_data_result__asRawBuilder b)
+    updates,
+  ]) = _$GReadDevicesData_acceleratorData_data_result__asRaw;
+
+  static void _initializeBuilder(
+    GReadDevicesData_acceleratorData_data_result__asRawBuilder b,
+  ) => b..G__typename = 'Raw';
+
+  @override
+  @BuiltValueField(wireName: '__typename')
+  String get G__typename;
+  BuiltList<int> get rawValue;
+  static Serializer<GReadDevicesData_acceleratorData_data_result__asRaw>
+  get serializer => _$gReadDevicesDataAcceleratorDataDataResultAsRawSerializer;
+
+  @override
+  Map<String, dynamic> toJson() =>
+      (_i1.serializers.serializeWith(
+            GReadDevicesData_acceleratorData_data_result__asRaw.serializer,
+            this,
+          )
+          as Map<String, dynamic>);
+
+  static GReadDevicesData_acceleratorData_data_result__asRaw? fromJson(
+    Map<String, dynamic> json,
+  ) => _i1.serializers.deserializeWith(
+    GReadDevicesData_acceleratorData_data_result__asRaw.serializer,
     json,
   );
 }

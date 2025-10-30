@@ -67,10 +67,10 @@ class ACSysGraphQLException extends ACSysException {
 }
 
 class ACSysStatusException extends ACSysException {
-  final int status;
+  final Status status;
 
-  const ACSysStatusException(String message, {required this.status})
-    : super("ACNET status: [${status & 255} ${status ~/ 256}]");
+  ACSysStatusException(String message, {required this.status})
+    : super("ACNET status: [${status.facility} ${status.error}]");
 }
 
 final class Reading {
@@ -722,6 +722,9 @@ extension on GStreamDataData_acceleratorData_data_result {
       DevTextArray(val.textArrayValue.toList()),
     GStreamDataData_acceleratorData_data_result__asStatusReply val =>
       DevStatusCode(Status.fromInt(val.status)),
+    GStreamDataData_acceleratorData_data_result__asRaw val => DevRaw(
+      val.rawValue.toList(),
+    ),
     _ => throw ACSysTypeException("unexpected data type, $runtimeType"),
   };
 }
@@ -740,6 +743,9 @@ extension on GReadDevicesData_acceleratorData_data_result {
       DevTextArray(val.textArrayValue.toList()),
     GReadDevicesData_acceleratorData_data_result__asStatusReply val =>
       DevStatusCode(Status.fromInt(val.status)),
+    GReadDevicesData_acceleratorData_data_result__asRaw val => DevRaw(
+      val.rawValue.toList(),
+    ),
     _ => throw ACSysTypeException("unexpected data type, $runtimeType"),
   };
 }

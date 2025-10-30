@@ -13,6 +13,9 @@ query ReadDevices($devList: [String!]!) {
                 ... on ScalarArray {
                     scalarArrayValue
                 }
+                ... on Raw {
+                    rawValue
+                }
                 ... on Text {
                     textValue
                 }

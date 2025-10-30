@@ -24,6 +24,7 @@ Serializers _$serializers =
           ..add(GReadDevicesData.serializer)
           ..add(GReadDevicesData_acceleratorData.serializer)
           ..add(GReadDevicesData_acceleratorData_data.serializer)
+          ..add(GReadDevicesData_acceleratorData_data_result__asRaw.serializer)
           ..add(
             GReadDevicesData_acceleratorData_data_result__asScalar.serializer,
           )
@@ -71,6 +72,7 @@ Serializers _$serializers =
           ..add(GStreamDataData.serializer)
           ..add(GStreamDataData_acceleratorData.serializer)
           ..add(GStreamDataData_acceleratorData_data.serializer)
+          ..add(GStreamDataData_acceleratorData_data_result__asRaw.serializer)
           ..add(
             GStreamDataData_acceleratorData_data_result__asScalar.serializer,
           )
@@ -211,6 +213,14 @@ Serializers _$serializers =
               const FullType(GTimeSeriesEntryIn),
             ]),
             () => new ListBuilder<GTimeSeriesEntryIn>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(int)]),
+            () => new ListBuilder<int>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(int)]),
+            () => new ListBuilder<int>(),
           ))
         .build();
 
