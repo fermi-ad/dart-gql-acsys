@@ -7,7 +7,7 @@ part of 'start_plot.var.gql.dart';
 // **************************************************************************
 
 Serializer<GStartPlotVars> _$gStartPlotVarsSerializer =
-    new _$GStartPlotVarsSerializer();
+    _$GStartPlotVarsSerializer();
 
 class _$GStartPlotVarsSerializer
     implements StructuredSerializer<GStartPlotVars> {
@@ -97,7 +97,7 @@ class _$GStartPlotVarsSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GStartPlotVarsBuilder();
+    final result = GStartPlotVarsBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -196,7 +196,7 @@ class _$GStartPlotVars extends GStartPlotVars {
   final double? endTime;
 
   factory _$GStartPlotVars([void Function(GStartPlotVarsBuilder)? updates]) =>
-      (new GStartPlotVarsBuilder()..update(updates))._build();
+      (GStartPlotVarsBuilder()..update(updates))._build();
 
   _$GStartPlotVars._({
     required this.drfList,
@@ -208,21 +208,13 @@ class _$GStartPlotVars extends GStartPlotVars {
     this.triggerEvent,
     this.startTime,
     this.endTime,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      drfList,
-      r'GStartPlotVars',
-      'drfList',
-    );
-  }
-
+  }) : super._();
   @override
   GStartPlotVars rebuild(void Function(GStartPlotVarsBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  GStartPlotVarsBuilder toBuilder() =>
-      new GStartPlotVarsBuilder()..replace(this);
+  GStartPlotVarsBuilder toBuilder() => GStartPlotVarsBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -276,8 +268,7 @@ class GStartPlotVarsBuilder
   _$GStartPlotVars? _$v;
 
   ListBuilder<String>? _drfList;
-  ListBuilder<String> get drfList =>
-      _$this._drfList ??= new ListBuilder<String>();
+  ListBuilder<String> get drfList => _$this._drfList ??= ListBuilder<String>();
   set drfList(ListBuilder<String>? drfList) => _$this._drfList = drfList;
 
   double? _xMin;
@@ -334,7 +325,6 @@ class GStartPlotVarsBuilder
 
   @override
   void replace(GStartPlotVars other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GStartPlotVars;
   }
 
@@ -351,7 +341,7 @@ class GStartPlotVarsBuilder
     try {
       _$result =
           _$v ??
-          new _$GStartPlotVars._(
+          _$GStartPlotVars._(
             drfList: drfList.build(),
             xMin: xMin,
             xMax: xMax,
@@ -368,7 +358,7 @@ class GStartPlotVarsBuilder
         _$failedField = 'drfList';
         drfList.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GStartPlotVars',
           _$failedField,
           e.toString(),

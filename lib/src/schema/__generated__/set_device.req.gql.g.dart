@@ -7,7 +7,7 @@ part of 'set_device.req.gql.dart';
 // **************************************************************************
 
 Serializer<GSetDeviceReq> _$gSetDeviceReqSerializer =
-    new _$GSetDeviceReqSerializer();
+    _$GSetDeviceReqSerializer();
 
 class _$GSetDeviceReqSerializer implements StructuredSerializer<GSetDeviceReq> {
   @override
@@ -100,7 +100,7 @@ class _$GSetDeviceReqSerializer implements StructuredSerializer<GSetDeviceReq> {
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GSetDeviceReqBuilder();
+    final result = GSetDeviceReqBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -208,7 +208,7 @@ class _$GSetDeviceReq extends GSetDeviceReq {
   final _i4.Context? context;
 
   factory _$GSetDeviceReq([void Function(GSetDeviceReqBuilder)? updates]) =>
-      (new GSetDeviceReqBuilder()..update(updates))._build();
+      (GSetDeviceReqBuilder()..update(updates))._build();
 
   _$GSetDeviceReq._({
     required this.vars,
@@ -221,26 +221,13 @@ class _$GSetDeviceReq extends GSetDeviceReq {
     this.fetchPolicy,
     required this.executeOnListen,
     this.context,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(vars, r'GSetDeviceReq', 'vars');
-    BuiltValueNullFieldError.checkNotNull(
-      operation,
-      r'GSetDeviceReq',
-      'operation',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      executeOnListen,
-      r'GSetDeviceReq',
-      'executeOnListen',
-    );
-  }
-
+  }) : super._();
   @override
   GSetDeviceReq rebuild(void Function(GSetDeviceReqBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  GSetDeviceReqBuilder toBuilder() => new GSetDeviceReqBuilder()..replace(this);
+  GSetDeviceReqBuilder toBuilder() => GSetDeviceReqBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -299,7 +286,7 @@ class GSetDeviceReqBuilder
 
   _i3.GSetDeviceVarsBuilder? _vars;
   _i3.GSetDeviceVarsBuilder get vars =>
-      _$this._vars ??= new _i3.GSetDeviceVarsBuilder();
+      _$this._vars ??= _i3.GSetDeviceVarsBuilder();
   set vars(_i3.GSetDeviceVarsBuilder? vars) => _$this._vars = vars;
 
   _i4.Operation? _operation;
@@ -321,7 +308,7 @@ class GSetDeviceReqBuilder
 
   _i2.GSetDeviceDataBuilder? _optimisticResponse;
   _i2.GSetDeviceDataBuilder get optimisticResponse =>
-      _$this._optimisticResponse ??= new _i2.GSetDeviceDataBuilder();
+      _$this._optimisticResponse ??= _i2.GSetDeviceDataBuilder();
   set optimisticResponse(_i2.GSetDeviceDataBuilder? optimisticResponse) =>
       _$this._optimisticResponse = optimisticResponse;
 
@@ -375,7 +362,6 @@ class GSetDeviceReqBuilder
 
   @override
   void replace(GSetDeviceReq other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GSetDeviceReq;
   }
 
@@ -392,7 +378,7 @@ class GSetDeviceReqBuilder
     try {
       _$result =
           _$v ??
-          new _$GSetDeviceReq._(
+          _$GSetDeviceReq._(
             vars: vars.build(),
             operation: BuiltValueNullFieldError.checkNotNull(
               operation,
@@ -421,7 +407,7 @@ class GSetDeviceReqBuilder
         _$failedField = 'optimisticResponse';
         _optimisticResponse?.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GSetDeviceReq',
           _$failedField,
           e.toString(),

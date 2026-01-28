@@ -7,7 +7,7 @@ part of 'read_devices.var.gql.dart';
 // **************************************************************************
 
 Serializer<GReadDevicesVars> _$gReadDevicesVarsSerializer =
-    new _$GReadDevicesVarsSerializer();
+    _$GReadDevicesVarsSerializer();
 
 class _$GReadDevicesVarsSerializer
     implements StructuredSerializer<GReadDevicesVars> {
@@ -41,7 +41,7 @@ class _$GReadDevicesVarsSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GReadDevicesVarsBuilder();
+    final result = GReadDevicesVarsBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -73,23 +73,16 @@ class _$GReadDevicesVars extends GReadDevicesVars {
 
   factory _$GReadDevicesVars([
     void Function(GReadDevicesVarsBuilder)? updates,
-  ]) => (new GReadDevicesVarsBuilder()..update(updates))._build();
+  ]) => (GReadDevicesVarsBuilder()..update(updates))._build();
 
-  _$GReadDevicesVars._({required this.devList}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      devList,
-      r'GReadDevicesVars',
-      'devList',
-    );
-  }
-
+  _$GReadDevicesVars._({required this.devList}) : super._();
   @override
   GReadDevicesVars rebuild(void Function(GReadDevicesVarsBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
   GReadDevicesVarsBuilder toBuilder() =>
-      new GReadDevicesVarsBuilder()..replace(this);
+      GReadDevicesVarsBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -107,8 +100,9 @@ class _$GReadDevicesVars extends GReadDevicesVars {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'GReadDevicesVars')
-      ..add('devList', devList)).toString();
+    return (newBuiltValueToStringHelper(
+      r'GReadDevicesVars',
+    )..add('devList', devList)).toString();
   }
 }
 
@@ -117,8 +111,7 @@ class GReadDevicesVarsBuilder
   _$GReadDevicesVars? _$v;
 
   ListBuilder<String>? _devList;
-  ListBuilder<String> get devList =>
-      _$this._devList ??= new ListBuilder<String>();
+  ListBuilder<String> get devList => _$this._devList ??= ListBuilder<String>();
   set devList(ListBuilder<String>? devList) => _$this._devList = devList;
 
   GReadDevicesVarsBuilder();
@@ -134,7 +127,6 @@ class GReadDevicesVarsBuilder
 
   @override
   void replace(GReadDevicesVars other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GReadDevicesVars;
   }
 
@@ -149,14 +141,14 @@ class GReadDevicesVarsBuilder
   _$GReadDevicesVars _build() {
     _$GReadDevicesVars _$result;
     try {
-      _$result = _$v ?? new _$GReadDevicesVars._(devList: devList.build());
+      _$result = _$v ?? _$GReadDevicesVars._(devList: devList.build());
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'devList';
         devList.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GReadDevicesVars',
           _$failedField,
           e.toString(),

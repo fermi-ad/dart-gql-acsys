@@ -26,13 +26,12 @@ abstract class GPlotConfigsReq
   factory GPlotConfigsReq([void Function(GPlotConfigsReqBuilder b) updates]) =
       _$GPlotConfigsReq;
 
-  static void _initializeBuilder(GPlotConfigsReqBuilder b) =>
-      b
-        ..operation = _i4.Operation(
-          document: _i5.document,
-          operationName: 'PlotConfigs',
-        )
-        ..executeOnListen = true;
+  static void _initializeBuilder(GPlotConfigsReqBuilder b) => b
+    ..operation = _i4.Operation(
+      document: _i5.document,
+      operationName: 'PlotConfigs',
+    )
+    ..executeOnListen = true;
 
   @override
   _i3.GPlotConfigsVars get vars;

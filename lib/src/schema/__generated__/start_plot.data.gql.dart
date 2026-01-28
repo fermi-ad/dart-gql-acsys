@@ -146,17 +146,18 @@ abstract class GStartPlotData_startPlot_data_channelData_result {
   @BuiltValueField(wireName: '__typename')
   String get G__typename;
   static Serializer<GStartPlotData_startPlot_data_channelData_result>
-  get serializer => _i2.InlineFragmentSerializer<
-    GStartPlotData_startPlot_data_channelData_result
-  >(
-    'GStartPlotData_startPlot_data_channelData_result',
-    GStartPlotData_startPlot_data_channelData_result__base,
-    {
-      'Scalar': GStartPlotData_startPlot_data_channelData_result__asScalar,
-      'ScalarArray':
-          GStartPlotData_startPlot_data_channelData_result__asScalarArray,
-    },
-  );
+  get serializer =>
+      _i2.InlineFragmentSerializer<
+        GStartPlotData_startPlot_data_channelData_result
+      >(
+        'GStartPlotData_startPlot_data_channelData_result',
+        GStartPlotData_startPlot_data_channelData_result__base,
+        {
+          'Scalar': GStartPlotData_startPlot_data_channelData_result__asScalar,
+          'ScalarArray':
+              GStartPlotData_startPlot_data_channelData_result__asScalarArray,
+        },
+      );
 
   Map<String, dynamic> toJson() =>
       (_i1.serializers.serializeWith(
@@ -200,7 +201,6 @@ abstract class GStartPlotData_startPlot_data_channelData_result__base
   get serializer =>
       _$gStartPlotDataStartPlotDataChannelDataResultBaseSerializer;
 
-  @override
   Map<String, dynamic> toJson() =>
       (_i1.serializers.serializeWith(
             GStartPlotData_startPlot_data_channelData_result__base.serializer,
@@ -244,7 +244,6 @@ abstract class GStartPlotData_startPlot_data_channelData_result__asScalar
   get serializer =>
       _$gStartPlotDataStartPlotDataChannelDataResultAsScalarSerializer;
 
-  @override
   Map<String, dynamic> toJson() =>
       (_i1.serializers.serializeWith(
             GStartPlotData_startPlot_data_channelData_result__asScalar
@@ -291,7 +290,6 @@ abstract class GStartPlotData_startPlot_data_channelData_result__asScalarArray
   get serializer =>
       _$gStartPlotDataStartPlotDataChannelDataResultAsScalarArraySerializer;
 
-  @override
   Map<String, dynamic> toJson() =>
       (_i1.serializers.serializeWith(
             GStartPlotData_startPlot_data_channelData_result__asScalarArray

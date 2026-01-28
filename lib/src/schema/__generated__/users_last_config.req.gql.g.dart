@@ -7,7 +7,7 @@ part of 'users_last_config.req.gql.dart';
 // **************************************************************************
 
 Serializer<GUsersLastConfigReq> _$gUsersLastConfigReqSerializer =
-    new _$GUsersLastConfigReqSerializer();
+    _$GUsersLastConfigReqSerializer();
 
 class _$GUsersLastConfigReqSerializer
     implements StructuredSerializer<GUsersLastConfigReq> {
@@ -104,7 +104,7 @@ class _$GUsersLastConfigReqSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GUsersLastConfigReqBuilder();
+    final result = GUsersLastConfigReqBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -216,7 +216,7 @@ class _$GUsersLastConfigReq extends GUsersLastConfigReq {
 
   factory _$GUsersLastConfigReq([
     void Function(GUsersLastConfigReqBuilder)? updates,
-  ]) => (new GUsersLastConfigReqBuilder()..update(updates))._build();
+  ]) => (GUsersLastConfigReqBuilder()..update(updates))._build();
 
   _$GUsersLastConfigReq._({
     required this.vars,
@@ -229,20 +229,7 @@ class _$GUsersLastConfigReq extends GUsersLastConfigReq {
     this.fetchPolicy,
     required this.executeOnListen,
     this.context,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(vars, r'GUsersLastConfigReq', 'vars');
-    BuiltValueNullFieldError.checkNotNull(
-      operation,
-      r'GUsersLastConfigReq',
-      'operation',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      executeOnListen,
-      r'GUsersLastConfigReq',
-      'executeOnListen',
-    );
-  }
-
+  }) : super._();
   @override
   GUsersLastConfigReq rebuild(
     void Function(GUsersLastConfigReqBuilder) updates,
@@ -250,7 +237,7 @@ class _$GUsersLastConfigReq extends GUsersLastConfigReq {
 
   @override
   GUsersLastConfigReqBuilder toBuilder() =>
-      new GUsersLastConfigReqBuilder()..replace(this);
+      GUsersLastConfigReqBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -309,7 +296,7 @@ class GUsersLastConfigReqBuilder
 
   _i3.GUsersLastConfigVarsBuilder? _vars;
   _i3.GUsersLastConfigVarsBuilder get vars =>
-      _$this._vars ??= new _i3.GUsersLastConfigVarsBuilder();
+      _$this._vars ??= _i3.GUsersLastConfigVarsBuilder();
   set vars(_i3.GUsersLastConfigVarsBuilder? vars) => _$this._vars = vars;
 
   _i4.Operation? _operation;
@@ -340,7 +327,7 @@ class GUsersLastConfigReqBuilder
 
   _i2.GUsersLastConfigDataBuilder? _optimisticResponse;
   _i2.GUsersLastConfigDataBuilder get optimisticResponse =>
-      _$this._optimisticResponse ??= new _i2.GUsersLastConfigDataBuilder();
+      _$this._optimisticResponse ??= _i2.GUsersLastConfigDataBuilder();
   set optimisticResponse(_i2.GUsersLastConfigDataBuilder? optimisticResponse) =>
       _$this._optimisticResponse = optimisticResponse;
 
@@ -394,7 +381,6 @@ class GUsersLastConfigReqBuilder
 
   @override
   void replace(GUsersLastConfigReq other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GUsersLastConfigReq;
   }
 
@@ -411,7 +397,7 @@ class GUsersLastConfigReqBuilder
     try {
       _$result =
           _$v ??
-          new _$GUsersLastConfigReq._(
+          _$GUsersLastConfigReq._(
             vars: vars.build(),
             operation: BuiltValueNullFieldError.checkNotNull(
               operation,
@@ -440,7 +426,7 @@ class GUsersLastConfigReqBuilder
         _$failedField = 'optimisticResponse';
         _optimisticResponse?.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GUsersLastConfigReq',
           _$failedField,
           e.toString(),

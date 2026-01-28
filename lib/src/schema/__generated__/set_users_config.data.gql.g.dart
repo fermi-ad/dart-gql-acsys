@@ -7,10 +7,10 @@ part of 'set_users_config.data.gql.dart';
 // **************************************************************************
 
 Serializer<GSetUsersConfigData> _$gSetUsersConfigDataSerializer =
-    new _$GSetUsersConfigDataSerializer();
+    _$GSetUsersConfigDataSerializer();
 Serializer<GSetUsersConfigData_usersConfiguration>
 _$gSetUsersConfigDataUsersConfigurationSerializer =
-    new _$GSetUsersConfigData_usersConfigurationSerializer();
+    _$GSetUsersConfigData_usersConfigurationSerializer();
 
 class _$GSetUsersConfigDataSerializer
     implements StructuredSerializer<GSetUsersConfigData> {
@@ -50,7 +50,7 @@ class _$GSetUsersConfigDataSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GSetUsersConfigDataBuilder();
+    final result = GSetUsersConfigDataBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -119,7 +119,7 @@ class _$GSetUsersConfigData_usersConfigurationSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GSetUsersConfigData_usersConfigurationBuilder();
+    final result = GSetUsersConfigData_usersConfigurationBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -158,24 +158,12 @@ class _$GSetUsersConfigData extends GSetUsersConfigData {
 
   factory _$GSetUsersConfigData([
     void Function(GSetUsersConfigDataBuilder)? updates,
-  ]) => (new GSetUsersConfigDataBuilder()..update(updates))._build();
+  ]) => (GSetUsersConfigDataBuilder()..update(updates))._build();
 
   _$GSetUsersConfigData._({
     required this.G__typename,
     required this.usersConfiguration,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      G__typename,
-      r'GSetUsersConfigData',
-      'G__typename',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      usersConfiguration,
-      r'GSetUsersConfigData',
-      'usersConfiguration',
-    );
-  }
-
+  }) : super._();
   @override
   GSetUsersConfigData rebuild(
     void Function(GSetUsersConfigDataBuilder) updates,
@@ -183,7 +171,7 @@ class _$GSetUsersConfigData extends GSetUsersConfigData {
 
   @override
   GSetUsersConfigDataBuilder toBuilder() =>
-      new GSetUsersConfigDataBuilder()..replace(this);
+      GSetUsersConfigDataBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -222,7 +210,7 @@ class GSetUsersConfigDataBuilder
   GSetUsersConfigData_usersConfigurationBuilder? _usersConfiguration;
   GSetUsersConfigData_usersConfigurationBuilder get usersConfiguration =>
       _$this._usersConfiguration ??=
-          new GSetUsersConfigData_usersConfigurationBuilder();
+          GSetUsersConfigData_usersConfigurationBuilder();
   set usersConfiguration(
     GSetUsersConfigData_usersConfigurationBuilder? usersConfiguration,
   ) => _$this._usersConfiguration = usersConfiguration;
@@ -243,7 +231,6 @@ class GSetUsersConfigDataBuilder
 
   @override
   void replace(GSetUsersConfigData other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GSetUsersConfigData;
   }
 
@@ -260,7 +247,7 @@ class GSetUsersConfigDataBuilder
     try {
       _$result =
           _$v ??
-          new _$GSetUsersConfigData._(
+          _$GSetUsersConfigData._(
             G__typename: BuiltValueNullFieldError.checkNotNull(
               G__typename,
               r'GSetUsersConfigData',
@@ -274,7 +261,7 @@ class GSetUsersConfigDataBuilder
         _$failedField = 'usersConfiguration';
         usersConfiguration.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GSetUsersConfigData',
           _$failedField,
           e.toString(),
@@ -296,26 +283,13 @@ class _$GSetUsersConfigData_usersConfiguration
 
   factory _$GSetUsersConfigData_usersConfiguration([
     void Function(GSetUsersConfigData_usersConfigurationBuilder)? updates,
-  ]) =>
-      (new GSetUsersConfigData_usersConfigurationBuilder()..update(updates))
-          ._build();
+  ]) => (GSetUsersConfigData_usersConfigurationBuilder()..update(updates))
+      ._build();
 
   _$GSetUsersConfigData_usersConfiguration._({
     required this.G__typename,
     required this.status,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      G__typename,
-      r'GSetUsersConfigData_usersConfiguration',
-      'G__typename',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      status,
-      r'GSetUsersConfigData_usersConfiguration',
-      'status',
-    );
-  }
-
+  }) : super._();
   @override
   GSetUsersConfigData_usersConfiguration rebuild(
     void Function(GSetUsersConfigData_usersConfigurationBuilder) updates,
@@ -323,7 +297,7 @@ class _$GSetUsersConfigData_usersConfiguration
 
   @override
   GSetUsersConfigData_usersConfigurationBuilder toBuilder() =>
-      new GSetUsersConfigData_usersConfigurationBuilder()..replace(this);
+      GSetUsersConfigData_usersConfigurationBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -385,7 +359,6 @@ class GSetUsersConfigData_usersConfigurationBuilder
 
   @override
   void replace(GSetUsersConfigData_usersConfiguration other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GSetUsersConfigData_usersConfiguration;
   }
 
@@ -402,7 +375,7 @@ class GSetUsersConfigData_usersConfigurationBuilder
   _$GSetUsersConfigData_usersConfiguration _build() {
     final _$result =
         _$v ??
-        new _$GSetUsersConfigData_usersConfiguration._(
+        _$GSetUsersConfigData_usersConfiguration._(
           G__typename: BuiltValueNullFieldError.checkNotNull(
             G__typename,
             r'GSetUsersConfigData_usersConfiguration',

@@ -7,7 +7,7 @@ part of 'remove_plot_config.req.gql.dart';
 // **************************************************************************
 
 Serializer<GDeletePlotConfigReq> _$gDeletePlotConfigReqSerializer =
-    new _$GDeletePlotConfigReqSerializer();
+    _$GDeletePlotConfigReqSerializer();
 
 class _$GDeletePlotConfigReqSerializer
     implements StructuredSerializer<GDeletePlotConfigReq> {
@@ -104,7 +104,7 @@ class _$GDeletePlotConfigReqSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GDeletePlotConfigReqBuilder();
+    final result = GDeletePlotConfigReqBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -216,7 +216,7 @@ class _$GDeletePlotConfigReq extends GDeletePlotConfigReq {
 
   factory _$GDeletePlotConfigReq([
     void Function(GDeletePlotConfigReqBuilder)? updates,
-  ]) => (new GDeletePlotConfigReqBuilder()..update(updates))._build();
+  ]) => (GDeletePlotConfigReqBuilder()..update(updates))._build();
 
   _$GDeletePlotConfigReq._({
     required this.vars,
@@ -229,24 +229,7 @@ class _$GDeletePlotConfigReq extends GDeletePlotConfigReq {
     this.fetchPolicy,
     required this.executeOnListen,
     this.context,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      vars,
-      r'GDeletePlotConfigReq',
-      'vars',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      operation,
-      r'GDeletePlotConfigReq',
-      'operation',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      executeOnListen,
-      r'GDeletePlotConfigReq',
-      'executeOnListen',
-    );
-  }
-
+  }) : super._();
   @override
   GDeletePlotConfigReq rebuild(
     void Function(GDeletePlotConfigReqBuilder) updates,
@@ -254,7 +237,7 @@ class _$GDeletePlotConfigReq extends GDeletePlotConfigReq {
 
   @override
   GDeletePlotConfigReqBuilder toBuilder() =>
-      new GDeletePlotConfigReqBuilder()..replace(this);
+      GDeletePlotConfigReqBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -313,7 +296,7 @@ class GDeletePlotConfigReqBuilder
 
   _i3.GDeletePlotConfigVarsBuilder? _vars;
   _i3.GDeletePlotConfigVarsBuilder get vars =>
-      _$this._vars ??= new _i3.GDeletePlotConfigVarsBuilder();
+      _$this._vars ??= _i3.GDeletePlotConfigVarsBuilder();
   set vars(_i3.GDeletePlotConfigVarsBuilder? vars) => _$this._vars = vars;
 
   _i4.Operation? _operation;
@@ -344,7 +327,7 @@ class GDeletePlotConfigReqBuilder
 
   _i2.GDeletePlotConfigDataBuilder? _optimisticResponse;
   _i2.GDeletePlotConfigDataBuilder get optimisticResponse =>
-      _$this._optimisticResponse ??= new _i2.GDeletePlotConfigDataBuilder();
+      _$this._optimisticResponse ??= _i2.GDeletePlotConfigDataBuilder();
   set optimisticResponse(
     _i2.GDeletePlotConfigDataBuilder? optimisticResponse,
   ) => _$this._optimisticResponse = optimisticResponse;
@@ -399,7 +382,6 @@ class GDeletePlotConfigReqBuilder
 
   @override
   void replace(GDeletePlotConfigReq other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GDeletePlotConfigReq;
   }
 
@@ -416,7 +398,7 @@ class GDeletePlotConfigReqBuilder
     try {
       _$result =
           _$v ??
-          new _$GDeletePlotConfigReq._(
+          _$GDeletePlotConfigReq._(
             vars: vars.build(),
             operation: BuiltValueNullFieldError.checkNotNull(
               operation,
@@ -445,7 +427,7 @@ class GDeletePlotConfigReqBuilder
         _$failedField = 'optimisticResponse';
         _optimisticResponse?.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GDeletePlotConfigReq',
           _$failedField,
           e.toString(),

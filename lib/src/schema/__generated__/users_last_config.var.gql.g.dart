@@ -7,7 +7,7 @@ part of 'users_last_config.var.gql.dart';
 // **************************************************************************
 
 Serializer<GUsersLastConfigVars> _$gUsersLastConfigVarsSerializer =
-    new _$GUsersLastConfigVarsSerializer();
+    _$GUsersLastConfigVarsSerializer();
 
 class _$GUsersLastConfigVarsSerializer
     implements StructuredSerializer<GUsersLastConfigVars> {
@@ -34,17 +34,16 @@ class _$GUsersLastConfigVarsSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return new GUsersLastConfigVarsBuilder().build();
+    return GUsersLastConfigVarsBuilder().build();
   }
 }
 
 class _$GUsersLastConfigVars extends GUsersLastConfigVars {
   factory _$GUsersLastConfigVars([
     void Function(GUsersLastConfigVarsBuilder)? updates,
-  ]) => (new GUsersLastConfigVarsBuilder()..update(updates))._build();
+  ]) => (GUsersLastConfigVarsBuilder()..update(updates))._build();
 
   _$GUsersLastConfigVars._() : super._();
-
   @override
   GUsersLastConfigVars rebuild(
     void Function(GUsersLastConfigVarsBuilder) updates,
@@ -52,7 +51,7 @@ class _$GUsersLastConfigVars extends GUsersLastConfigVars {
 
   @override
   GUsersLastConfigVarsBuilder toBuilder() =>
-      new GUsersLastConfigVarsBuilder()..replace(this);
+      GUsersLastConfigVarsBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -79,7 +78,6 @@ class GUsersLastConfigVarsBuilder
 
   @override
   void replace(GUsersLastConfigVars other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GUsersLastConfigVars;
   }
 
@@ -92,7 +90,7 @@ class GUsersLastConfigVarsBuilder
   GUsersLastConfigVars build() => _build();
 
   _$GUsersLastConfigVars _build() {
-    final _$result = _$v ?? new _$GUsersLastConfigVars._();
+    final _$result = _$v ?? _$GUsersLastConfigVars._();
     replace(_$result);
     return _$result;
   }

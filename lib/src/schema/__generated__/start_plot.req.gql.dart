@@ -26,13 +26,12 @@ abstract class GStartPlotReq
   factory GStartPlotReq([void Function(GStartPlotReqBuilder b) updates]) =
       _$GStartPlotReq;
 
-  static void _initializeBuilder(GStartPlotReqBuilder b) =>
-      b
-        ..operation = _i4.Operation(
-          document: _i5.document,
-          operationName: 'StartPlot',
-        )
-        ..executeOnListen = true;
+  static void _initializeBuilder(GStartPlotReqBuilder b) => b
+    ..operation = _i4.Operation(
+      document: _i5.document,
+      operationName: 'StartPlot',
+    )
+    ..executeOnListen = true;
 
   @override
   _i3.GStartPlotVars get vars;

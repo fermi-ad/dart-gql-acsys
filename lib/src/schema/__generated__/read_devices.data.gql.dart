@@ -115,22 +115,24 @@ abstract class GReadDevicesData_acceleratorData_data_result {
   @BuiltValueField(wireName: '__typename')
   String get G__typename;
   static Serializer<GReadDevicesData_acceleratorData_data_result>
-  get serializer => _i2.InlineFragmentSerializer<
-    GReadDevicesData_acceleratorData_data_result
-  >(
-    'GReadDevicesData_acceleratorData_data_result',
-    GReadDevicesData_acceleratorData_data_result__base,
-    {
-      'StatusReply':
-          GReadDevicesData_acceleratorData_data_result__asStatusReply,
-      'Scalar': GReadDevicesData_acceleratorData_data_result__asScalar,
-      'ScalarArray':
-          GReadDevicesData_acceleratorData_data_result__asScalarArray,
-      'Raw': GReadDevicesData_acceleratorData_data_result__asRaw,
-      'Text': GReadDevicesData_acceleratorData_data_result__asText,
-      'TextArray': GReadDevicesData_acceleratorData_data_result__asTextArray,
-    },
-  );
+  get serializer =>
+      _i2.InlineFragmentSerializer<
+        GReadDevicesData_acceleratorData_data_result
+      >(
+        'GReadDevicesData_acceleratorData_data_result',
+        GReadDevicesData_acceleratorData_data_result__base,
+        {
+          'StatusReply':
+              GReadDevicesData_acceleratorData_data_result__asStatusReply,
+          'Scalar': GReadDevicesData_acceleratorData_data_result__asScalar,
+          'ScalarArray':
+              GReadDevicesData_acceleratorData_data_result__asScalarArray,
+          'Raw': GReadDevicesData_acceleratorData_data_result__asRaw,
+          'Text': GReadDevicesData_acceleratorData_data_result__asText,
+          'TextArray':
+              GReadDevicesData_acceleratorData_data_result__asTextArray,
+        },
+      );
 
   Map<String, dynamic> toJson() =>
       (_i1.serializers.serializeWith(
@@ -171,7 +173,6 @@ abstract class GReadDevicesData_acceleratorData_data_result__base
   static Serializer<GReadDevicesData_acceleratorData_data_result__base>
   get serializer => _$gReadDevicesDataAcceleratorDataDataResultBaseSerializer;
 
-  @override
   Map<String, dynamic> toJson() =>
       (_i1.serializers.serializeWith(
             GReadDevicesData_acceleratorData_data_result__base.serializer,
@@ -215,7 +216,6 @@ abstract class GReadDevicesData_acceleratorData_data_result__asStatusReply
   get serializer =>
       _$gReadDevicesDataAcceleratorDataDataResultAsStatusReplySerializer;
 
-  @override
   Map<String, dynamic> toJson() =>
       (_i1.serializers.serializeWith(
             GReadDevicesData_acceleratorData_data_result__asStatusReply
@@ -260,7 +260,6 @@ abstract class GReadDevicesData_acceleratorData_data_result__asScalar
   get serializer =>
       _$gReadDevicesDataAcceleratorDataDataResultAsScalarSerializer;
 
-  @override
   Map<String, dynamic> toJson() =>
       (_i1.serializers.serializeWith(
             GReadDevicesData_acceleratorData_data_result__asScalar.serializer,
@@ -304,7 +303,6 @@ abstract class GReadDevicesData_acceleratorData_data_result__asScalarArray
   get serializer =>
       _$gReadDevicesDataAcceleratorDataDataResultAsScalarArraySerializer;
 
-  @override
   Map<String, dynamic> toJson() =>
       (_i1.serializers.serializeWith(
             GReadDevicesData_acceleratorData_data_result__asScalarArray
@@ -346,7 +344,6 @@ abstract class GReadDevicesData_acceleratorData_data_result__asRaw
   static Serializer<GReadDevicesData_acceleratorData_data_result__asRaw>
   get serializer => _$gReadDevicesDataAcceleratorDataDataResultAsRawSerializer;
 
-  @override
   Map<String, dynamic> toJson() =>
       (_i1.serializers.serializeWith(
             GReadDevicesData_acceleratorData_data_result__asRaw.serializer,
@@ -387,7 +384,6 @@ abstract class GReadDevicesData_acceleratorData_data_result__asText
   static Serializer<GReadDevicesData_acceleratorData_data_result__asText>
   get serializer => _$gReadDevicesDataAcceleratorDataDataResultAsTextSerializer;
 
-  @override
   Map<String, dynamic> toJson() =>
       (_i1.serializers.serializeWith(
             GReadDevicesData_acceleratorData_data_result__asText.serializer,
@@ -431,7 +427,6 @@ abstract class GReadDevicesData_acceleratorData_data_result__asTextArray
   get serializer =>
       _$gReadDevicesDataAcceleratorDataDataResultAsTextArraySerializer;
 
-  @override
   Map<String, dynamic> toJson() =>
       (_i1.serializers.serializeWith(
             GReadDevicesData_acceleratorData_data_result__asTextArray

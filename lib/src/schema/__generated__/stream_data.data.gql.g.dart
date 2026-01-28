@@ -7,34 +7,34 @@ part of 'stream_data.data.gql.dart';
 // **************************************************************************
 
 Serializer<GStreamDataData> _$gStreamDataDataSerializer =
-    new _$GStreamDataDataSerializer();
+    _$GStreamDataDataSerializer();
 Serializer<GStreamDataData_acceleratorData>
 _$gStreamDataDataAcceleratorDataSerializer =
-    new _$GStreamDataData_acceleratorDataSerializer();
+    _$GStreamDataData_acceleratorDataSerializer();
 Serializer<GStreamDataData_acceleratorData_data>
 _$gStreamDataDataAcceleratorDataDataSerializer =
-    new _$GStreamDataData_acceleratorData_dataSerializer();
+    _$GStreamDataData_acceleratorData_dataSerializer();
 Serializer<GStreamDataData_acceleratorData_data_result__base>
 _$gStreamDataDataAcceleratorDataDataResultBaseSerializer =
-    new _$GStreamDataData_acceleratorData_data_result__baseSerializer();
+    _$GStreamDataData_acceleratorData_data_result__baseSerializer();
 Serializer<GStreamDataData_acceleratorData_data_result__asStatusReply>
 _$gStreamDataDataAcceleratorDataDataResultAsStatusReplySerializer =
-    new _$GStreamDataData_acceleratorData_data_result__asStatusReplySerializer();
+    _$GStreamDataData_acceleratorData_data_result__asStatusReplySerializer();
 Serializer<GStreamDataData_acceleratorData_data_result__asScalar>
 _$gStreamDataDataAcceleratorDataDataResultAsScalarSerializer =
-    new _$GStreamDataData_acceleratorData_data_result__asScalarSerializer();
+    _$GStreamDataData_acceleratorData_data_result__asScalarSerializer();
 Serializer<GStreamDataData_acceleratorData_data_result__asScalarArray>
 _$gStreamDataDataAcceleratorDataDataResultAsScalarArraySerializer =
-    new _$GStreamDataData_acceleratorData_data_result__asScalarArraySerializer();
+    _$GStreamDataData_acceleratorData_data_result__asScalarArraySerializer();
 Serializer<GStreamDataData_acceleratorData_data_result__asRaw>
 _$gStreamDataDataAcceleratorDataDataResultAsRawSerializer =
-    new _$GStreamDataData_acceleratorData_data_result__asRawSerializer();
+    _$GStreamDataData_acceleratorData_data_result__asRawSerializer();
 Serializer<GStreamDataData_acceleratorData_data_result__asText>
 _$gStreamDataDataAcceleratorDataDataResultAsTextSerializer =
-    new _$GStreamDataData_acceleratorData_data_result__asTextSerializer();
+    _$GStreamDataData_acceleratorData_data_result__asTextSerializer();
 Serializer<GStreamDataData_acceleratorData_data_result__asTextArray>
 _$gStreamDataDataAcceleratorDataDataResultAsTextArraySerializer =
-    new _$GStreamDataData_acceleratorData_data_result__asTextArraySerializer();
+    _$GStreamDataData_acceleratorData_data_result__asTextArraySerializer();
 
 class _$GStreamDataDataSerializer
     implements StructuredSerializer<GStreamDataData> {
@@ -71,7 +71,7 @@ class _$GStreamDataDataSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GStreamDataDataBuilder();
+    final result = GStreamDataDataBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -147,7 +147,7 @@ class _$GStreamDataData_acceleratorDataSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GStreamDataData_acceleratorDataBuilder();
+    final result = GStreamDataData_acceleratorDataBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -234,7 +234,7 @@ class _$GStreamDataData_acceleratorData_dataSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GStreamDataData_acceleratorData_dataBuilder();
+    final result = GStreamDataData_acceleratorData_dataBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -311,8 +311,7 @@ class _$GStreamDataData_acceleratorData_data_result__baseSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result =
-        new GStreamDataData_acceleratorData_data_result__baseBuilder();
+    final result = GStreamDataData_acceleratorData_data_result__baseBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -375,7 +374,7 @@ class _$GStreamDataData_acceleratorData_data_result__asStatusReplySerializer
     FullType specifiedType = FullType.unspecified,
   }) {
     final result =
-        new GStreamDataData_acceleratorData_data_result__asStatusReplyBuilder();
+        GStreamDataData_acceleratorData_data_result__asStatusReplyBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -449,7 +448,7 @@ class _$GStreamDataData_acceleratorData_data_result__asScalarSerializer
     FullType specifiedType = FullType.unspecified,
   }) {
     final result =
-        new GStreamDataData_acceleratorData_data_result__asScalarBuilder();
+        GStreamDataData_acceleratorData_data_result__asScalarBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -525,7 +524,7 @@ class _$GStreamDataData_acceleratorData_data_result__asScalarArraySerializer
     FullType specifiedType = FullType.unspecified,
   }) {
     final result =
-        new GStreamDataData_acceleratorData_data_result__asScalarArrayBuilder();
+        GStreamDataData_acceleratorData_data_result__asScalarArrayBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -600,8 +599,7 @@ class _$GStreamDataData_acceleratorData_data_result__asRawSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result =
-        new GStreamDataData_acceleratorData_data_result__asRawBuilder();
+    final result = GStreamDataData_acceleratorData_data_result__asRawBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -676,8 +674,7 @@ class _$GStreamDataData_acceleratorData_data_result__asTextSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result =
-        new GStreamDataData_acceleratorData_data_result__asTextBuilder();
+    final result = GStreamDataData_acceleratorData_data_result__asTextBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -753,7 +750,7 @@ class _$GStreamDataData_acceleratorData_data_result__asTextArraySerializer
     FullType specifiedType = FullType.unspecified,
   }) {
     final result =
-        new GStreamDataData_acceleratorData_data_result__asTextArrayBuilder();
+        GStreamDataData_acceleratorData_data_result__asTextArrayBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -794,31 +791,18 @@ class _$GStreamDataData extends GStreamDataData {
   final GStreamDataData_acceleratorData acceleratorData;
 
   factory _$GStreamDataData([void Function(GStreamDataDataBuilder)? updates]) =>
-      (new GStreamDataDataBuilder()..update(updates))._build();
+      (GStreamDataDataBuilder()..update(updates))._build();
 
   _$GStreamDataData._({
     required this.G__typename,
     required this.acceleratorData,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      G__typename,
-      r'GStreamDataData',
-      'G__typename',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      acceleratorData,
-      r'GStreamDataData',
-      'acceleratorData',
-    );
-  }
-
+  }) : super._();
   @override
   GStreamDataData rebuild(void Function(GStreamDataDataBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  GStreamDataDataBuilder toBuilder() =>
-      new GStreamDataDataBuilder()..replace(this);
+  GStreamDataDataBuilder toBuilder() => GStreamDataDataBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -856,7 +840,7 @@ class GStreamDataDataBuilder
 
   GStreamDataData_acceleratorDataBuilder? _acceleratorData;
   GStreamDataData_acceleratorDataBuilder get acceleratorData =>
-      _$this._acceleratorData ??= new GStreamDataData_acceleratorDataBuilder();
+      _$this._acceleratorData ??= GStreamDataData_acceleratorDataBuilder();
   set acceleratorData(
     GStreamDataData_acceleratorDataBuilder? acceleratorData,
   ) => _$this._acceleratorData = acceleratorData;
@@ -877,7 +861,6 @@ class GStreamDataDataBuilder
 
   @override
   void replace(GStreamDataData other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GStreamDataData;
   }
 
@@ -894,7 +877,7 @@ class GStreamDataDataBuilder
     try {
       _$result =
           _$v ??
-          new _$GStreamDataData._(
+          _$GStreamDataData._(
             G__typename: BuiltValueNullFieldError.checkNotNull(
               G__typename,
               r'GStreamDataData',
@@ -908,7 +891,7 @@ class GStreamDataDataBuilder
         _$failedField = 'acceleratorData';
         acceleratorData.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GStreamDataData',
           _$failedField,
           e.toString(),
@@ -932,31 +915,13 @@ class _$GStreamDataData_acceleratorData
 
   factory _$GStreamDataData_acceleratorData([
     void Function(GStreamDataData_acceleratorDataBuilder)? updates,
-  ]) =>
-      (new GStreamDataData_acceleratorDataBuilder()..update(updates))._build();
+  ]) => (GStreamDataData_acceleratorDataBuilder()..update(updates))._build();
 
   _$GStreamDataData_acceleratorData._({
     required this.G__typename,
     required this.refId,
     required this.data,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      G__typename,
-      r'GStreamDataData_acceleratorData',
-      'G__typename',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      refId,
-      r'GStreamDataData_acceleratorData',
-      'refId',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      data,
-      r'GStreamDataData_acceleratorData',
-      'data',
-    );
-  }
-
+  }) : super._();
   @override
   GStreamDataData_acceleratorData rebuild(
     void Function(GStreamDataData_acceleratorDataBuilder) updates,
@@ -964,7 +929,7 @@ class _$GStreamDataData_acceleratorData
 
   @override
   GStreamDataData_acceleratorDataBuilder toBuilder() =>
-      new GStreamDataData_acceleratorDataBuilder()..replace(this);
+      GStreamDataData_acceleratorDataBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -1013,7 +978,7 @@ class GStreamDataData_acceleratorDataBuilder
 
   ListBuilder<GStreamDataData_acceleratorData_data>? _data;
   ListBuilder<GStreamDataData_acceleratorData_data> get data =>
-      _$this._data ??= new ListBuilder<GStreamDataData_acceleratorData_data>();
+      _$this._data ??= ListBuilder<GStreamDataData_acceleratorData_data>();
   set data(ListBuilder<GStreamDataData_acceleratorData_data>? data) =>
       _$this._data = data;
 
@@ -1034,7 +999,6 @@ class GStreamDataData_acceleratorDataBuilder
 
   @override
   void replace(GStreamDataData_acceleratorData other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GStreamDataData_acceleratorData;
   }
 
@@ -1051,7 +1015,7 @@ class GStreamDataData_acceleratorDataBuilder
     try {
       _$result =
           _$v ??
-          new _$GStreamDataData_acceleratorData._(
+          _$GStreamDataData_acceleratorData._(
             G__typename: BuiltValueNullFieldError.checkNotNull(
               G__typename,
               r'GStreamDataData_acceleratorData',
@@ -1070,7 +1034,7 @@ class GStreamDataData_acceleratorDataBuilder
         _$failedField = 'data';
         data.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GStreamDataData_acceleratorData',
           _$failedField,
           e.toString(),
@@ -1095,31 +1059,13 @@ class _$GStreamDataData_acceleratorData_data
   factory _$GStreamDataData_acceleratorData_data([
     void Function(GStreamDataData_acceleratorData_dataBuilder)? updates,
   ]) =>
-      (new GStreamDataData_acceleratorData_dataBuilder()..update(updates))
-          ._build();
+      (GStreamDataData_acceleratorData_dataBuilder()..update(updates))._build();
 
   _$GStreamDataData_acceleratorData_data._({
     required this.G__typename,
     required this.timestamp,
     required this.result,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      G__typename,
-      r'GStreamDataData_acceleratorData_data',
-      'G__typename',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      timestamp,
-      r'GStreamDataData_acceleratorData_data',
-      'timestamp',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      result,
-      r'GStreamDataData_acceleratorData_data',
-      'result',
-    );
-  }
-
+  }) : super._();
   @override
   GStreamDataData_acceleratorData_data rebuild(
     void Function(GStreamDataData_acceleratorData_dataBuilder) updates,
@@ -1127,7 +1073,7 @@ class _$GStreamDataData_acceleratorData_data
 
   @override
   GStreamDataData_acceleratorData_dataBuilder toBuilder() =>
-      new GStreamDataData_acceleratorData_dataBuilder()..replace(this);
+      GStreamDataData_acceleratorData_dataBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -1196,7 +1142,6 @@ class GStreamDataData_acceleratorData_dataBuilder
 
   @override
   void replace(GStreamDataData_acceleratorData_data other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GStreamDataData_acceleratorData_data;
   }
 
@@ -1213,7 +1158,7 @@ class GStreamDataData_acceleratorData_dataBuilder
   _$GStreamDataData_acceleratorData_data _build() {
     final _$result =
         _$v ??
-        new _$GStreamDataData_acceleratorData_data._(
+        _$GStreamDataData_acceleratorData_data._(
           G__typename: BuiltValueNullFieldError.checkNotNull(
             G__typename,
             r'GStreamDataData_acceleratorData_data',
@@ -1244,20 +1189,13 @@ class _$GStreamDataData_acceleratorData_data_result__base
     void Function(GStreamDataData_acceleratorData_data_result__baseBuilder)?
     updates,
   ]) =>
-      (new GStreamDataData_acceleratorData_data_result__baseBuilder()
+      (GStreamDataData_acceleratorData_data_result__baseBuilder()
             ..update(updates))
           ._build();
 
   _$GStreamDataData_acceleratorData_data_result__base._({
     required this.G__typename,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      G__typename,
-      r'GStreamDataData_acceleratorData_data_result__base',
-      'G__typename',
-    );
-  }
-
+  }) : super._();
   @override
   GStreamDataData_acceleratorData_data_result__base rebuild(
     void Function(GStreamDataData_acceleratorData_data_result__baseBuilder)
@@ -1266,8 +1204,7 @@ class _$GStreamDataData_acceleratorData_data_result__base
 
   @override
   GStreamDataData_acceleratorData_data_result__baseBuilder toBuilder() =>
-      new GStreamDataData_acceleratorData_data_result__baseBuilder()
-        ..replace(this);
+      GStreamDataData_acceleratorData_data_result__baseBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -1319,7 +1256,6 @@ class GStreamDataData_acceleratorData_data_result__baseBuilder
 
   @override
   void replace(GStreamDataData_acceleratorData_data_result__base other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GStreamDataData_acceleratorData_data_result__base;
   }
 
@@ -1337,7 +1273,7 @@ class GStreamDataData_acceleratorData_data_result__baseBuilder
   _$GStreamDataData_acceleratorData_data_result__base _build() {
     final _$result =
         _$v ??
-        new _$GStreamDataData_acceleratorData_data_result__base._(
+        _$GStreamDataData_acceleratorData_data_result__base._(
           G__typename: BuiltValueNullFieldError.checkNotNull(
             G__typename,
             r'GStreamDataData_acceleratorData_data_result__base',
@@ -1362,26 +1298,14 @@ class _$GStreamDataData_acceleratorData_data_result__asStatusReply
     )?
     updates,
   ]) =>
-      (new GStreamDataData_acceleratorData_data_result__asStatusReplyBuilder()
+      (GStreamDataData_acceleratorData_data_result__asStatusReplyBuilder()
             ..update(updates))
           ._build();
 
   _$GStreamDataData_acceleratorData_data_result__asStatusReply._({
     required this.G__typename,
     required this.status,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      G__typename,
-      r'GStreamDataData_acceleratorData_data_result__asStatusReply',
-      'G__typename',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      status,
-      r'GStreamDataData_acceleratorData_data_result__asStatusReply',
-      'status',
-    );
-  }
-
+  }) : super._();
   @override
   GStreamDataData_acceleratorData_data_result__asStatusReply rebuild(
     void Function(
@@ -1393,7 +1317,7 @@ class _$GStreamDataData_acceleratorData_data_result__asStatusReply
   @override
   GStreamDataData_acceleratorData_data_result__asStatusReplyBuilder
   toBuilder() =>
-      new GStreamDataData_acceleratorData_data_result__asStatusReplyBuilder()
+      GStreamDataData_acceleratorData_data_result__asStatusReplyBuilder()
         ..replace(this);
 
   @override
@@ -1461,7 +1385,6 @@ class GStreamDataData_acceleratorData_data_result__asStatusReplyBuilder
   void replace(
     GStreamDataData_acceleratorData_data_result__asStatusReply other,
   ) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GStreamDataData_acceleratorData_data_result__asStatusReply;
   }
 
@@ -1482,7 +1405,7 @@ class GStreamDataData_acceleratorData_data_result__asStatusReplyBuilder
   _$GStreamDataData_acceleratorData_data_result__asStatusReply _build() {
     final _$result =
         _$v ??
-        new _$GStreamDataData_acceleratorData_data_result__asStatusReply._(
+        _$GStreamDataData_acceleratorData_data_result__asStatusReply._(
           G__typename: BuiltValueNullFieldError.checkNotNull(
             G__typename,
             r'GStreamDataData_acceleratorData_data_result__asStatusReply',
@@ -1510,26 +1433,14 @@ class _$GStreamDataData_acceleratorData_data_result__asScalar
     void Function(GStreamDataData_acceleratorData_data_result__asScalarBuilder)?
     updates,
   ]) =>
-      (new GStreamDataData_acceleratorData_data_result__asScalarBuilder()
+      (GStreamDataData_acceleratorData_data_result__asScalarBuilder()
             ..update(updates))
           ._build();
 
   _$GStreamDataData_acceleratorData_data_result__asScalar._({
     required this.G__typename,
     required this.scalarValue,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      G__typename,
-      r'GStreamDataData_acceleratorData_data_result__asScalar',
-      'G__typename',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      scalarValue,
-      r'GStreamDataData_acceleratorData_data_result__asScalar',
-      'scalarValue',
-    );
-  }
-
+  }) : super._();
   @override
   GStreamDataData_acceleratorData_data_result__asScalar rebuild(
     void Function(GStreamDataData_acceleratorData_data_result__asScalarBuilder)
@@ -1538,7 +1449,7 @@ class _$GStreamDataData_acceleratorData_data_result__asScalar
 
   @override
   GStreamDataData_acceleratorData_data_result__asScalarBuilder toBuilder() =>
-      new GStreamDataData_acceleratorData_data_result__asScalarBuilder()
+      GStreamDataData_acceleratorData_data_result__asScalarBuilder()
         ..replace(this);
 
   @override
@@ -1603,7 +1514,6 @@ class GStreamDataData_acceleratorData_data_result__asScalarBuilder
 
   @override
   void replace(GStreamDataData_acceleratorData_data_result__asScalar other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GStreamDataData_acceleratorData_data_result__asScalar;
   }
 
@@ -1621,7 +1531,7 @@ class GStreamDataData_acceleratorData_data_result__asScalarBuilder
   _$GStreamDataData_acceleratorData_data_result__asScalar _build() {
     final _$result =
         _$v ??
-        new _$GStreamDataData_acceleratorData_data_result__asScalar._(
+        _$GStreamDataData_acceleratorData_data_result__asScalar._(
           G__typename: BuiltValueNullFieldError.checkNotNull(
             G__typename,
             r'GStreamDataData_acceleratorData_data_result__asScalar',
@@ -1651,26 +1561,14 @@ class _$GStreamDataData_acceleratorData_data_result__asScalarArray
     )?
     updates,
   ]) =>
-      (new GStreamDataData_acceleratorData_data_result__asScalarArrayBuilder()
+      (GStreamDataData_acceleratorData_data_result__asScalarArrayBuilder()
             ..update(updates))
           ._build();
 
   _$GStreamDataData_acceleratorData_data_result__asScalarArray._({
     required this.G__typename,
     required this.scalarArrayValue,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      G__typename,
-      r'GStreamDataData_acceleratorData_data_result__asScalarArray',
-      'G__typename',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      scalarArrayValue,
-      r'GStreamDataData_acceleratorData_data_result__asScalarArray',
-      'scalarArrayValue',
-    );
-  }
-
+  }) : super._();
   @override
   GStreamDataData_acceleratorData_data_result__asScalarArray rebuild(
     void Function(
@@ -1682,7 +1580,7 @@ class _$GStreamDataData_acceleratorData_data_result__asScalarArray
   @override
   GStreamDataData_acceleratorData_data_result__asScalarArrayBuilder
   toBuilder() =>
-      new GStreamDataData_acceleratorData_data_result__asScalarArrayBuilder()
+      GStreamDataData_acceleratorData_data_result__asScalarArrayBuilder()
         ..replace(this);
 
   @override
@@ -1728,7 +1626,7 @@ class GStreamDataData_acceleratorData_data_result__asScalarArrayBuilder
 
   ListBuilder<double>? _scalarArrayValue;
   ListBuilder<double> get scalarArrayValue =>
-      _$this._scalarArrayValue ??= new ListBuilder<double>();
+      _$this._scalarArrayValue ??= ListBuilder<double>();
   set scalarArrayValue(ListBuilder<double>? scalarArrayValue) =>
       _$this._scalarArrayValue = scalarArrayValue;
 
@@ -1752,7 +1650,6 @@ class GStreamDataData_acceleratorData_data_result__asScalarArrayBuilder
   void replace(
     GStreamDataData_acceleratorData_data_result__asScalarArray other,
   ) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GStreamDataData_acceleratorData_data_result__asScalarArray;
   }
 
@@ -1775,7 +1672,7 @@ class GStreamDataData_acceleratorData_data_result__asScalarArrayBuilder
     try {
       _$result =
           _$v ??
-          new _$GStreamDataData_acceleratorData_data_result__asScalarArray._(
+          _$GStreamDataData_acceleratorData_data_result__asScalarArray._(
             G__typename: BuiltValueNullFieldError.checkNotNull(
               G__typename,
               r'GStreamDataData_acceleratorData_data_result__asScalarArray',
@@ -1789,7 +1686,7 @@ class GStreamDataData_acceleratorData_data_result__asScalarArrayBuilder
         _$failedField = 'scalarArrayValue';
         scalarArrayValue.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GStreamDataData_acceleratorData_data_result__asScalarArray',
           _$failedField,
           e.toString(),
@@ -1813,26 +1710,14 @@ class _$GStreamDataData_acceleratorData_data_result__asRaw
     void Function(GStreamDataData_acceleratorData_data_result__asRawBuilder)?
     updates,
   ]) =>
-      (new GStreamDataData_acceleratorData_data_result__asRawBuilder()
+      (GStreamDataData_acceleratorData_data_result__asRawBuilder()
             ..update(updates))
           ._build();
 
   _$GStreamDataData_acceleratorData_data_result__asRaw._({
     required this.G__typename,
     required this.rawValue,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      G__typename,
-      r'GStreamDataData_acceleratorData_data_result__asRaw',
-      'G__typename',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      rawValue,
-      r'GStreamDataData_acceleratorData_data_result__asRaw',
-      'rawValue',
-    );
-  }
-
+  }) : super._();
   @override
   GStreamDataData_acceleratorData_data_result__asRaw rebuild(
     void Function(GStreamDataData_acceleratorData_data_result__asRawBuilder)
@@ -1841,7 +1726,7 @@ class _$GStreamDataData_acceleratorData_data_result__asRaw
 
   @override
   GStreamDataData_acceleratorData_data_result__asRawBuilder toBuilder() =>
-      new GStreamDataData_acceleratorData_data_result__asRawBuilder()
+      GStreamDataData_acceleratorData_data_result__asRawBuilder()
         ..replace(this);
 
   @override
@@ -1885,7 +1770,7 @@ class GStreamDataData_acceleratorData_data_result__asRawBuilder
   set G__typename(String? G__typename) => _$this._G__typename = G__typename;
 
   ListBuilder<int>? _rawValue;
-  ListBuilder<int> get rawValue => _$this._rawValue ??= new ListBuilder<int>();
+  ListBuilder<int> get rawValue => _$this._rawValue ??= ListBuilder<int>();
   set rawValue(ListBuilder<int>? rawValue) => _$this._rawValue = rawValue;
 
   GStreamDataData_acceleratorData_data_result__asRawBuilder() {
@@ -1904,7 +1789,6 @@ class GStreamDataData_acceleratorData_data_result__asRawBuilder
 
   @override
   void replace(GStreamDataData_acceleratorData_data_result__asRaw other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GStreamDataData_acceleratorData_data_result__asRaw;
   }
 
@@ -1924,7 +1808,7 @@ class GStreamDataData_acceleratorData_data_result__asRawBuilder
     try {
       _$result =
           _$v ??
-          new _$GStreamDataData_acceleratorData_data_result__asRaw._(
+          _$GStreamDataData_acceleratorData_data_result__asRaw._(
             G__typename: BuiltValueNullFieldError.checkNotNull(
               G__typename,
               r'GStreamDataData_acceleratorData_data_result__asRaw',
@@ -1938,7 +1822,7 @@ class GStreamDataData_acceleratorData_data_result__asRawBuilder
         _$failedField = 'rawValue';
         rawValue.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GStreamDataData_acceleratorData_data_result__asRaw',
           _$failedField,
           e.toString(),
@@ -1962,26 +1846,14 @@ class _$GStreamDataData_acceleratorData_data_result__asText
     void Function(GStreamDataData_acceleratorData_data_result__asTextBuilder)?
     updates,
   ]) =>
-      (new GStreamDataData_acceleratorData_data_result__asTextBuilder()
+      (GStreamDataData_acceleratorData_data_result__asTextBuilder()
             ..update(updates))
           ._build();
 
   _$GStreamDataData_acceleratorData_data_result__asText._({
     required this.G__typename,
     required this.textValue,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      G__typename,
-      r'GStreamDataData_acceleratorData_data_result__asText',
-      'G__typename',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      textValue,
-      r'GStreamDataData_acceleratorData_data_result__asText',
-      'textValue',
-    );
-  }
-
+  }) : super._();
   @override
   GStreamDataData_acceleratorData_data_result__asText rebuild(
     void Function(GStreamDataData_acceleratorData_data_result__asTextBuilder)
@@ -1990,7 +1862,7 @@ class _$GStreamDataData_acceleratorData_data_result__asText
 
   @override
   GStreamDataData_acceleratorData_data_result__asTextBuilder toBuilder() =>
-      new GStreamDataData_acceleratorData_data_result__asTextBuilder()
+      GStreamDataData_acceleratorData_data_result__asTextBuilder()
         ..replace(this);
 
   @override
@@ -2055,7 +1927,6 @@ class GStreamDataData_acceleratorData_data_result__asTextBuilder
 
   @override
   void replace(GStreamDataData_acceleratorData_data_result__asText other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GStreamDataData_acceleratorData_data_result__asText;
   }
 
@@ -2073,7 +1944,7 @@ class GStreamDataData_acceleratorData_data_result__asTextBuilder
   _$GStreamDataData_acceleratorData_data_result__asText _build() {
     final _$result =
         _$v ??
-        new _$GStreamDataData_acceleratorData_data_result__asText._(
+        _$GStreamDataData_acceleratorData_data_result__asText._(
           G__typename: BuiltValueNullFieldError.checkNotNull(
             G__typename,
             r'GStreamDataData_acceleratorData_data_result__asText',
@@ -2103,26 +1974,14 @@ class _$GStreamDataData_acceleratorData_data_result__asTextArray
     )?
     updates,
   ]) =>
-      (new GStreamDataData_acceleratorData_data_result__asTextArrayBuilder()
+      (GStreamDataData_acceleratorData_data_result__asTextArrayBuilder()
             ..update(updates))
           ._build();
 
   _$GStreamDataData_acceleratorData_data_result__asTextArray._({
     required this.G__typename,
     required this.textArrayValue,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      G__typename,
-      r'GStreamDataData_acceleratorData_data_result__asTextArray',
-      'G__typename',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      textArrayValue,
-      r'GStreamDataData_acceleratorData_data_result__asTextArray',
-      'textArrayValue',
-    );
-  }
-
+  }) : super._();
   @override
   GStreamDataData_acceleratorData_data_result__asTextArray rebuild(
     void Function(
@@ -2133,7 +1992,7 @@ class _$GStreamDataData_acceleratorData_data_result__asTextArray
 
   @override
   GStreamDataData_acceleratorData_data_result__asTextArrayBuilder toBuilder() =>
-      new GStreamDataData_acceleratorData_data_result__asTextArrayBuilder()
+      GStreamDataData_acceleratorData_data_result__asTextArrayBuilder()
         ..replace(this);
 
   @override
@@ -2178,7 +2037,7 @@ class GStreamDataData_acceleratorData_data_result__asTextArrayBuilder
 
   ListBuilder<String>? _textArrayValue;
   ListBuilder<String> get textArrayValue =>
-      _$this._textArrayValue ??= new ListBuilder<String>();
+      _$this._textArrayValue ??= ListBuilder<String>();
   set textArrayValue(ListBuilder<String>? textArrayValue) =>
       _$this._textArrayValue = textArrayValue;
 
@@ -2200,7 +2059,6 @@ class GStreamDataData_acceleratorData_data_result__asTextArrayBuilder
 
   @override
   void replace(GStreamDataData_acceleratorData_data_result__asTextArray other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GStreamDataData_acceleratorData_data_result__asTextArray;
   }
 
@@ -2222,7 +2080,7 @@ class GStreamDataData_acceleratorData_data_result__asTextArrayBuilder
     try {
       _$result =
           _$v ??
-          new _$GStreamDataData_acceleratorData_data_result__asTextArray._(
+          _$GStreamDataData_acceleratorData_data_result__asTextArray._(
             G__typename: BuiltValueNullFieldError.checkNotNull(
               G__typename,
               r'GStreamDataData_acceleratorData_data_result__asTextArray',
@@ -2236,7 +2094,7 @@ class GStreamDataData_acceleratorData_data_result__asTextArrayBuilder
         _$failedField = 'textArrayValue';
         textArrayValue.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GStreamDataData_acceleratorData_data_result__asTextArray',
           _$failedField,
           e.toString(),

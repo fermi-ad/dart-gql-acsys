@@ -7,7 +7,7 @@ part of 'set_users_config.var.gql.dart';
 // **************************************************************************
 
 Serializer<GSetUsersConfigVars> _$gSetUsersConfigVarsSerializer =
-    new _$GSetUsersConfigVarsSerializer();
+    _$GSetUsersConfigVarsSerializer();
 
 class _$GSetUsersConfigVarsSerializer
     implements StructuredSerializer<GSetUsersConfigVars> {
@@ -42,7 +42,7 @@ class _$GSetUsersConfigVarsSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GSetUsersConfigVarsBuilder();
+    final result = GSetUsersConfigVarsBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -74,12 +74,9 @@ class _$GSetUsersConfigVars extends GSetUsersConfigVars {
 
   factory _$GSetUsersConfigVars([
     void Function(GSetUsersConfigVarsBuilder)? updates,
-  ]) => (new GSetUsersConfigVarsBuilder()..update(updates))._build();
+  ]) => (GSetUsersConfigVarsBuilder()..update(updates))._build();
 
-  _$GSetUsersConfigVars._({required this.cfg}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(cfg, r'GSetUsersConfigVars', 'cfg');
-  }
-
+  _$GSetUsersConfigVars._({required this.cfg}) : super._();
   @override
   GSetUsersConfigVars rebuild(
     void Function(GSetUsersConfigVarsBuilder) updates,
@@ -87,7 +84,7 @@ class _$GSetUsersConfigVars extends GSetUsersConfigVars {
 
   @override
   GSetUsersConfigVarsBuilder toBuilder() =>
-      new GSetUsersConfigVarsBuilder()..replace(this);
+      GSetUsersConfigVarsBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -105,8 +102,9 @@ class _$GSetUsersConfigVars extends GSetUsersConfigVars {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'GSetUsersConfigVars')
-      ..add('cfg', cfg)).toString();
+    return (newBuiltValueToStringHelper(
+      r'GSetUsersConfigVars',
+    )..add('cfg', cfg)).toString();
   }
 }
 
@@ -116,7 +114,7 @@ class GSetUsersConfigVarsBuilder
 
   _i1.GPlotConfigurationSnapshotInBuilder? _cfg;
   _i1.GPlotConfigurationSnapshotInBuilder get cfg =>
-      _$this._cfg ??= new _i1.GPlotConfigurationSnapshotInBuilder();
+      _$this._cfg ??= _i1.GPlotConfigurationSnapshotInBuilder();
   set cfg(_i1.GPlotConfigurationSnapshotInBuilder? cfg) => _$this._cfg = cfg;
 
   GSetUsersConfigVarsBuilder();
@@ -132,7 +130,6 @@ class GSetUsersConfigVarsBuilder
 
   @override
   void replace(GSetUsersConfigVars other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GSetUsersConfigVars;
   }
 
@@ -147,14 +144,14 @@ class GSetUsersConfigVarsBuilder
   _$GSetUsersConfigVars _build() {
     _$GSetUsersConfigVars _$result;
     try {
-      _$result = _$v ?? new _$GSetUsersConfigVars._(cfg: cfg.build());
+      _$result = _$v ?? _$GSetUsersConfigVars._(cfg: cfg.build());
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'cfg';
         cfg.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GSetUsersConfigVars',
           _$failedField,
           e.toString(),
