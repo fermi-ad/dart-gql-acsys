@@ -4,9 +4,7 @@
 import 'package:dart_gql_acsys/dart_gql_acsys.dart';
 
 Future<void> main() async {
-  final strm = ACSysService(
-    port: 8001,
-  ).startPlot(["M:OUTTMP"], updateRate: 10000);
+  final strm = ACSysService().startPlot(["M:OUTTMP"], updateRate: 10000);
 
   try {
     // Wait for each reply packet.

@@ -9,9 +9,10 @@ Future<void> main() async {
     // pattern-matching to deconstruct the return value into two local
     // variables.
 
-    final [temp, humid] = await ACSysService(
-      port: 8001,
-    ).readDevices(["M:OUTTMP", "G:HUMID"]);
+    final [temp, humid] = await ACSysService().readDevices([
+      "M:OUTTMP",
+      "G:HUMID",
+    ]);
 
     print("Temperature: ${temp.value.toDouble()?.toStringAsFixed(1)} F");
     print("   Humidity: ${humid.value.toDouble()?.toStringAsFixed(1)} %");
