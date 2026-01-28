@@ -9,6 +9,7 @@ library;
 import 'dart:developer' as dev;
 
 import 'package:built_collection/built_collection.dart';
+import 'package:dart_gql_acsys/src/schema/__generated__/set_device.data.gql.dart';
 import 'package:pure_dart_ui/pure_dart_ui.dart';
 
 import 'package:ferry/ferry.dart';
@@ -430,7 +431,7 @@ final class ACSysService implements ACSysServiceAPI {
     // Define a nested function which converts the GraphQL reply into a
     // SettingStatus.
 
-    xlat(e) => SettingStatus(
+    xlat(GSetDeviceData e) => SettingStatus(
       facilityCode: e.setDevice.status ~/ 256,
       errorCode: e.setDevice.status & 255,
     );
