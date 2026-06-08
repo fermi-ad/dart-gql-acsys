@@ -8,7 +8,9 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  ferry: ^0.16.2-dev.4
+  flutter:
+    sdk: flutter
+  graphql_flutter: ^5.2.1
   gql_http_link: ^1.2.0
   gql_websocket_link: ^2.1.0
   gql_code_builder: ^0.15.0
