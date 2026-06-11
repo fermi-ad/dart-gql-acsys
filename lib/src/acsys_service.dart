@@ -14,7 +14,6 @@ import 'package:dart_gql_acsys/src/schema/subscriptions.dart';
 
 import 'package:pure_dart_ui/pure_dart_ui.dart';
 import 'package:graphql_flutter/graphql_flutter.dart' hide WebSocketLink;
-import 'package:flutter/material.dart';
 import "package:gql_websocket_link/gql_websocket_link.dart";
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -179,8 +178,8 @@ abstract interface class ACSysServiceAPI {
 /// widget which manages an object of this class.
 
 final class ACSysService implements ACSysServiceAPI {
-  final ValueNotifier<GraphQLClient> _cl;
-  final ValueNotifier<GraphQLClient> _srv;
+  final GraphQLClient _cl;
+  final GraphQLClient _srv;
 
   static Map<String, String> _buildAuthHeader(String? jwt) =>
       jwt != null ? {"Authorization": "Bearer $jwt"} : {};
@@ -189,27 +188,23 @@ final class ACSysService implements ACSysServiceAPI {
   // GraphQL endpoints.
 
   ACSysService({String? jwt})
-    : _cl = ValueNotifier<GraphQLClient>(
-        GraphQLClient(
-          link: HttpLink(
-            "https://ad-api.fnal.gov/acsys",
-            defaultHeaders: _buildAuthHeader(jwt),
-          ),
-          cache: GraphQLCache(store: InMemoryStore()),
+    : _cl = GraphQLClient(
+        link: HttpLink(
+          "https://ad-api.fnal.gov/acsys",
+          defaultHeaders: _buildAuthHeader(jwt),
         ),
+        cache: GraphQLCache(store: InMemoryStore()),
       ),
-      _srv = ValueNotifier<GraphQLClient>(
-        GraphQLClient(
-          link: WebSocketLink(
-            null,
-            channelGenerator: () => WebSocketChannel.connect(
-              Uri(scheme: "wss", host: "ad-api.fnal.gov", path: "/acsys/s"),
-              protocols: ["graphql-ws"],
-            ),
-            reconnectInterval: const Duration(seconds: 1),
+      _srv = GraphQLClient(
+        link: WebSocketLink(
+          null,
+          channelGenerator: () => WebSocketChannel.connect(
+            Uri(scheme: "wss", host: "ad-api.fnal.gov", path: "/acsys/s"),
+            protocols: ["graphql-ws"],
           ),
-          cache: GraphQLCache(store: InMemoryStore()),
+          reconnectInterval: const Duration(seconds: 1),
         ),
+        cache: GraphQLCache(store: InMemoryStore()),
       );
 
   // Common code needed to do RPCs. The caller sends in a protobuf request and,
@@ -235,7 +230,7 @@ final class ACSysService implements ACSysServiceAPI {
       fetchPolicy: withPolicy,
     );
 
-    final QueryResult result = await _cl.value.query(options);
+    final QueryResult result = await _cl.query(options);
 
     if (result.hasException) {
       if (result.exception?.linkException != null) {
@@ -266,7 +261,7 @@ final class ACSysService implements ACSysServiceAPI {
   // be sent for a device in error.
   @override
   Stream<Reading> monitorDevices(List<String> drfs) {
-    return _srv.value
+    return _srv
         .subscribe(
           SubscriptionOptions(
             document: gql(devicesMonitor),
@@ -369,7 +364,7 @@ final class ACSysService implements ACSysServiceAPI {
     int? nAcquisitions,
     int? triggerEvent,
   }) {
-    return _srv.value
+    return _srv
         .subscribe(
           SubscriptionOptions(
             document: gql(plotStart),
