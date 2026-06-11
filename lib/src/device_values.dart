@@ -222,10 +222,8 @@ extension FromDeviceValue on DeviceValue {
   List<(DateTime, double)>? toTimeSeriesWithDates() => switch (this) {
     DevTimeSeries(values: var values) => [
       ...values.map(
-        (e) => (
-          DateTime.fromMillisecondsSinceEpoch((e.$1 * 1000).toInt()),
-          e.$2,
-        ),
+        (e) =>
+            (DateTime.fromMillisecondsSinceEpoch((e.$1 * 1000).toInt()), e.$2),
       ),
     ],
     _ => null,

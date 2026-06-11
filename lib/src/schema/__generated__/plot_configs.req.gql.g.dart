@@ -7,7 +7,7 @@ part of 'plot_configs.req.gql.dart';
 // **************************************************************************
 
 Serializer<GPlotConfigsReq> _$gPlotConfigsReqSerializer =
-    new _$GPlotConfigsReqSerializer();
+    _$GPlotConfigsReqSerializer();
 
 class _$GPlotConfigsReqSerializer
     implements StructuredSerializer<GPlotConfigsReq> {
@@ -101,7 +101,7 @@ class _$GPlotConfigsReqSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GPlotConfigsReqBuilder();
+    final result = GPlotConfigsReqBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -212,7 +212,7 @@ class _$GPlotConfigsReq extends GPlotConfigsReq {
   final _i4.Context? context;
 
   factory _$GPlotConfigsReq([void Function(GPlotConfigsReqBuilder)? updates]) =>
-      (new GPlotConfigsReqBuilder()..update(updates))._build();
+      (GPlotConfigsReqBuilder()..update(updates))._build();
 
   _$GPlotConfigsReq._({
     required this.vars,
@@ -225,27 +225,13 @@ class _$GPlotConfigsReq extends GPlotConfigsReq {
     this.fetchPolicy,
     required this.executeOnListen,
     this.context,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(vars, r'GPlotConfigsReq', 'vars');
-    BuiltValueNullFieldError.checkNotNull(
-      operation,
-      r'GPlotConfigsReq',
-      'operation',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      executeOnListen,
-      r'GPlotConfigsReq',
-      'executeOnListen',
-    );
-  }
-
+  }) : super._();
   @override
   GPlotConfigsReq rebuild(void Function(GPlotConfigsReqBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  GPlotConfigsReqBuilder toBuilder() =>
-      new GPlotConfigsReqBuilder()..replace(this);
+  GPlotConfigsReqBuilder toBuilder() => GPlotConfigsReqBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -304,7 +290,7 @@ class GPlotConfigsReqBuilder
 
   _i3.GPlotConfigsVarsBuilder? _vars;
   _i3.GPlotConfigsVarsBuilder get vars =>
-      _$this._vars ??= new _i3.GPlotConfigsVarsBuilder();
+      _$this._vars ??= _i3.GPlotConfigsVarsBuilder();
   set vars(_i3.GPlotConfigsVarsBuilder? vars) => _$this._vars = vars;
 
   _i4.Operation? _operation;
@@ -329,7 +315,7 @@ class GPlotConfigsReqBuilder
 
   _i2.GPlotConfigsDataBuilder? _optimisticResponse;
   _i2.GPlotConfigsDataBuilder get optimisticResponse =>
-      _$this._optimisticResponse ??= new _i2.GPlotConfigsDataBuilder();
+      _$this._optimisticResponse ??= _i2.GPlotConfigsDataBuilder();
   set optimisticResponse(_i2.GPlotConfigsDataBuilder? optimisticResponse) =>
       _$this._optimisticResponse = optimisticResponse;
 
@@ -383,7 +369,6 @@ class GPlotConfigsReqBuilder
 
   @override
   void replace(GPlotConfigsReq other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GPlotConfigsReq;
   }
 
@@ -400,7 +385,7 @@ class GPlotConfigsReqBuilder
     try {
       _$result =
           _$v ??
-          new _$GPlotConfigsReq._(
+          _$GPlotConfigsReq._(
             vars: vars.build(),
             operation: BuiltValueNullFieldError.checkNotNull(
               operation,
@@ -429,7 +414,7 @@ class GPlotConfigsReqBuilder
         _$failedField = 'optimisticResponse';
         _optimisticResponse?.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GPlotConfigsReq',
           _$failedField,
           e.toString(),

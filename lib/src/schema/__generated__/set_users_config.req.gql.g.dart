@@ -7,7 +7,7 @@ part of 'set_users_config.req.gql.dart';
 // **************************************************************************
 
 Serializer<GSetUsersConfigReq> _$gSetUsersConfigReqSerializer =
-    new _$GSetUsersConfigReqSerializer();
+    _$GSetUsersConfigReqSerializer();
 
 class _$GSetUsersConfigReqSerializer
     implements StructuredSerializer<GSetUsersConfigReq> {
@@ -101,7 +101,7 @@ class _$GSetUsersConfigReqSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GSetUsersConfigReqBuilder();
+    final result = GSetUsersConfigReqBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -213,7 +213,7 @@ class _$GSetUsersConfigReq extends GSetUsersConfigReq {
 
   factory _$GSetUsersConfigReq([
     void Function(GSetUsersConfigReqBuilder)? updates,
-  ]) => (new GSetUsersConfigReqBuilder()..update(updates))._build();
+  ]) => (GSetUsersConfigReqBuilder()..update(updates))._build();
 
   _$GSetUsersConfigReq._({
     required this.vars,
@@ -226,20 +226,7 @@ class _$GSetUsersConfigReq extends GSetUsersConfigReq {
     this.fetchPolicy,
     required this.executeOnListen,
     this.context,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(vars, r'GSetUsersConfigReq', 'vars');
-    BuiltValueNullFieldError.checkNotNull(
-      operation,
-      r'GSetUsersConfigReq',
-      'operation',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      executeOnListen,
-      r'GSetUsersConfigReq',
-      'executeOnListen',
-    );
-  }
-
+  }) : super._();
   @override
   GSetUsersConfigReq rebuild(
     void Function(GSetUsersConfigReqBuilder) updates,
@@ -247,7 +234,7 @@ class _$GSetUsersConfigReq extends GSetUsersConfigReq {
 
   @override
   GSetUsersConfigReqBuilder toBuilder() =>
-      new GSetUsersConfigReqBuilder()..replace(this);
+      GSetUsersConfigReqBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -306,7 +293,7 @@ class GSetUsersConfigReqBuilder
 
   _i3.GSetUsersConfigVarsBuilder? _vars;
   _i3.GSetUsersConfigVarsBuilder get vars =>
-      _$this._vars ??= new _i3.GSetUsersConfigVarsBuilder();
+      _$this._vars ??= _i3.GSetUsersConfigVarsBuilder();
   set vars(_i3.GSetUsersConfigVarsBuilder? vars) => _$this._vars = vars;
 
   _i4.Operation? _operation;
@@ -337,7 +324,7 @@ class GSetUsersConfigReqBuilder
 
   _i2.GSetUsersConfigDataBuilder? _optimisticResponse;
   _i2.GSetUsersConfigDataBuilder get optimisticResponse =>
-      _$this._optimisticResponse ??= new _i2.GSetUsersConfigDataBuilder();
+      _$this._optimisticResponse ??= _i2.GSetUsersConfigDataBuilder();
   set optimisticResponse(_i2.GSetUsersConfigDataBuilder? optimisticResponse) =>
       _$this._optimisticResponse = optimisticResponse;
 
@@ -391,7 +378,6 @@ class GSetUsersConfigReqBuilder
 
   @override
   void replace(GSetUsersConfigReq other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GSetUsersConfigReq;
   }
 
@@ -408,7 +394,7 @@ class GSetUsersConfigReqBuilder
     try {
       _$result =
           _$v ??
-          new _$GSetUsersConfigReq._(
+          _$GSetUsersConfigReq._(
             vars: vars.build(),
             operation: BuiltValueNullFieldError.checkNotNull(
               operation,
@@ -437,7 +423,7 @@ class GSetUsersConfigReqBuilder
         _$failedField = 'optimisticResponse';
         _optimisticResponse?.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GSetUsersConfigReq',
           _$failedField,
           e.toString(),

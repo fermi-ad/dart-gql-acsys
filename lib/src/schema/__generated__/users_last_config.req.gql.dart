@@ -30,13 +30,12 @@ abstract class GUsersLastConfigReq
     void Function(GUsersLastConfigReqBuilder b) updates,
   ]) = _$GUsersLastConfigReq;
 
-  static void _initializeBuilder(GUsersLastConfigReqBuilder b) =>
-      b
-        ..operation = _i4.Operation(
-          document: _i5.document,
-          operationName: 'UsersLastConfig',
-        )
-        ..executeOnListen = true;
+  static void _initializeBuilder(GUsersLastConfigReqBuilder b) => b
+    ..operation = _i4.Operation(
+      document: _i5.document,
+      operationName: 'UsersLastConfig',
+    )
+    ..executeOnListen = true;
 
   @override
   _i3.GUsersLastConfigVars get vars;

@@ -7,7 +7,7 @@ part of 'remove_plot_config.var.gql.dart';
 // **************************************************************************
 
 Serializer<GDeletePlotConfigVars> _$gDeletePlotConfigVarsSerializer =
-    new _$GDeletePlotConfigVarsSerializer();
+    _$GDeletePlotConfigVarsSerializer();
 
 class _$GDeletePlotConfigVarsSerializer
     implements StructuredSerializer<GDeletePlotConfigVars> {
@@ -39,7 +39,7 @@ class _$GDeletePlotConfigVarsSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GDeletePlotConfigVarsBuilder();
+    final result = GDeletePlotConfigVarsBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -68,12 +68,9 @@ class _$GDeletePlotConfigVars extends GDeletePlotConfigVars {
 
   factory _$GDeletePlotConfigVars([
     void Function(GDeletePlotConfigVarsBuilder)? updates,
-  ]) => (new GDeletePlotConfigVarsBuilder()..update(updates))._build();
+  ]) => (GDeletePlotConfigVarsBuilder()..update(updates))._build();
 
-  _$GDeletePlotConfigVars._({required this.id}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(id, r'GDeletePlotConfigVars', 'id');
-  }
-
+  _$GDeletePlotConfigVars._({required this.id}) : super._();
   @override
   GDeletePlotConfigVars rebuild(
     void Function(GDeletePlotConfigVarsBuilder) updates,
@@ -81,7 +78,7 @@ class _$GDeletePlotConfigVars extends GDeletePlotConfigVars {
 
   @override
   GDeletePlotConfigVarsBuilder toBuilder() =>
-      new GDeletePlotConfigVarsBuilder()..replace(this);
+      GDeletePlotConfigVarsBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -99,8 +96,9 @@ class _$GDeletePlotConfigVars extends GDeletePlotConfigVars {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'GDeletePlotConfigVars')
-      ..add('id', id)).toString();
+    return (newBuiltValueToStringHelper(
+      r'GDeletePlotConfigVars',
+    )..add('id', id)).toString();
   }
 }
 
@@ -125,7 +123,6 @@ class GDeletePlotConfigVarsBuilder
 
   @override
   void replace(GDeletePlotConfigVars other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GDeletePlotConfigVars;
   }
 
@@ -140,7 +137,7 @@ class GDeletePlotConfigVarsBuilder
   _$GDeletePlotConfigVars _build() {
     final _$result =
         _$v ??
-        new _$GDeletePlotConfigVars._(
+        _$GDeletePlotConfigVars._(
           id: BuiltValueNullFieldError.checkNotNull(
             id,
             r'GDeletePlotConfigVars',

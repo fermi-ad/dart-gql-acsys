@@ -7,9 +7,9 @@ part of 'set_device.data.gql.dart';
 // **************************************************************************
 
 Serializer<GSetDeviceData> _$gSetDeviceDataSerializer =
-    new _$GSetDeviceDataSerializer();
+    _$GSetDeviceDataSerializer();
 Serializer<GSetDeviceData_setDevice> _$gSetDeviceDataSetDeviceSerializer =
-    new _$GSetDeviceData_setDeviceSerializer();
+    _$GSetDeviceData_setDeviceSerializer();
 
 class _$GSetDeviceDataSerializer
     implements StructuredSerializer<GSetDeviceData> {
@@ -46,7 +46,7 @@ class _$GSetDeviceDataSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GSetDeviceDataBuilder();
+    final result = GSetDeviceDataBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -113,7 +113,7 @@ class _$GSetDeviceData_setDeviceSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GSetDeviceData_setDeviceBuilder();
+    final result = GSetDeviceData_setDeviceBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -151,29 +151,16 @@ class _$GSetDeviceData extends GSetDeviceData {
   final GSetDeviceData_setDevice setDevice;
 
   factory _$GSetDeviceData([void Function(GSetDeviceDataBuilder)? updates]) =>
-      (new GSetDeviceDataBuilder()..update(updates))._build();
+      (GSetDeviceDataBuilder()..update(updates))._build();
 
   _$GSetDeviceData._({required this.G__typename, required this.setDevice})
-    : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      G__typename,
-      r'GSetDeviceData',
-      'G__typename',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      setDevice,
-      r'GSetDeviceData',
-      'setDevice',
-    );
-  }
-
+    : super._();
   @override
   GSetDeviceData rebuild(void Function(GSetDeviceDataBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  GSetDeviceDataBuilder toBuilder() =>
-      new GSetDeviceDataBuilder()..replace(this);
+  GSetDeviceDataBuilder toBuilder() => GSetDeviceDataBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -211,7 +198,7 @@ class GSetDeviceDataBuilder
 
   GSetDeviceData_setDeviceBuilder? _setDevice;
   GSetDeviceData_setDeviceBuilder get setDevice =>
-      _$this._setDevice ??= new GSetDeviceData_setDeviceBuilder();
+      _$this._setDevice ??= GSetDeviceData_setDeviceBuilder();
   set setDevice(GSetDeviceData_setDeviceBuilder? setDevice) =>
       _$this._setDevice = setDevice;
 
@@ -231,7 +218,6 @@ class GSetDeviceDataBuilder
 
   @override
   void replace(GSetDeviceData other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GSetDeviceData;
   }
 
@@ -248,7 +234,7 @@ class GSetDeviceDataBuilder
     try {
       _$result =
           _$v ??
-          new _$GSetDeviceData._(
+          _$GSetDeviceData._(
             G__typename: BuiltValueNullFieldError.checkNotNull(
               G__typename,
               r'GSetDeviceData',
@@ -262,7 +248,7 @@ class GSetDeviceDataBuilder
         _$failedField = 'setDevice';
         setDevice.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GSetDeviceData',
           _$failedField,
           e.toString(),
@@ -283,24 +269,12 @@ class _$GSetDeviceData_setDevice extends GSetDeviceData_setDevice {
 
   factory _$GSetDeviceData_setDevice([
     void Function(GSetDeviceData_setDeviceBuilder)? updates,
-  ]) => (new GSetDeviceData_setDeviceBuilder()..update(updates))._build();
+  ]) => (GSetDeviceData_setDeviceBuilder()..update(updates))._build();
 
   _$GSetDeviceData_setDevice._({
     required this.G__typename,
     required this.status,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      G__typename,
-      r'GSetDeviceData_setDevice',
-      'G__typename',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      status,
-      r'GSetDeviceData_setDevice',
-      'status',
-    );
-  }
-
+  }) : super._();
   @override
   GSetDeviceData_setDevice rebuild(
     void Function(GSetDeviceData_setDeviceBuilder) updates,
@@ -308,7 +282,7 @@ class _$GSetDeviceData_setDevice extends GSetDeviceData_setDevice {
 
   @override
   GSetDeviceData_setDeviceBuilder toBuilder() =>
-      new GSetDeviceData_setDeviceBuilder()..replace(this);
+      GSetDeviceData_setDeviceBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -365,7 +339,6 @@ class GSetDeviceData_setDeviceBuilder
 
   @override
   void replace(GSetDeviceData_setDevice other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GSetDeviceData_setDevice;
   }
 
@@ -380,7 +353,7 @@ class GSetDeviceData_setDeviceBuilder
   _$GSetDeviceData_setDevice _build() {
     final _$result =
         _$v ??
-        new _$GSetDeviceData_setDevice._(
+        _$GSetDeviceData_setDevice._(
           G__typename: BuiltValueNullFieldError.checkNotNull(
             G__typename,
             r'GSetDeviceData_setDevice',

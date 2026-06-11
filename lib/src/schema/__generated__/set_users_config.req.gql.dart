@@ -27,13 +27,12 @@ abstract class GSetUsersConfigReq
     void Function(GSetUsersConfigReqBuilder b) updates,
   ]) = _$GSetUsersConfigReq;
 
-  static void _initializeBuilder(GSetUsersConfigReqBuilder b) =>
-      b
-        ..operation = _i4.Operation(
-          document: _i5.document,
-          operationName: 'SetUsersConfig',
-        )
-        ..executeOnListen = true;
+  static void _initializeBuilder(GSetUsersConfigReqBuilder b) => b
+    ..operation = _i4.Operation(
+      document: _i5.document,
+      operationName: 'SetUsersConfig',
+    )
+    ..executeOnListen = true;
 
   @override
   _i3.GSetUsersConfigVars get vars;

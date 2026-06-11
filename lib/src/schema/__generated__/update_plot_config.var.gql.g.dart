@@ -7,7 +7,7 @@ part of 'update_plot_config.var.gql.dart';
 // **************************************************************************
 
 Serializer<GUpdatePlotConfigVars> _$gUpdatePlotConfigVarsSerializer =
-    new _$GUpdatePlotConfigVarsSerializer();
+    _$GUpdatePlotConfigVarsSerializer();
 
 class _$GUpdatePlotConfigVarsSerializer
     implements StructuredSerializer<GUpdatePlotConfigVars> {
@@ -42,7 +42,7 @@ class _$GUpdatePlotConfigVarsSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GUpdatePlotConfigVarsBuilder();
+    final result = GUpdatePlotConfigVarsBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -74,12 +74,9 @@ class _$GUpdatePlotConfigVars extends GUpdatePlotConfigVars {
 
   factory _$GUpdatePlotConfigVars([
     void Function(GUpdatePlotConfigVarsBuilder)? updates,
-  ]) => (new GUpdatePlotConfigVarsBuilder()..update(updates))._build();
+  ]) => (GUpdatePlotConfigVarsBuilder()..update(updates))._build();
 
-  _$GUpdatePlotConfigVars._({required this.cfg}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(cfg, r'GUpdatePlotConfigVars', 'cfg');
-  }
-
+  _$GUpdatePlotConfigVars._({required this.cfg}) : super._();
   @override
   GUpdatePlotConfigVars rebuild(
     void Function(GUpdatePlotConfigVarsBuilder) updates,
@@ -87,7 +84,7 @@ class _$GUpdatePlotConfigVars extends GUpdatePlotConfigVars {
 
   @override
   GUpdatePlotConfigVarsBuilder toBuilder() =>
-      new GUpdatePlotConfigVarsBuilder()..replace(this);
+      GUpdatePlotConfigVarsBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -105,8 +102,9 @@ class _$GUpdatePlotConfigVars extends GUpdatePlotConfigVars {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'GUpdatePlotConfigVars')
-      ..add('cfg', cfg)).toString();
+    return (newBuiltValueToStringHelper(
+      r'GUpdatePlotConfigVars',
+    )..add('cfg', cfg)).toString();
   }
 }
 
@@ -116,7 +114,7 @@ class GUpdatePlotConfigVarsBuilder
 
   _i1.GPlotConfigurationSnapshotInBuilder? _cfg;
   _i1.GPlotConfigurationSnapshotInBuilder get cfg =>
-      _$this._cfg ??= new _i1.GPlotConfigurationSnapshotInBuilder();
+      _$this._cfg ??= _i1.GPlotConfigurationSnapshotInBuilder();
   set cfg(_i1.GPlotConfigurationSnapshotInBuilder? cfg) => _$this._cfg = cfg;
 
   GUpdatePlotConfigVarsBuilder();
@@ -132,7 +130,6 @@ class GUpdatePlotConfigVarsBuilder
 
   @override
   void replace(GUpdatePlotConfigVars other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GUpdatePlotConfigVars;
   }
 
@@ -147,14 +144,14 @@ class GUpdatePlotConfigVarsBuilder
   _$GUpdatePlotConfigVars _build() {
     _$GUpdatePlotConfigVars _$result;
     try {
-      _$result = _$v ?? new _$GUpdatePlotConfigVars._(cfg: cfg.build());
+      _$result = _$v ?? _$GUpdatePlotConfigVars._(cfg: cfg.build());
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'cfg';
         cfg.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GUpdatePlotConfigVars',
           _$failedField,
           e.toString(),

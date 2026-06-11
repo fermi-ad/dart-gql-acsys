@@ -7,7 +7,7 @@ part of 'plot_configs.var.gql.dart';
 // **************************************************************************
 
 Serializer<GPlotConfigsVars> _$gPlotConfigsVarsSerializer =
-    new _$GPlotConfigsVarsSerializer();
+    _$GPlotConfigsVarsSerializer();
 
 class _$GPlotConfigsVarsSerializer
     implements StructuredSerializer<GPlotConfigsVars> {
@@ -39,7 +39,7 @@ class _$GPlotConfigsVarsSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GPlotConfigsVarsBuilder();
+    final result = GPlotConfigsVarsBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -65,17 +65,16 @@ class _$GPlotConfigsVars extends GPlotConfigsVars {
 
   factory _$GPlotConfigsVars([
     void Function(GPlotConfigsVarsBuilder)? updates,
-  ]) => (new GPlotConfigsVarsBuilder()..update(updates))._build();
+  ]) => (GPlotConfigsVarsBuilder()..update(updates))._build();
 
   _$GPlotConfigsVars._({this.id}) : super._();
-
   @override
   GPlotConfigsVars rebuild(void Function(GPlotConfigsVarsBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
   GPlotConfigsVarsBuilder toBuilder() =>
-      new GPlotConfigsVarsBuilder()..replace(this);
+      GPlotConfigsVarsBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -93,8 +92,9 @@ class _$GPlotConfigsVars extends GPlotConfigsVars {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'GPlotConfigsVars')
-      ..add('id', id)).toString();
+    return (newBuiltValueToStringHelper(
+      r'GPlotConfigsVars',
+    )..add('id', id)).toString();
   }
 }
 
@@ -119,7 +119,6 @@ class GPlotConfigsVarsBuilder
 
   @override
   void replace(GPlotConfigsVars other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GPlotConfigsVars;
   }
 
@@ -132,7 +131,7 @@ class GPlotConfigsVarsBuilder
   GPlotConfigsVars build() => _build();
 
   _$GPlotConfigsVars _build() {
-    final _$result = _$v ?? new _$GPlotConfigsVars._(id: id);
+    final _$result = _$v ?? _$GPlotConfigsVars._(id: id);
     replace(_$result);
     return _$result;
   }

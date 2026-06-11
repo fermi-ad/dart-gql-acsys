@@ -7,7 +7,7 @@ part of 'update_plot_config.data.gql.dart';
 // **************************************************************************
 
 Serializer<GUpdatePlotConfigData> _$gUpdatePlotConfigDataSerializer =
-    new _$GUpdatePlotConfigDataSerializer();
+    _$GUpdatePlotConfigDataSerializer();
 
 class _$GUpdatePlotConfigDataSerializer
     implements StructuredSerializer<GUpdatePlotConfigData> {
@@ -48,7 +48,7 @@ class _$GUpdatePlotConfigDataSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GUpdatePlotConfigDataBuilder();
+    final result = GUpdatePlotConfigDataBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -84,19 +84,12 @@ class _$GUpdatePlotConfigData extends GUpdatePlotConfigData {
 
   factory _$GUpdatePlotConfigData([
     void Function(GUpdatePlotConfigDataBuilder)? updates,
-  ]) => (new GUpdatePlotConfigDataBuilder()..update(updates))._build();
+  ]) => (GUpdatePlotConfigDataBuilder()..update(updates))._build();
 
   _$GUpdatePlotConfigData._({
     required this.G__typename,
     this.updatePlotConfiguration,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-      G__typename,
-      r'GUpdatePlotConfigData',
-      'G__typename',
-    );
-  }
-
+  }) : super._();
   @override
   GUpdatePlotConfigData rebuild(
     void Function(GUpdatePlotConfigDataBuilder) updates,
@@ -104,7 +97,7 @@ class _$GUpdatePlotConfigData extends GUpdatePlotConfigData {
 
   @override
   GUpdatePlotConfigDataBuilder toBuilder() =>
-      new GUpdatePlotConfigDataBuilder()..replace(this);
+      GUpdatePlotConfigDataBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -161,7 +154,6 @@ class GUpdatePlotConfigDataBuilder
 
   @override
   void replace(GUpdatePlotConfigData other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GUpdatePlotConfigData;
   }
 
@@ -176,7 +168,7 @@ class GUpdatePlotConfigDataBuilder
   _$GUpdatePlotConfigData _build() {
     final _$result =
         _$v ??
-        new _$GUpdatePlotConfigData._(
+        _$GUpdatePlotConfigData._(
           G__typename: BuiltValueNullFieldError.checkNotNull(
             G__typename,
             r'GUpdatePlotConfigData',

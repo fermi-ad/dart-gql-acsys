@@ -6,7 +6,7 @@ import 'package:dart_gql_acsys/dart_gql_acsys.dart';
 const units = ["F", "%"];
 
 Future<void> main() async {
-  final strm = ACSysService(port: 8001).monitorDevices(["M:OUTTMP", "G:HUMID"]);
+  final strm = ACSysService().monitorDevices(["M:OUTTMP", "G:HUMID"]);
 
   try {
     // Perform the loop each time we recive a new packet. For each reply,

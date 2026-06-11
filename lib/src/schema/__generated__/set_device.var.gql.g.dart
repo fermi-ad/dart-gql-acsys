@@ -7,7 +7,7 @@ part of 'set_device.var.gql.dart';
 // **************************************************************************
 
 Serializer<GSetDeviceVars> _$gSetDeviceVarsSerializer =
-    new _$GSetDeviceVarsSerializer();
+    _$GSetDeviceVarsSerializer();
 
 class _$GSetDeviceVarsSerializer
     implements StructuredSerializer<GSetDeviceVars> {
@@ -44,7 +44,7 @@ class _$GSetDeviceVarsSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GSetDeviceVarsBuilder();
+    final result = GSetDeviceVarsBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -83,20 +83,15 @@ class _$GSetDeviceVars extends GSetDeviceVars {
   final _i1.GDevValue value;
 
   factory _$GSetDeviceVars([void Function(GSetDeviceVarsBuilder)? updates]) =>
-      (new GSetDeviceVarsBuilder()..update(updates))._build();
+      (GSetDeviceVarsBuilder()..update(updates))._build();
 
-  _$GSetDeviceVars._({required this.device, required this.value}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(device, r'GSetDeviceVars', 'device');
-    BuiltValueNullFieldError.checkNotNull(value, r'GSetDeviceVars', 'value');
-  }
-
+  _$GSetDeviceVars._({required this.device, required this.value}) : super._();
   @override
   GSetDeviceVars rebuild(void Function(GSetDeviceVarsBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  GSetDeviceVarsBuilder toBuilder() =>
-      new GSetDeviceVarsBuilder()..replace(this);
+  GSetDeviceVarsBuilder toBuilder() => GSetDeviceVarsBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -133,8 +128,7 @@ class GSetDeviceVarsBuilder
   set device(String? device) => _$this._device = device;
 
   _i1.GDevValueBuilder? _value;
-  _i1.GDevValueBuilder get value =>
-      _$this._value ??= new _i1.GDevValueBuilder();
+  _i1.GDevValueBuilder get value => _$this._value ??= _i1.GDevValueBuilder();
   set value(_i1.GDevValueBuilder? value) => _$this._value = value;
 
   GSetDeviceVarsBuilder();
@@ -151,7 +145,6 @@ class GSetDeviceVarsBuilder
 
   @override
   void replace(GSetDeviceVars other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GSetDeviceVars;
   }
 
@@ -168,7 +161,7 @@ class GSetDeviceVarsBuilder
     try {
       _$result =
           _$v ??
-          new _$GSetDeviceVars._(
+          _$GSetDeviceVars._(
             device: BuiltValueNullFieldError.checkNotNull(
               device,
               r'GSetDeviceVars',
@@ -182,7 +175,7 @@ class GSetDeviceVarsBuilder
         _$failedField = 'value';
         value.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GSetDeviceVars',
           _$failedField,
           e.toString(),

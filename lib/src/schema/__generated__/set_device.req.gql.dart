@@ -26,13 +26,12 @@ abstract class GSetDeviceReq
   factory GSetDeviceReq([void Function(GSetDeviceReqBuilder b) updates]) =
       _$GSetDeviceReq;
 
-  static void _initializeBuilder(GSetDeviceReqBuilder b) =>
-      b
-        ..operation = _i4.Operation(
-          document: _i5.document,
-          operationName: 'SetDevice',
-        )
-        ..executeOnListen = true;
+  static void _initializeBuilder(GSetDeviceReqBuilder b) => b
+    ..operation = _i4.Operation(
+      document: _i5.document,
+      operationName: 'SetDevice',
+    )
+    ..executeOnListen = true;
 
   @override
   _i3.GSetDeviceVars get vars;

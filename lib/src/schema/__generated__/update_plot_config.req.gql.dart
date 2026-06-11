@@ -30,13 +30,12 @@ abstract class GUpdatePlotConfigReq
     void Function(GUpdatePlotConfigReqBuilder b) updates,
   ]) = _$GUpdatePlotConfigReq;
 
-  static void _initializeBuilder(GUpdatePlotConfigReqBuilder b) =>
-      b
-        ..operation = _i4.Operation(
-          document: _i5.document,
-          operationName: 'UpdatePlotConfig',
-        )
-        ..executeOnListen = true;
+  static void _initializeBuilder(GUpdatePlotConfigReqBuilder b) => b
+    ..operation = _i4.Operation(
+      document: _i5.document,
+      operationName: 'UpdatePlotConfig',
+    )
+    ..executeOnListen = true;
 
   @override
   _i3.GUpdatePlotConfigVars get vars;

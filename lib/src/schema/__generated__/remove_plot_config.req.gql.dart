@@ -30,13 +30,12 @@ abstract class GDeletePlotConfigReq
     void Function(GDeletePlotConfigReqBuilder b) updates,
   ]) = _$GDeletePlotConfigReq;
 
-  static void _initializeBuilder(GDeletePlotConfigReqBuilder b) =>
-      b
-        ..operation = _i4.Operation(
-          document: _i5.document,
-          operationName: 'DeletePlotConfig',
-        )
-        ..executeOnListen = true;
+  static void _initializeBuilder(GDeletePlotConfigReqBuilder b) => b
+    ..operation = _i4.Operation(
+      document: _i5.document,
+      operationName: 'DeletePlotConfig',
+    )
+    ..executeOnListen = true;
 
   @override
   _i3.GDeletePlotConfigVars get vars;

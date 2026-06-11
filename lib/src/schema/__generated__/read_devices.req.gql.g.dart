@@ -7,7 +7,7 @@ part of 'read_devices.req.gql.dart';
 // **************************************************************************
 
 Serializer<GReadDevicesReq> _$gReadDevicesReqSerializer =
-    new _$GReadDevicesReqSerializer();
+    _$GReadDevicesReqSerializer();
 
 class _$GReadDevicesReqSerializer
     implements StructuredSerializer<GReadDevicesReq> {
@@ -101,7 +101,7 @@ class _$GReadDevicesReqSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GReadDevicesReqBuilder();
+    final result = GReadDevicesReqBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -212,7 +212,7 @@ class _$GReadDevicesReq extends GReadDevicesReq {
   final _i4.Context? context;
 
   factory _$GReadDevicesReq([void Function(GReadDevicesReqBuilder)? updates]) =>
-      (new GReadDevicesReqBuilder()..update(updates))._build();
+      (GReadDevicesReqBuilder()..update(updates))._build();
 
   _$GReadDevicesReq._({
     required this.vars,
@@ -225,27 +225,13 @@ class _$GReadDevicesReq extends GReadDevicesReq {
     this.fetchPolicy,
     required this.executeOnListen,
     this.context,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(vars, r'GReadDevicesReq', 'vars');
-    BuiltValueNullFieldError.checkNotNull(
-      operation,
-      r'GReadDevicesReq',
-      'operation',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      executeOnListen,
-      r'GReadDevicesReq',
-      'executeOnListen',
-    );
-  }
-
+  }) : super._();
   @override
   GReadDevicesReq rebuild(void Function(GReadDevicesReqBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  GReadDevicesReqBuilder toBuilder() =>
-      new GReadDevicesReqBuilder()..replace(this);
+  GReadDevicesReqBuilder toBuilder() => GReadDevicesReqBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -304,7 +290,7 @@ class GReadDevicesReqBuilder
 
   _i3.GReadDevicesVarsBuilder? _vars;
   _i3.GReadDevicesVarsBuilder get vars =>
-      _$this._vars ??= new _i3.GReadDevicesVarsBuilder();
+      _$this._vars ??= _i3.GReadDevicesVarsBuilder();
   set vars(_i3.GReadDevicesVarsBuilder? vars) => _$this._vars = vars;
 
   _i4.Operation? _operation;
@@ -329,7 +315,7 @@ class GReadDevicesReqBuilder
 
   _i2.GReadDevicesDataBuilder? _optimisticResponse;
   _i2.GReadDevicesDataBuilder get optimisticResponse =>
-      _$this._optimisticResponse ??= new _i2.GReadDevicesDataBuilder();
+      _$this._optimisticResponse ??= _i2.GReadDevicesDataBuilder();
   set optimisticResponse(_i2.GReadDevicesDataBuilder? optimisticResponse) =>
       _$this._optimisticResponse = optimisticResponse;
 
@@ -383,7 +369,6 @@ class GReadDevicesReqBuilder
 
   @override
   void replace(GReadDevicesReq other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GReadDevicesReq;
   }
 
@@ -400,7 +385,7 @@ class GReadDevicesReqBuilder
     try {
       _$result =
           _$v ??
-          new _$GReadDevicesReq._(
+          _$GReadDevicesReq._(
             vars: vars.build(),
             operation: BuiltValueNullFieldError.checkNotNull(
               operation,
@@ -429,7 +414,7 @@ class GReadDevicesReqBuilder
         _$failedField = 'optimisticResponse';
         _optimisticResponse?.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GReadDevicesReq',
           _$failedField,
           e.toString(),

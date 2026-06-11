@@ -7,7 +7,7 @@ part of 'start_plot.req.gql.dart';
 // **************************************************************************
 
 Serializer<GStartPlotReq> _$gStartPlotReqSerializer =
-    new _$GStartPlotReqSerializer();
+    _$GStartPlotReqSerializer();
 
 class _$GStartPlotReqSerializer implements StructuredSerializer<GStartPlotReq> {
   @override
@@ -100,7 +100,7 @@ class _$GStartPlotReqSerializer implements StructuredSerializer<GStartPlotReq> {
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GStartPlotReqBuilder();
+    final result = GStartPlotReqBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -208,7 +208,7 @@ class _$GStartPlotReq extends GStartPlotReq {
   final _i4.Context? context;
 
   factory _$GStartPlotReq([void Function(GStartPlotReqBuilder)? updates]) =>
-      (new GStartPlotReqBuilder()..update(updates))._build();
+      (GStartPlotReqBuilder()..update(updates))._build();
 
   _$GStartPlotReq._({
     required this.vars,
@@ -221,26 +221,13 @@ class _$GStartPlotReq extends GStartPlotReq {
     this.fetchPolicy,
     required this.executeOnListen,
     this.context,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(vars, r'GStartPlotReq', 'vars');
-    BuiltValueNullFieldError.checkNotNull(
-      operation,
-      r'GStartPlotReq',
-      'operation',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      executeOnListen,
-      r'GStartPlotReq',
-      'executeOnListen',
-    );
-  }
-
+  }) : super._();
   @override
   GStartPlotReq rebuild(void Function(GStartPlotReqBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  GStartPlotReqBuilder toBuilder() => new GStartPlotReqBuilder()..replace(this);
+  GStartPlotReqBuilder toBuilder() => GStartPlotReqBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -299,7 +286,7 @@ class GStartPlotReqBuilder
 
   _i3.GStartPlotVarsBuilder? _vars;
   _i3.GStartPlotVarsBuilder get vars =>
-      _$this._vars ??= new _i3.GStartPlotVarsBuilder();
+      _$this._vars ??= _i3.GStartPlotVarsBuilder();
   set vars(_i3.GStartPlotVarsBuilder? vars) => _$this._vars = vars;
 
   _i4.Operation? _operation;
@@ -321,7 +308,7 @@ class GStartPlotReqBuilder
 
   _i2.GStartPlotDataBuilder? _optimisticResponse;
   _i2.GStartPlotDataBuilder get optimisticResponse =>
-      _$this._optimisticResponse ??= new _i2.GStartPlotDataBuilder();
+      _$this._optimisticResponse ??= _i2.GStartPlotDataBuilder();
   set optimisticResponse(_i2.GStartPlotDataBuilder? optimisticResponse) =>
       _$this._optimisticResponse = optimisticResponse;
 
@@ -375,7 +362,6 @@ class GStartPlotReqBuilder
 
   @override
   void replace(GStartPlotReq other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GStartPlotReq;
   }
 
@@ -392,7 +378,7 @@ class GStartPlotReqBuilder
     try {
       _$result =
           _$v ??
-          new _$GStartPlotReq._(
+          _$GStartPlotReq._(
             vars: vars.build(),
             operation: BuiltValueNullFieldError.checkNotNull(
               operation,
@@ -421,7 +407,7 @@ class GStartPlotReqBuilder
         _$failedField = 'optimisticResponse';
         _optimisticResponse?.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GStartPlotReq',
           _$failedField,
           e.toString(),

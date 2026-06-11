@@ -7,7 +7,7 @@ part of 'stream_data.var.gql.dart';
 // **************************************************************************
 
 Serializer<GStreamDataVars> _$gStreamDataVarsSerializer =
-    new _$GStreamDataVarsSerializer();
+    _$GStreamDataVarsSerializer();
 
 class _$GStreamDataVarsSerializer
     implements StructuredSerializer<GStreamDataVars> {
@@ -41,7 +41,7 @@ class _$GStreamDataVarsSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GStreamDataVarsBuilder();
+    final result = GStreamDataVarsBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -72,19 +72,15 @@ class _$GStreamDataVars extends GStreamDataVars {
   final BuiltList<String> drfs;
 
   factory _$GStreamDataVars([void Function(GStreamDataVarsBuilder)? updates]) =>
-      (new GStreamDataVarsBuilder()..update(updates))._build();
+      (GStreamDataVarsBuilder()..update(updates))._build();
 
-  _$GStreamDataVars._({required this.drfs}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(drfs, r'GStreamDataVars', 'drfs');
-  }
-
+  _$GStreamDataVars._({required this.drfs}) : super._();
   @override
   GStreamDataVars rebuild(void Function(GStreamDataVarsBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  GStreamDataVarsBuilder toBuilder() =>
-      new GStreamDataVarsBuilder()..replace(this);
+  GStreamDataVarsBuilder toBuilder() => GStreamDataVarsBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -102,8 +98,9 @@ class _$GStreamDataVars extends GStreamDataVars {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'GStreamDataVars')
-      ..add('drfs', drfs)).toString();
+    return (newBuiltValueToStringHelper(
+      r'GStreamDataVars',
+    )..add('drfs', drfs)).toString();
   }
 }
 
@@ -112,7 +109,7 @@ class GStreamDataVarsBuilder
   _$GStreamDataVars? _$v;
 
   ListBuilder<String>? _drfs;
-  ListBuilder<String> get drfs => _$this._drfs ??= new ListBuilder<String>();
+  ListBuilder<String> get drfs => _$this._drfs ??= ListBuilder<String>();
   set drfs(ListBuilder<String>? drfs) => _$this._drfs = drfs;
 
   GStreamDataVarsBuilder();
@@ -128,7 +125,6 @@ class GStreamDataVarsBuilder
 
   @override
   void replace(GStreamDataVars other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GStreamDataVars;
   }
 
@@ -143,14 +139,14 @@ class GStreamDataVarsBuilder
   _$GStreamDataVars _build() {
     _$GStreamDataVars _$result;
     try {
-      _$result = _$v ?? new _$GStreamDataVars._(drfs: drfs.build());
+      _$result = _$v ?? _$GStreamDataVars._(drfs: drfs.build());
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'drfs';
         drfs.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GStreamDataVars',
           _$failedField,
           e.toString(),

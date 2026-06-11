@@ -26,13 +26,12 @@ abstract class GStreamDataReq
   factory GStreamDataReq([void Function(GStreamDataReqBuilder b) updates]) =
       _$GStreamDataReq;
 
-  static void _initializeBuilder(GStreamDataReqBuilder b) =>
-      b
-        ..operation = _i4.Operation(
-          document: _i5.document,
-          operationName: 'StreamData',
-        )
-        ..executeOnListen = true;
+  static void _initializeBuilder(GStreamDataReqBuilder b) => b
+    ..operation = _i4.Operation(
+      document: _i5.document,
+      operationName: 'StreamData',
+    )
+    ..executeOnListen = true;
 
   @override
   _i3.GStreamDataVars get vars;

@@ -7,7 +7,7 @@ part of 'stream_data.req.gql.dart';
 // **************************************************************************
 
 Serializer<GStreamDataReq> _$gStreamDataReqSerializer =
-    new _$GStreamDataReqSerializer();
+    _$GStreamDataReqSerializer();
 
 class _$GStreamDataReqSerializer
     implements StructuredSerializer<GStreamDataReq> {
@@ -101,7 +101,7 @@ class _$GStreamDataReqSerializer
     Iterable<Object?> serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = new GStreamDataReqBuilder();
+    final result = GStreamDataReqBuilder();
 
     final iterator = serialized.iterator;
     while (iterator.moveNext()) {
@@ -212,7 +212,7 @@ class _$GStreamDataReq extends GStreamDataReq {
   final _i4.Context? context;
 
   factory _$GStreamDataReq([void Function(GStreamDataReqBuilder)? updates]) =>
-      (new GStreamDataReqBuilder()..update(updates))._build();
+      (GStreamDataReqBuilder()..update(updates))._build();
 
   _$GStreamDataReq._({
     required this.vars,
@@ -225,27 +225,13 @@ class _$GStreamDataReq extends GStreamDataReq {
     this.fetchPolicy,
     required this.executeOnListen,
     this.context,
-  }) : super._() {
-    BuiltValueNullFieldError.checkNotNull(vars, r'GStreamDataReq', 'vars');
-    BuiltValueNullFieldError.checkNotNull(
-      operation,
-      r'GStreamDataReq',
-      'operation',
-    );
-    BuiltValueNullFieldError.checkNotNull(
-      executeOnListen,
-      r'GStreamDataReq',
-      'executeOnListen',
-    );
-  }
-
+  }) : super._();
   @override
   GStreamDataReq rebuild(void Function(GStreamDataReqBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  GStreamDataReqBuilder toBuilder() =>
-      new GStreamDataReqBuilder()..replace(this);
+  GStreamDataReqBuilder toBuilder() => GStreamDataReqBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -304,7 +290,7 @@ class GStreamDataReqBuilder
 
   _i3.GStreamDataVarsBuilder? _vars;
   _i3.GStreamDataVarsBuilder get vars =>
-      _$this._vars ??= new _i3.GStreamDataVarsBuilder();
+      _$this._vars ??= _i3.GStreamDataVarsBuilder();
   set vars(_i3.GStreamDataVarsBuilder? vars) => _$this._vars = vars;
 
   _i4.Operation? _operation;
@@ -326,7 +312,7 @@ class GStreamDataReqBuilder
 
   _i2.GStreamDataDataBuilder? _optimisticResponse;
   _i2.GStreamDataDataBuilder get optimisticResponse =>
-      _$this._optimisticResponse ??= new _i2.GStreamDataDataBuilder();
+      _$this._optimisticResponse ??= _i2.GStreamDataDataBuilder();
   set optimisticResponse(_i2.GStreamDataDataBuilder? optimisticResponse) =>
       _$this._optimisticResponse = optimisticResponse;
 
@@ -380,7 +366,6 @@ class GStreamDataReqBuilder
 
   @override
   void replace(GStreamDataReq other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$GStreamDataReq;
   }
 
@@ -397,7 +382,7 @@ class GStreamDataReqBuilder
     try {
       _$result =
           _$v ??
-          new _$GStreamDataReq._(
+          _$GStreamDataReq._(
             vars: vars.build(),
             operation: BuiltValueNullFieldError.checkNotNull(
               operation,
@@ -426,7 +411,7 @@ class GStreamDataReqBuilder
         _$failedField = 'optimisticResponse';
         _optimisticResponse?.build();
       } catch (e) {
-        throw new BuiltValueNestedFieldError(
+        throw BuiltValueNestedFieldError(
           r'GStreamDataReq',
           _$failedField,
           e.toString(),

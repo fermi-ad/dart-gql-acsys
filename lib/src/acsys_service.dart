@@ -292,10 +292,10 @@ final class ACSysService implements ACSysServiceAPI {
   // Constructor. This creates the HTTP links needed to communicate with our
   // GraphQL endpoints.
 
-  ACSysService({String? jwt, int? port})
+  ACSysService({String? jwt})
     : _q = Client(
         link: HttpLink(
-          "https://acsys-proxy.fnal.gov:${port ?? 8000}/acsys",
+          "https://ad-api.fnal.gov/acsys",
           defaultHeaders: _buildAuthHeader(jwt),
         ),
         cache: Cache(),
@@ -303,16 +303,10 @@ final class ACSysService implements ACSysServiceAPI {
       _s = Client(
         link: WebSocketLink(
           null,
-          channelGenerator:
-              () => WebSocketChannel.connect(
-                Uri(
-                  scheme: "wss",
-                  host: "acsys-proxy.fnal.gov",
-                  port: port ?? 8000,
-                  path: "/acsys/s",
-                ),
-                protocols: ["graphql-ws"],
-              ),
+          channelGenerator: () => WebSocketChannel.connect(
+            Uri(scheme: "wss", host: "ad-api.fnal.gov", path: "/acsys/s"),
+            protocols: ["graphql-ws"],
+          ),
           reconnectInterval: const Duration(seconds: 1),
         ),
         cache: Cache(),
@@ -349,10 +343,9 @@ final class ACSysService implements ACSysServiceAPI {
   @override
   Future<List<Reading>> readDevices(List<String> devices) {
     final req = GReadDevicesReq(
-      (b) =>
-          b
-            ..vars.devList = ListBuilder(devices)
-            ..fetchPolicy = FetchPolicy.NetworkOnly,
+      (b) => b
+        ..vars.devList = ListBuilder(devices)
+        ..fetchPolicy = FetchPolicy.NetworkOnly,
     );
 
     return _rpc(req, xlat: _convertReading);
@@ -366,10 +359,9 @@ final class ACSysService implements ACSysServiceAPI {
   @override
   Stream<Reading> monitorDevices(List<String> drfs) {
     final req = GStreamDataReq(
-      (b) =>
-          b
-            ..vars.drfs = ListBuilder(drfs)
-            ..fetchPolicy = FetchPolicy.NetworkOnly,
+      (b) => b
+        ..vars.drfs = ListBuilder(drfs)
+        ..fetchPolicy = FetchPolicy.NetworkOnly,
     );
 
     return _s
@@ -439,10 +431,9 @@ final class ACSysService implements ACSysServiceAPI {
     // Build the request.
 
     final req = GSetDeviceReq(
-      (b) =>
-          b
-            ..vars.device = forDRF
-            ..vars.value = newSetting._toGDevValue(),
+      (b) => b
+        ..vars.device = forDRF
+        ..vars.value = newSetting._toGDevValue(),
     );
 
     return _rpc(req, xlat: xlat);
@@ -453,6 +444,7 @@ final class ACSysService implements ACSysServiceAPI {
     required String toDRF,
     required String value,
   }) => submit(forDRF: toDRF, newSetting: DevText(value));
+
   @override
   Stream<PlotReply> startPlot(
     List<String> drfs, {
@@ -466,18 +458,17 @@ final class ACSysService implements ACSysServiceAPI {
     int? triggerEvent,
   }) {
     final req = GStartPlotReq(
-      (b) =>
-          b
-            ..fetchPolicy = FetchPolicy.NetworkOnly
-            ..vars.drfList = ListBuilder(drfs)
-            ..vars.xMin = xMin
-            ..vars.xMax = xMax
-            ..vars.windowSize = windowSize
-            ..vars.nAcquisitions = nAcquisitions
-            ..vars.updateDelay = updateRate
-            ..vars.triggerEvent = triggerEvent
-            ..vars.startTime = startTime
-            ..vars.endTime = endTime,
+      (b) => b
+        ..fetchPolicy = FetchPolicy.NetworkOnly
+        ..vars.drfList = ListBuilder(drfs)
+        ..vars.xMin = xMin
+        ..vars.xMax = xMax
+        ..vars.windowSize = windowSize
+        ..vars.nAcquisitions = nAcquisitions
+        ..vars.updateDelay = updateRate
+        ..vars.triggerEvent = triggerEvent
+        ..vars.startTime = startTime
+        ..vars.endTime = endTime,
     );
 
     return _s
@@ -495,19 +486,16 @@ final class ACSysService implements ACSysServiceAPI {
 
     return _rpc(
       req,
-      xlat:
-          (GPlotConfigsData data) =>
-              data.plotConfiguration
-                  .map(
-                    (e) => PlotConfigurationListing(
-                      configurationId:
-                          e.configurationId != null
-                              ? PlotConfigId._fromInt(e.configurationId!)
-                              : null,
-                      configurationName: e.configurationName,
-                    ),
-                  )
-                  .toList(),
+      xlat: (GPlotConfigsData data) => data.plotConfiguration
+          .map(
+            (e) => PlotConfigurationListing(
+              configurationId: e.configurationId != null
+                  ? PlotConfigId._fromInt(e.configurationId!)
+                  : null,
+              configurationName: e.configurationName,
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -534,39 +522,39 @@ final class ACSysService implements ACSysServiceAPI {
         return e == null
             ? null
             : PlotConfigurationSnapshot(
-              configurationId:
-                  e.configurationId != null
-                      ? PlotConfigId._fromInt(e.configurationId!)
-                      : null,
-              configurationName: e.configurationName,
-              channels: Map.fromEntries(
-                e.channels.map(
-                  (e) => MapEntry(
-                    e.device,
-                    ChannelSettingSnapshot(
-                      lineColor:
-                          e.lineColor != null ? Color(e.lineColor!) : null,
-                      markerIndex: e.markerIndex,
-                      yMin: e.yMin,
-                      yMax: e.yMax,
+                configurationId: e.configurationId != null
+                    ? PlotConfigId._fromInt(e.configurationId!)
+                    : null,
+                configurationName: e.configurationName,
+                channels: Map.fromEntries(
+                  e.channels.map(
+                    (e) => MapEntry(
+                      e.device,
+                      ChannelSettingSnapshot(
+                        lineColor: e.lineColor != null
+                            ? Color(e.lineColor!)
+                            : null,
+                        markerIndex: e.markerIndex,
+                        yMin: e.yMin,
+                        yMax: e.yMax,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              xMin: e.xMin,
-              xMax: e.xMax,
-              startTime: e.startTime,
-              endTime: e.endTime,
-              timeDelta: e.timeDelta,
-              isOneShot: e.isOneShot,
-              isScalar: e.isScalar,
-              isShowLabels: e.isShowLabels,
-              updateDelay: e.updateDelay,
-              nAcquisitions: e.nAcquisitions,
-              tclkEvent: e.tclkEvent,
-              dataLimit: e.dataLimit,
-              isPersistent: e.isPersistent,
-            );
+                xMin: e.xMin,
+                xMax: e.xMax,
+                startTime: e.startTime,
+                endTime: e.endTime,
+                timeDelta: e.timeDelta,
+                isOneShot: e.isOneShot,
+                isScalar: e.isScalar,
+                isShowLabels: e.isShowLabels,
+                updateDelay: e.updateDelay,
+                nAcquisitions: e.nAcquisitions,
+                tclkEvent: e.tclkEvent,
+                dataLimit: e.dataLimit,
+                isPersistent: e.isPersistent,
+              );
       },
     );
   }
@@ -590,48 +578,44 @@ final class ACSysService implements ACSysServiceAPI {
 
     return _rpc(
       req,
-      xlat:
-          (GPlotConfigsData data) =>
-              data.plotConfiguration
-                  .map(
-                    (e) => PlotConfigurationSnapshot(
-                      configurationId:
-                          e.configurationId != null
-                              ? PlotConfigId._fromInt(e.configurationId!)
-                              : null,
-                      configurationName: e.configurationName,
-                      channels: Map.fromEntries(
-                        e.channels.map(
-                          (e) => MapEntry(
-                            e.device,
-                            ChannelSettingSnapshot(
-                              lineColor:
-                                  e.lineColor != null
-                                      ? Color(e.lineColor!)
-                                      : null,
-                              markerIndex: e.markerIndex,
-                              yMin: e.yMin,
-                              yMax: e.yMax,
-                            ),
-                          ),
-                        ),
-                      ),
-                      xMin: e.xMin,
-                      xMax: e.xMax,
-                      startTime: e.startTime,
-                      endTime: e.endTime,
-                      timeDelta: e.timeDelta,
-                      isOneShot: e.isOneShot,
-                      isScalar: e.isScalar,
-                      isShowLabels: e.isShowLabels,
-                      updateDelay: e.updateDelay,
-                      nAcquisitions: e.nAcquisitions,
-                      tclkEvent: e.tclkEvent,
-                      dataLimit: e.dataLimit,
-                      isPersistent: e.isPersistent,
+      xlat: (GPlotConfigsData data) => data.plotConfiguration
+          .map(
+            (e) => PlotConfigurationSnapshot(
+              configurationId: e.configurationId != null
+                  ? PlotConfigId._fromInt(e.configurationId!)
+                  : null,
+              configurationName: e.configurationName,
+              channels: Map.fromEntries(
+                e.channels.map(
+                  (e) => MapEntry(
+                    e.device,
+                    ChannelSettingSnapshot(
+                      lineColor: e.lineColor != null
+                          ? Color(e.lineColor!)
+                          : null,
+                      markerIndex: e.markerIndex,
+                      yMin: e.yMin,
+                      yMax: e.yMax,
                     ),
-                  )
-                  .toList(),
+                  ),
+                ),
+              ),
+              xMin: e.xMin,
+              xMax: e.xMax,
+              startTime: e.startTime,
+              endTime: e.endTime,
+              timeDelta: e.timeDelta,
+              isOneShot: e.isOneShot,
+              isScalar: e.isScalar,
+              isShowLabels: e.isShowLabels,
+              updateDelay: e.updateDelay,
+              nAcquisitions: e.nAcquisitions,
+              tclkEvent: e.tclkEvent,
+              dataLimit: e.dataLimit,
+              isPersistent: e.isPersistent,
+            ),
+          )
+          .toList(),
     ).then((value) {
       switch (value) {
         case []:
@@ -648,36 +632,34 @@ final class ACSysService implements ACSysServiceAPI {
 
   GPlotConfigurationSnapshotInBuilder _plotConfigurationSnapshotIn(
     PlotConfigurationSnapshot cfg,
-  ) =>
-      GPlotConfigurationSnapshotInBuilder()
-        ..configurationId = cfg.configurationId?._value
-        ..configurationName = cfg.configurationName
-        ..channels = ListBuilder(
-          cfg.channels.entries.map(
-            (e) => GChannelSettingSnapshotIn(
-              (b) =>
-                  b
-                    ..device = e.key
-                    ..lineColor = e.value.lineColor?.value
-                    ..markerIndex = e.value.markerIndex
-                    ..yMin = e.value.yMin
-                    ..yMax = e.value.yMax,
-            ),
-          ),
-        )
-        ..xMin = cfg.xMin
-        ..xMax = cfg.xMax
-        ..startTime = cfg.startTime
-        ..endTime = cfg.endTime
-        ..timeDelta = cfg.timeDelta
-        ..isOneShot = cfg.isOneShot
-        ..isScalar = cfg.isScalar
-        ..isShowLabels = cfg.isShowLabels
-        ..isPersistent = cfg.isPersistent
-        ..dataLimit = cfg.dataLimit
-        ..updateDelay = cfg.updateDelay
-        ..nAcquisitions = cfg.nAcquisitions
-        ..tclkEvent = cfg.tclkEvent;
+  ) => GPlotConfigurationSnapshotInBuilder()
+    ..configurationId = cfg.configurationId?._value
+    ..configurationName = cfg.configurationName
+    ..channels = ListBuilder(
+      cfg.channels.entries.map(
+        (e) => GChannelSettingSnapshotIn(
+          (b) => b
+            ..device = e.key
+            ..lineColor = e.value.lineColor?.value
+            ..markerIndex = e.value.markerIndex
+            ..yMin = e.value.yMin
+            ..yMax = e.value.yMax,
+        ),
+      ),
+    )
+    ..xMin = cfg.xMin
+    ..xMax = cfg.xMax
+    ..startTime = cfg.startTime
+    ..endTime = cfg.endTime
+    ..timeDelta = cfg.timeDelta
+    ..isOneShot = cfg.isOneShot
+    ..isScalar = cfg.isScalar
+    ..isShowLabels = cfg.isShowLabels
+    ..isPersistent = cfg.isPersistent
+    ..dataLimit = cfg.dataLimit
+    ..updateDelay = cfg.updateDelay
+    ..nAcquisitions = cfg.nAcquisitions
+    ..tclkEvent = cfg.tclkEvent;
 
   @override
   Future<PlotConfigurationSnapshot> savePlotConfiguration({
@@ -794,7 +776,15 @@ extension on DeviceValue {
       GDevValueBuilder()..textArrayVal = ListBuilder(v),
     DevTimeSeries(values: var v) =>
       GDevValueBuilder()..timeSeriesVal = ListBuilder(v),
-    DevStatusCode() =>
-      throw ACSysGraphQLException("can't send DevStatusCode types"),
+    DevStatusCode() => throw ACSysGraphQLException(
+      "can't send DevStatusCode types",
+    ),
   };
 }
+
+DeviceValue? xlat(Map<String, dynamic> json) => switch (json) {
+  {"status": int v, "scalarValue": null, "scalarArray": null} => DevStatusCode(
+    Status.fromInt(v),
+  ),
+  _ => null,
+};

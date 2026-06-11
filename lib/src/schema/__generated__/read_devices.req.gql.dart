@@ -26,13 +26,12 @@ abstract class GReadDevicesReq
   factory GReadDevicesReq([void Function(GReadDevicesReqBuilder b) updates]) =
       _$GReadDevicesReq;
 
-  static void _initializeBuilder(GReadDevicesReqBuilder b) =>
-      b
-        ..operation = _i4.Operation(
-          document: _i5.document,
-          operationName: 'ReadDevices',
-        )
-        ..executeOnListen = true;
+  static void _initializeBuilder(GReadDevicesReqBuilder b) => b
+    ..operation = _i4.Operation(
+      document: _i5.document,
+      operationName: 'ReadDevices',
+    )
+    ..executeOnListen = true;
 
   @override
   _i3.GReadDevicesVars get vars;
