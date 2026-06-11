@@ -4,15 +4,14 @@ version: 1.2.0
 publish_to: none
 
 environment:
-  sdk: ^3.11.0
+  sdk: ^3.12.0
 
 # Add regular dependencies here.
 dependencies:
-  flutter:
-    sdk: flutter
-  graphql_flutter: ^5.2.1
-  gql_websocket_link: ^2.1.0
-  web_socket_channel: ^3.0.0
+  graphql: ^5.2.1
+  http: ^1.1.0
+  web_socket_channel: ^3.0.3
+
   built_value: ^8.9.5
   collection: ^1.19.1 # Use the latest version
   pure_dart_ui: ^0.1.10

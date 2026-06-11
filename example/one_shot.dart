@@ -1,6 +1,7 @@
 // This example reads and prints the latest outdoor temperature and
 // humidity readings.
 
+import 'dart:io';
 import 'package:dart_gql_acsys/dart_gql_acsys.dart';
 
 Future<void> main() async {
@@ -19,4 +20,6 @@ Future<void> main() async {
   } catch (e) {
     print("exception: $e");
   }
+
+  exit(0);
 }

@@ -8,14 +8,12 @@ library;
 
 import 'dart:developer' as dev;
 
-import 'package:dart_gql_acsys/src/schema/mutations.dart';
-import 'package:dart_gql_acsys/src/schema/queries.dart';
-import 'package:dart_gql_acsys/src/schema/subscriptions.dart';
-
+import 'package:http/http.dart' as http;
+import 'package:graphql/client.dart';
 import 'package:pure_dart_ui/pure_dart_ui.dart';
-import 'package:graphql_flutter/graphql_flutter.dart' hide WebSocketLink;
-import "package:gql_websocket_link/gql_websocket_link.dart";
-import 'package:web_socket_channel/web_socket_channel.dart';
+
+import 'package:dart_gql_acsys/src/schema/mutations.dart';
+import 'package:dart_gql_acsys/src/schema/subscriptions.dart';
 
 import 'device_values.dart';
 import 'acsys_api.dart';
@@ -78,8 +76,8 @@ final class ChannelSettingSnapshot {
 /// widget which manages an object of this class.
 
 final class ACSysService implements ACSysServiceAPI {
-  final GraphQLClient _cl;
-  final GraphQLClient _srv;
+  final GraphQLClient _q;
+  final GraphQLClient _s;
 
   static Map<String, String> _buildAuthHeader(String? jwt) =>
       jwt != null ? {"Authorization": "Bearer $jwt"} : {};
@@ -88,37 +86,39 @@ final class ACSysService implements ACSysServiceAPI {
   // GraphQL endpoints.
 
   ACSysService({String? jwt})
-    : _cl = GraphQLClient(
+    : _q = GraphQLClient(
         link: HttpLink(
           "https://ad-api.fnal.gov/acsys",
           defaultHeaders: _buildAuthHeader(jwt),
+          httpClient: http.Client(),
         ),
+        queryRequestTimeout: const Duration(seconds: 5),
         cache: GraphQLCache(store: InMemoryStore()),
       ),
-      _srv = GraphQLClient(
+      _s = GraphQLClient(
         link: WebSocketLink(
-          null,
-          channelGenerator: () => WebSocketChannel.connect(
-            Uri(scheme: "wss", host: "ad-api.fnal.gov", path: "/acsys/s"),
-            protocols: ["graphql-ws"],
+          "wss://ad-api.fnal.gov/acsys/s",
+          config: SocketClientConfig(
+            autoReconnect: true,
+            headers: _buildAuthHeader(jwt),
+            queryAndMutationTimeout: const Duration(seconds: 5),
+            inactivityTimeout: const Duration(seconds: 30),
           ),
-          reconnectInterval: const Duration(seconds: 1),
+          subProtocol: "graphql-ws",
         ),
         cache: GraphQLCache(store: InMemoryStore()),
       );
 
-  // Common code needed to do RPCs. The caller sends in a protobuf request and,
-  // optionally, a function to translate the protobuf reply into some other data
-  // type.
-  //ask Rich about this
-  Map<String, dynamic> listConvert(List<String> inputList) {
-    Map<String, dynamic> maps = {};
-    for (final ent in inputList) {
-      maps.putIfAbsent(ent, () => ent);
-    }
-    return maps;
-  }
-
+  // Executes a GraphQL query with comprehensive error handling and validation.
+  //
+  // This method handles all common GraphQL error scenarios including:
+  // - Network/connection errors (link exceptions)
+  // - GraphQL query errors (syntax, validation, resolver errors)
+  // - Null data responses
+  // - Unknown exception states
+  //
+  // All errors are logged and thrown as [ACSysGraphQLException] with
+  // meaningful error messages for easier debugging.
   Future<QueryResult> _doGraphQL({
     required String query,
     required Map<String, dynamic> withVariables,
@@ -130,29 +130,119 @@ final class ACSysService implements ACSysServiceAPI {
       fetchPolicy: withPolicy,
     );
 
-    final QueryResult result = await _cl.query(options);
+    final QueryResult result = await _q.query(options);
 
-    if (result.hasException) {
-      if (result.exception?.linkException != null) {
-        throw Exception(result.exception?.linkException);
-      } else if (result.exception?.graphqlErrors != null) {
-        throw Exception(result.exception?.graphqlErrors);
-      } else {
-        return Future.error(
-          "The request to $result returned an exception.  Please refer to the developer console for more detail.",
-        );
-      }
-    } else {
-      return result;
+    // Handle link-level errors (network, connection, timeout, etc.)
+    if (result.exception?.linkException != null) {
+      final linkEx = result.exception!.linkException!;
+      final errorMsg =
+          'Network error: ${linkEx.originalException ?? linkEx.toString()}';
+
+      dev.log(
+        errorMsg,
+        name: 'ACSYS.GraphQL',
+        error: linkEx,
+        stackTrace: StackTrace.current,
+      );
+
+      throw ACSysGraphQLException(errorMsg);
     }
+
+    // Handle GraphQL-level errors (query syntax, validation, resolver errors)
+    if (result.exception?.graphqlErrors.isNotEmpty ?? false) {
+      final errors = result.exception!.graphqlErrors;
+      final errorMessages = errors
+          .map(
+            (e) => '${e.message}${e.path != null ? " at path: ${e.path}" : ""}',
+          )
+          .join('; ');
+      final errorMsg = 'GraphQL errors: $errorMessages';
+
+      dev.log(errorMsg, name: 'ACSYS.GraphQL', error: errors);
+
+      throw ACSysGraphQLException(errorMsg);
+    }
+
+    // Handle unexpected exception state (shouldn't happen, but be defensive)
+    if (result.hasException) {
+      final errorMsg =
+          'Unknown GraphQL exception: ${result.exception.toString()}';
+
+      dev.log(errorMsg, name: 'ACSYS.GraphQL', error: result.exception);
+
+      throw ACSysGraphQLException(errorMsg);
+    }
+
+    // Verify we actually got data back (successful query should have data)
+    if (result.data == null) {
+      const errorMsg = 'Query succeeded but returned no data';
+
+      dev.log(errorMsg, name: 'ACSYS.GraphQL');
+      throw ACSysGraphQLException(errorMsg);
+    }
+
+    // All checks passed - return the successful result
+    return result;
   }
 
+  static List<Reading> _convertReading(QueryResult queryResult) =>
+      (queryResult.data?['acceleratorData'] as List<Object?>)
+          .cast<Map<String, dynamic>>()
+          .expand((entry) {
+            final refId = entry['refId'] as int;
+
+            return (entry['data'] as List<Object?>)
+                .cast<Map<String, dynamic>>()
+                .map(
+                  (row) => Reading(
+                    refId: refId,
+                    timestamp: fromFloatTs(row['timestamp'] as double),
+                    value: devVal(row['result'] as Map<String, dynamic>),
+                  ),
+                );
+          })
+          .toList();
+
   @override
-  Future<List<Reading>> readDevices(List<String> devices) async => _doGraphQL(
-    query: devicesRead,
-    withVariables: listConvert(devices),
-    withPolicy: FetchPolicy.networkOnly,
-  ).then((result) => _convertReading(result));
+  Future<List<Reading>> readDevices(List<String> devices) async {
+    const devicesRead = r"""
+      query ReadDevices($devList: [String!]!) {
+        acceleratorData(deviceList: $devList) {
+          refId
+          data {
+            timestamp
+            result {
+              ... on StatusReply {
+                status
+              }
+              ... on Scalar {
+                scalarValue
+              }
+              ... on ScalarArray {
+                scalarArrayValue
+              }
+              ... on Raw {
+                rawValue
+              }
+              ... on Text {
+                textValue
+              }
+              ... on TextArray {
+                textArrayValue
+              }
+            }
+          }
+        }
+      }""";
+
+    return _convertReading(
+      await _doGraphQL(
+        query: devicesRead,
+        withVariables: {'devList': devices},
+        withPolicy: .networkOnly,
+      ),
+    );
+  }
 
   // Returns a stream of readings for the devices specified in the parameter
   // list. The `Reading` class has a `refId` field which indicates to which
@@ -161,12 +251,12 @@ final class ACSysService implements ACSysServiceAPI {
   // be sent for a device in error.
   @override
   Stream<Reading> monitorDevices(List<String> drfs) {
-    return _srv
+    return _s
         .subscribe(
           SubscriptionOptions(
             document: gql(devicesMonitor),
-            variables: listConvert(drfs),
-            fetchPolicy: FetchPolicy.networkOnly,
+            variables: {'drfList': drfs},
+            fetchPolicy: .networkOnly,
           ),
         )
         .handleError(
@@ -186,40 +276,21 @@ final class ACSysService implements ACSysServiceAPI {
     // payload.
     if (queryResult.data?['acceleratorData'] case {
       "refId": int refId,
-      "data": List<Map<String, dynamic>> data,
+      "data": List<Object?> rawData,
     }) {
+      final data = rawData.cast<Map<String, dynamic>>();
+
       for (final {"timestamp": double stamp, "result": dynamic result}
           in data) {
         yield (Reading(
           refId: refId,
           timestamp: fromFloatTs(stamp),
-          value: devVal(result),
+          value: devVal(result as Map<String, dynamic>),
         ));
       }
     }
   }
 
-  static List<Reading> _convertReading(QueryResult queryResult) {
-    List<Reading> readings = List.empty();
-    List<Map<String, dynamic>> acceleratorData =
-        queryResult.data?['acceleratorData'];
-
-    for (final {"refId": int refId, "data": List<Map<String, dynamic>> data}
-        in acceleratorData) {
-      for (final {"timestamp": double stamp, "result": dynamic result}
-          in data) {
-        readings.add(
-          Reading(
-            refId: refId,
-            timestamp: fromFloatTs(stamp),
-            value: devVal(result),
-          ),
-        );
-      }
-    }
-
-    return readings;
-  }
   // Performs a setting request. `forDRF` is the DRF string representing the
   // target device and property to receive the setting. `newSetting` is the
   // value of the setting. The future this function returns will resolve to the
@@ -241,7 +312,7 @@ final class ACSysService implements ACSysServiceAPI {
     return _doGraphQL(
       query: deviceSet,
       withVariables: {'device': forDRF, 'value': newSetting},
-      withPolicy: FetchPolicy.networkOnly,
+      withPolicy: .networkOnly,
     ).then((res) => xlat(res));
   }
 
@@ -264,7 +335,7 @@ final class ACSysService implements ACSysServiceAPI {
     int? nAcquisitions,
     int? triggerEvent,
   }) {
-    return _srv
+    return _s
         .subscribe(
           SubscriptionOptions(
             document: gql(plotStart),
@@ -279,7 +350,7 @@ final class ACSysService implements ACSysServiceAPI {
               'startTime': startTime,
               'endTime': endTime,
             },
-            fetchPolicy: FetchPolicy.networkOnly,
+            fetchPolicy: .networkOnly,
           ),
         )
         .handleError((err) => dev.log("error: $err", name: "gql.startPlot"))
@@ -311,65 +382,33 @@ final class ACSysService implements ACSysServiceAPI {
         .toList(),
   );
 
-  // Converts the map value to a DeviceValue type
+  // Converts the map value to a DeviceValue type.
+  //
+  // The graphql client normalizes inline fragments into a flat map containing
+  // only the fields that were actually selected, plus a "__typename" key. We
+  // dispatch on "__typename" and then pull the single relevant field.
 
-  static DeviceValue devVal(Map<String, dynamic> jsonMap) => switch (jsonMap) {
-    {
-      "StatusReply": int v,
-      "Scalar": null,
-      "ScalarArray": null,
-      "Raw": null,
-      "Text": null,
-      "TextArray": null,
-    } =>
-      DevStatusCode(Status.fromInt(v)),
-    {
-      "StatusReply": null,
-      "Scalar": double v,
-      "ScalarArray": null,
-      "Raw": null,
-      "Text": null,
-      "TextArray": null,
-    } =>
-      DevScalar(v),
-    {
-      "StatusReply": null,
-      "Scalar": null,
-      "ScalarArray": List<double> v,
-      "Raw": null,
-      "Text": null,
-      "TextArray": null,
-    } =>
-      DevScalarArray(v),
-    {
-      "StatusReply": null,
-      "Scalar": null,
-      "ScalarArray": null,
-      "Raw": List<int> v,
-      "Text": null,
-      "TextArray": null,
-    } =>
-      DevRaw((v)),
-    {
-      "StatusReply": null,
-      "Scalar": null,
-      "ScalarArray": null,
-      "Raw": null,
-      "Text": String v,
-      "TextArray": null,
-    } =>
-      DevText(v),
-    {
-      "StatusReply": null,
-      "Scalar": null,
-      "ScalarArray": null,
-      "Raw": null,
-      "Text": null,
-      "TextArray": List<String> v,
-    } =>
-      DevTextArray(v),
-    _ => throw ACSysGraphQLException("DeviceValue type not found"),
-  };
+  static DeviceValue devVal(Map<String, dynamic> jsonMap) =>
+      switch (jsonMap['__typename'] as String?) {
+        'StatusReply' => DevStatusCode(
+          Status.fromInt(jsonMap['status'] as int),
+        ),
+        'Scalar' => DevScalar((jsonMap['scalarValue'] as num).toDouble()),
+        'ScalarArray' => DevScalarArray(
+          (jsonMap['scalarArrayValue'] as List<Object?>)
+              .cast<num>()
+              .map((n) => n.toDouble())
+              .toList(),
+        ),
+        'Raw' => DevRaw((jsonMap['rawValue'] as List<Object?>).cast<int>()),
+        'Text' => DevText(jsonMap['textValue'] as String),
+        'TextArray' => DevTextArray(
+          (jsonMap['textArrayValue'] as List<Object?>).cast<String>(),
+        ),
+        _ => throw ACSysGraphQLException(
+          "DeviceValue type not found: __typename=${jsonMap['__typename']}",
+        ),
+      };
 }
 
 DeviceValue? xlat(Map<String, dynamic> json) => switch (json) {
