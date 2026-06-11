@@ -8,34 +8,15 @@ library;
 
 import 'dart:developer' as dev;
 
-import 'package:built_collection/built_collection.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/set_device.data.gql.dart';
-import 'package:pure_dart_ui/pure_dart_ui.dart';
+import 'package:dart_gql_acsys/src/schema/mutations.dart';
+import 'package:dart_gql_acsys/src/schema/queries.dart';
+import 'package:dart_gql_acsys/src/schema/subscriptions.dart';
 
-import 'package:ferry/ferry.dart';
-import 'package:gql_http_link/gql_http_link.dart';
+import 'package:pure_dart_ui/pure_dart_ui.dart';
+import 'package:graphql_flutter/graphql_flutter.dart' hide WebSocketLink;
+import 'package:flutter/material.dart';
 import "package:gql_websocket_link/gql_websocket_link.dart";
 import 'package:web_socket_channel/web_socket_channel.dart';
-
-import 'package:dart_gql_acsys/src/schema/__generated__/DPM.schema.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/set_device.req.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/stream_data.data.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/stream_data.req.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/stream_data.var.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/start_plot.data.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/start_plot.req.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/plot_configs.data.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/plot_configs.req.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/read_devices.data.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/read_devices.req.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/remove_plot_config.data.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/remove_plot_config.req.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/update_plot_config.data.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/update_plot_config.req.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/users_last_config.data.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/users_last_config.req.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/set_users_config.data.gql.dart';
-import 'package:dart_gql_acsys/src/schema/__generated__/set_users_config.req.gql.dart';
 
 import 'device_values.dart';
 import 'status.dart';
@@ -167,52 +148,6 @@ extension type PlotConfigId._(int raw) implements Comparable {
   int compareTo(PlotConfigId other) => raw.compareTo(other.raw);
 }
 
-class PlotConfigurationListing {
-  PlotConfigId? configurationId;
-  String configurationName;
-
-  PlotConfigurationListing({
-    this.configurationId,
-    required this.configurationName,
-  });
-}
-
-final class PlotConfigurationSnapshot extends PlotConfigurationListing {
-  Map<String, ChannelSettingSnapshot> channels;
-  double? xMin;
-  double? xMax;
-  double? timeDelta;
-  double? startTime;
-  double? endTime;
-  bool isShowLabels;
-  bool isScalar;
-  bool isOneShot;
-  bool isPersistent;
-  int? updateDelay;
-  int? nAcquisitions;
-  int? tclkEvent;
-  int dataLimit;
-
-  PlotConfigurationSnapshot({
-    super.configurationId,
-    required super.configurationName,
-    required this.channels,
-    this.xMin,
-    this.xMax,
-    this.startTime,
-    this.endTime,
-    this.timeDelta,
-    required this.isShowLabels,
-    required this.isScalar,
-    required this.isOneShot,
-    this.isPersistent = false,
-    this.updateDelay,
-    this.nAcquisitions,
-    this.tclkEvent,
-    required this.dataLimit,
-  });
-}
-
 abstract interface class ACSysServiceAPI {
   /// Takes a list of data acquisition strings and returns a stream that
   /// provides readings for the requests.
@@ -237,30 +172,6 @@ abstract interface class ACSysServiceAPI {
     int? triggerEvent,
   });
 
-  /// Saves the plot configuration to the database.
-  Future<PlotConfigurationSnapshot> savePlotConfiguration({
-    required PlotConfigurationSnapshot snapshot,
-  });
-
-  /// Queries the database for a plot configuration.
-  Future<PlotConfigurationSnapshot?> retrievePlotConfiguration({
-    required PlotConfigId configurationId,
-  });
-
-  /// Returns every plot configuration in the database.
-  Future<List<PlotConfigurationListing>> listPlotConfigurations();
-
-  /// Removes a plot configuration from the database.
-  Future<void> removePlotConfiguration({required PlotConfigId configurationId});
-
-  /// Returns the last plot configuration that the user saved.
-  Future<PlotConfigurationSnapshot?> retrieveLastUserConfiguration();
-
-  /// Sets the provided plot configuration as the last one the user saved.
-  Future<void> saveUserConfiguration({
-    required PlotConfigurationSnapshot snapshot,
-  });
-
   /// Takes a device name and a value and sends a request to apply the value to
   /// the device.
   Future<SettingStatus> submit({
@@ -283,8 +194,8 @@ abstract interface class ACSysServiceAPI {
 /// widget which manages an object of this class.
 
 final class ACSysService implements ACSysServiceAPI {
-  final Client _q;
-  final Client _s;
+  final ValueNotifier<GraphQLClient> _cl;
+  final ValueNotifier<GraphQLClient> _srv;
 
   static Map<String, String> _buildAuthHeader(String? jwt) =>
       jwt != null ? {"Authorization": "Bearer $jwt"} : {};
@@ -293,63 +204,75 @@ final class ACSysService implements ACSysServiceAPI {
   // GraphQL endpoints.
 
   ACSysService({String? jwt})
-    : _q = Client(
-        link: HttpLink(
-          "https://ad-api.fnal.gov/acsys",
-          defaultHeaders: _buildAuthHeader(jwt),
-        ),
-        cache: Cache(),
-      ),
-      _s = Client(
-        link: WebSocketLink(
-          null,
-          channelGenerator: () => WebSocketChannel.connect(
-            Uri(scheme: "wss", host: "ad-api.fnal.gov", path: "/acsys/s"),
-            protocols: ["graphql-ws"],
+    : _cl = ValueNotifier<GraphQLClient>(
+        GraphQLClient(
+          link: HttpLink(
+            "https://ad-api.fnal.gov/acsys",
+            defaultHeaders: _buildAuthHeader(jwt),
           ),
-          reconnectInterval: const Duration(seconds: 1),
+          cache: GraphQLCache(store: InMemoryStore()),
         ),
-        cache: Cache(),
+      ),
+      _srv = ValueNotifier<GraphQLClient>(
+        GraphQLClient(
+          link: WebSocketLink(
+            null,
+            channelGenerator: () => WebSocketChannel.connect(
+              Uri(scheme: "wss", host: "ad-api.fnal.gov", path: "/acsys/s"),
+              protocols: ["graphql-ws"],
+            ),
+            reconnectInterval: const Duration(seconds: 1),
+          ),
+          cache: GraphQLCache(store: InMemoryStore()),
+        ),
       );
 
   // Common code needed to do RPCs. The caller sends in a protobuf request and,
   // optionally, a function to translate the protobuf reply into some other data
   // type.
+  //ask Rich about this
+  Map<String, dynamic> listConvert(List<String> inputList) {
+    Map<String, dynamic> maps = {};
+    for (final ent in inputList) {
+      maps.putIfAbsent(ent, () => ent);
+    }
+    return maps;
+  }
 
-  Future<Result> _rpc<TData, TVars, Result>(
-    OperationRequest<TData, TVars> req, {
-    Result Function(TData)? xlat,
-  }) =>
-      _q.request(req).firstWhere((response) => !response.loading).then((value) {
-        if (value.hasErrors) {
-          if (value.linkException != null) {
-            throw value.linkException!;
-          } else if (value.graphqlErrors != null) {
-            throw Exception(value.graphqlErrors);
-          } else {
-            throw Exception("unknown error");
-          }
-        } else {
-          final data = value.data;
-
-          if (data != null) {
-            return xlat != null ? xlat(data) : data as Result;
-          } else {
-            throw Exception("no data was returned from request");
-          }
-        }
-      });
-
-  @override
-  Future<List<Reading>> readDevices(List<String> devices) {
-    final req = GReadDevicesReq(
-      (b) => b
-        ..vars.devList = ListBuilder(devices)
-        ..fetchPolicy = FetchPolicy.NetworkOnly,
+  Future<QueryResult> _doGraphQL({
+    required String query,
+    required Map<String, dynamic> withVariables,
+    required FetchPolicy withPolicy,
+  }) async {
+    final QueryOptions options = QueryOptions(
+      document: gql(query),
+      variables: withVariables,
+      fetchPolicy: withPolicy,
     );
 
-    return _rpc(req, xlat: _convertReading);
+    final QueryResult result = await _cl.value.query(options);
+
+    if (result.hasException) {
+      if (result.exception?.linkException != null) {
+        throw Exception(result.exception?.linkException);
+      } else if (result.exception?.graphqlErrors != null) {
+        throw Exception(result.exception?.graphqlErrors);
+      } else {
+        return Future.error(
+          "The request to $result returned an exception.  Please refer to the developer console for more detail.",
+        );
+      }
+    } else {
+      return result;
+    }
   }
+
+  @override
+  Future<List<Reading>> readDevices(List<String> devices) async => _doGraphQL(
+    query: devicesRead,
+    withVariables: listConvert(devices),
+    withPolicy: FetchPolicy.networkOnly,
+  ).then((result) => _convertReading(result));
 
   // Returns a stream of readings for the devices specified in the parameter
   // list. The `Reading` class has a `refId` field which indicates to which
@@ -358,19 +281,19 @@ final class ACSysService implements ACSysServiceAPI {
   // be sent for a device in error.
   @override
   Stream<Reading> monitorDevices(List<String> drfs) {
-    final req = GStreamDataReq(
-      (b) => b
-        ..vars.drfs = ListBuilder(drfs)
-        ..fetchPolicy = FetchPolicy.NetworkOnly,
-    );
-
-    return _s
-        .request(req)
-        .handleError(
-          (error) => dev.log("error: $error", name: "gql.monitorDevices"),
+    return _srv.value
+        .subscribe(
+          SubscriptionOptions(
+            document: gql(devicesMonitor),
+            variables: listConvert(drfs),
+            fetchPolicy: FetchPolicy.networkOnly,
+          ),
         )
-        .where((event) => !event.loading)
-        .expand(_convertMonitor);
+        .handleError(
+          (err) => dev.log("error: $err", name: "gql.monitorDevices"),
+        )
+        .where((event) => event.isNotLoading)
+        .expand((element) => _convertMonitor(element));
   }
 
   static DateTime fromFloatTs(double ts) =>
@@ -378,38 +301,45 @@ final class ACSysService implements ACSysServiceAPI {
 
   // Convert the incoming GraphQL messages into `Reading` objects.
 
-  static Iterable<Reading> _convertMonitor(
-    OperationResponse<GStreamDataData, GStreamDataVars> e,
-  ) sync* {
+  static Iterable<Reading> _convertMonitor(QueryResult queryResult) sync* {
     // If the packet doesn't have GraphQL errors, then we can process the
     // payload.
-
-    if (!e.hasErrors) {
-      final GStreamDataData_acceleratorData data = e.data!.acceleratorData;
-
-      for (final entry in data.data) {
-        yield Reading(
-          refId: data.refId,
-          timestamp: fromFloatTs(entry.timestamp),
-          value: entry.result.toDevValue(),
-        );
+    if (queryResult.data?['acceleratorData'] case {
+      "refId": int refId,
+      "data": List<Map<String, dynamic>> data,
+    }) {
+      for (final {"timestamp": double stamp, "result": dynamic result}
+          in data) {
+        yield (Reading(
+          refId: refId,
+          timestamp: fromFloatTs(stamp),
+          value: devVal(result),
+        ));
       }
-    } else {
-      throw ACSysGraphQLException(e.graphqlErrors.toString());
     }
   }
 
-  static List<Reading> _convertReading(GReadDevicesData e) =>
-      e.acceleratorData.expand((v) sync* {
-        for (final data in v.data) {
-          yield Reading(
-            refId: v.refId,
-            timestamp: fromFloatTs(data.timestamp),
-            value: data.result.toDevValue(),
-          );
-        }
-      }).toList();
+  static List<Reading> _convertReading(QueryResult queryResult) {
+    List<Reading> readings = List.empty();
+    List<Map<String, dynamic>> acceleratorData =
+        queryResult.data?['acceleratorData'];
 
+    for (final {"refId": int refId, "data": List<Map<String, dynamic>> data}
+        in acceleratorData) {
+      for (final {"timestamp": double stamp, "result": dynamic result}
+          in data) {
+        readings.add(
+          Reading(
+            refId: refId,
+            timestamp: fromFloatTs(stamp),
+            value: devVal(result),
+          ),
+        );
+      }
+    }
+
+    return readings;
+  }
   // Performs a setting request. `forDRF` is the DRF string representing the
   // target device and property to receive the setting. `newSetting` is the
   // value of the setting. The future this function returns will resolve to the
@@ -423,20 +353,16 @@ final class ACSysService implements ACSysServiceAPI {
     // Define a nested function which converts the GraphQL reply into a
     // SettingStatus.
 
-    xlat(GSetDeviceData e) => SettingStatus(
-      facilityCode: e.setDevice.status ~/ 256,
-      errorCode: e.setDevice.status & 255,
+    xlat(QueryResult e) => SettingStatus(
+      facilityCode: e.data?['status'] ~/ 256,
+      errorCode: e.data?['status'] & 255,
     );
 
-    // Build the request.
-
-    final req = GSetDeviceReq(
-      (b) => b
-        ..vars.device = forDRF
-        ..vars.value = newSetting._toGDevValue(),
-    );
-
-    return _rpc(req, xlat: xlat);
+    return _doGraphQL(
+      query: deviceSet,
+      withVariables: {'device': forDRF, 'value': newSetting},
+      withPolicy: FetchPolicy.networkOnly,
+    ).then((res) => xlat(res));
   }
 
   @override
@@ -445,6 +371,7 @@ final class ACSysService implements ACSysServiceAPI {
     required String value,
   }) => submit(forDRF: toDRF, newSetting: DevText(value));
 
+  //NEEDS ADJUSTMENT
   @override
   Stream<PlotReply> startPlot(
     List<String> drfs, {
@@ -457,328 +384,126 @@ final class ACSysService implements ACSysServiceAPI {
     int? nAcquisitions,
     int? triggerEvent,
   }) {
-    final req = GStartPlotReq(
-      (b) => b
-        ..fetchPolicy = FetchPolicy.NetworkOnly
-        ..vars.drfList = ListBuilder(drfs)
-        ..vars.xMin = xMin
-        ..vars.xMax = xMax
-        ..vars.windowSize = windowSize
-        ..vars.nAcquisitions = nAcquisitions
-        ..vars.updateDelay = updateRate
-        ..vars.triggerEvent = triggerEvent
-        ..vars.startTime = startTime
-        ..vars.endTime = endTime,
-    );
-
-    return _s
-        .request(req)
-        .handleError((error) => dev.log("error: $error", name: "gql.startPlot"))
-        .where((event) => !event.loading)
-        .map((e) => e.data!.startPlot.toPlotReply(req));
-  }
-
-  @override
-  Future<List<PlotConfigurationListing>> listPlotConfigurations() {
-    final req = GPlotConfigsReq(
-      (b) => b..fetchPolicy = FetchPolicy.NetworkOnly,
-    );
-
-    return _rpc(
-      req,
-      xlat: (GPlotConfigsData data) => data.plotConfiguration
-          .map(
-            (e) => PlotConfigurationListing(
-              configurationId: e.configurationId != null
-                  ? PlotConfigId._fromInt(e.configurationId!)
-                  : null,
-              configurationName: e.configurationName,
-            ),
-          )
-          .toList(),
-    );
-  }
-
-  @override
-  Future<void> removePlotConfiguration({
-    required PlotConfigId configurationId,
-  }) {
-    final req = GDeletePlotConfigReq(
-      (b) => b..vars.id = configurationId._value,
-    );
-
-    return _rpc(req, xlat: (GDeletePlotConfigData data) => ());
-  }
-
-  @override
-  Future<PlotConfigurationSnapshot?> retrieveLastUserConfiguration() {
-    final req = GUsersLastConfigReq();
-
-    return _rpc(
-      req,
-      xlat: (GUsersLastConfigData data) {
-        final e = data.usersLastConfiguration;
-
-        return e == null
-            ? null
-            : PlotConfigurationSnapshot(
-                configurationId: e.configurationId != null
-                    ? PlotConfigId._fromInt(e.configurationId!)
-                    : null,
-                configurationName: e.configurationName,
-                channels: Map.fromEntries(
-                  e.channels.map(
-                    (e) => MapEntry(
-                      e.device,
-                      ChannelSettingSnapshot(
-                        lineColor: e.lineColor != null
-                            ? Color(e.lineColor!)
-                            : null,
-                        markerIndex: e.markerIndex,
-                        yMin: e.yMin,
-                        yMax: e.yMax,
-                      ),
-                    ),
-                  ),
-                ),
-                xMin: e.xMin,
-                xMax: e.xMax,
-                startTime: e.startTime,
-                endTime: e.endTime,
-                timeDelta: e.timeDelta,
-                isOneShot: e.isOneShot,
-                isScalar: e.isScalar,
-                isShowLabels: e.isShowLabels,
-                updateDelay: e.updateDelay,
-                nAcquisitions: e.nAcquisitions,
-                tclkEvent: e.tclkEvent,
-                dataLimit: e.dataLimit,
-                isPersistent: e.isPersistent,
-              );
-      },
-    );
-  }
-
-  @override
-  Future<void> saveUserConfiguration({
-    required PlotConfigurationSnapshot snapshot,
-  }) {
-    final req = GSetUsersConfigReq(
-      (b) => b..vars.cfg = _plotConfigurationSnapshotIn(snapshot),
-    );
-
-    return _rpc(req, xlat: (GSetUsersConfigData data) => ());
-  }
-
-  @override
-  Future<PlotConfigurationSnapshot?> retrievePlotConfiguration({
-    required PlotConfigId configurationId,
-  }) {
-    final req = GPlotConfigsReq((b) => b..vars.id = configurationId._value);
-
-    return _rpc(
-      req,
-      xlat: (GPlotConfigsData data) => data.plotConfiguration
-          .map(
-            (e) => PlotConfigurationSnapshot(
-              configurationId: e.configurationId != null
-                  ? PlotConfigId._fromInt(e.configurationId!)
-                  : null,
-              configurationName: e.configurationName,
-              channels: Map.fromEntries(
-                e.channels.map(
-                  (e) => MapEntry(
-                    e.device,
-                    ChannelSettingSnapshot(
-                      lineColor: e.lineColor != null
-                          ? Color(e.lineColor!)
-                          : null,
-                      markerIndex: e.markerIndex,
-                      yMin: e.yMin,
-                      yMax: e.yMax,
-                    ),
-                  ),
-                ),
-              ),
-              xMin: e.xMin,
-              xMax: e.xMax,
-              startTime: e.startTime,
-              endTime: e.endTime,
-              timeDelta: e.timeDelta,
-              isOneShot: e.isOneShot,
-              isScalar: e.isScalar,
-              isShowLabels: e.isShowLabels,
-              updateDelay: e.updateDelay,
-              nAcquisitions: e.nAcquisitions,
-              tclkEvent: e.tclkEvent,
-              dataLimit: e.dataLimit,
-              isPersistent: e.isPersistent,
-            ),
-          )
-          .toList(),
-    ).then((value) {
-      switch (value) {
-        case []:
-          return null;
-        case [PlotConfigurationSnapshot e]:
-          return e;
-        default:
-          throw const ACSysConfigurationException(
-            "multiple configurations found",
-          );
-      }
-    });
-  }
-
-  GPlotConfigurationSnapshotInBuilder _plotConfigurationSnapshotIn(
-    PlotConfigurationSnapshot cfg,
-  ) => GPlotConfigurationSnapshotInBuilder()
-    ..configurationId = cfg.configurationId?._value
-    ..configurationName = cfg.configurationName
-    ..channels = ListBuilder(
-      cfg.channels.entries.map(
-        (e) => GChannelSettingSnapshotIn(
-          (b) => b
-            ..device = e.key
-            ..lineColor = e.value.lineColor?.value
-            ..markerIndex = e.value.markerIndex
-            ..yMin = e.value.yMin
-            ..yMax = e.value.yMax,
-        ),
-      ),
-    )
-    ..xMin = cfg.xMin
-    ..xMax = cfg.xMax
-    ..startTime = cfg.startTime
-    ..endTime = cfg.endTime
-    ..timeDelta = cfg.timeDelta
-    ..isOneShot = cfg.isOneShot
-    ..isScalar = cfg.isScalar
-    ..isShowLabels = cfg.isShowLabels
-    ..isPersistent = cfg.isPersistent
-    ..dataLimit = cfg.dataLimit
-    ..updateDelay = cfg.updateDelay
-    ..nAcquisitions = cfg.nAcquisitions
-    ..tclkEvent = cfg.tclkEvent;
-
-  @override
-  Future<PlotConfigurationSnapshot> savePlotConfiguration({
-    required PlotConfigurationSnapshot snapshot,
-  }) {
-    final req = GUpdatePlotConfigReq(
-      (b) => b..vars.cfg = _plotConfigurationSnapshotIn(snapshot),
-    );
-
-    return _rpc(
-      req,
-      xlat: (GUpdatePlotConfigData data) => data.updatePlotConfiguration,
-    ).then(
-      (id) =>
-          snapshot
-            ..configurationId = id == null ? null : PlotConfigId._fromInt(id),
-    );
-  }
-}
-
-extension on GStartPlotData_startPlot_data_channelData_result {
-  DeviceValue toDevValue() => switch (this) {
-    GStartPlotData_startPlot_data_channelData_result__asScalar val => DevScalar(
-      val.scalarValue,
-    ),
-    GStartPlotData_startPlot_data_channelData_result__asScalarArray val =>
-      DevScalarArray(val.scalarArrayValue.toList()),
-    _ => throw ACSysTypeException("unexpected data type, $runtimeType"),
-  };
-}
-
-extension on GStreamDataData_acceleratorData_data_result {
-  DeviceValue toDevValue() => switch (this) {
-    GStreamDataData_acceleratorData_data_result__asScalar val => DevScalar(
-      val.scalarValue,
-    ),
-    GStreamDataData_acceleratorData_data_result__asScalarArray val =>
-      DevScalarArray(val.scalarArrayValue.toList()),
-    GStreamDataData_acceleratorData_data_result__asText val => DevText(
-      val.textValue,
-    ),
-    GStreamDataData_acceleratorData_data_result__asTextArray val =>
-      DevTextArray(val.textArrayValue.toList()),
-    GStreamDataData_acceleratorData_data_result__asStatusReply val =>
-      DevStatusCode(Status.fromInt(val.status)),
-    GStreamDataData_acceleratorData_data_result__asRaw val => DevRaw(
-      val.rawValue.toList(),
-    ),
-    _ => throw ACSysTypeException("unexpected data type, $runtimeType"),
-  };
-}
-
-extension on GReadDevicesData_acceleratorData_data_result {
-  DeviceValue toDevValue() => switch (this) {
-    GReadDevicesData_acceleratorData_data_result__asScalar val => DevScalar(
-      val.scalarValue,
-    ),
-    GReadDevicesData_acceleratorData_data_result__asScalarArray val =>
-      DevScalarArray(val.scalarArrayValue.toList()),
-    GReadDevicesData_acceleratorData_data_result__asText val => DevText(
-      val.textValue,
-    ),
-    GReadDevicesData_acceleratorData_data_result__asTextArray val =>
-      DevTextArray(val.textArrayValue.toList()),
-    GReadDevicesData_acceleratorData_data_result__asStatusReply val =>
-      DevStatusCode(Status.fromInt(val.status)),
-    GReadDevicesData_acceleratorData_data_result__asRaw val => DevRaw(
-      val.rawValue.toList(),
-    ),
-    _ => throw ACSysTypeException("unexpected data type, $runtimeType"),
-  };
-}
-
-extension on GStartPlotData_startPlot_data {
-  PlotChannelData toPlotChannelData(int idx, GStartPlotReq req) =>
-      PlotChannelData(
-        name: req.vars.drfList[idx],
-        units: channelUnits,
-        rate: channelRate,
-        status: channelStatus,
-        points: [
-          ...channelData.map(
-            (e) => PlotPoint(t: e.timestamp, value: e.result.toDevValue()),
+    return _srv.value
+        .subscribe(
+          SubscriptionOptions(
+            document: gql(plotStart),
+            variables: {
+              'drfList': drfs,
+              'xMin': xMin,
+              'xMax': xMax,
+              'windowSize': windowSize,
+              'nAcquisitions': nAcquisitions,
+              'updateDelay': updateRate,
+              'triggerEvent': triggerEvent,
+              'startTime': startTime,
+              'endTime': endTime,
+            },
+            fetchPolicy: FetchPolicy.networkOnly,
           ),
-        ],
-      );
-}
+        )
+        .handleError((err) => dev.log("error: $err", name: "gql.startPlot"))
+        .where((event) => event.isNotLoading)
+        .map(
+          (startPlot) =>
+              _toPlotReply(startPlot.data!, drfs, xMin, xMax, windowSize),
+        );
+  }
 
-extension on GStartPlotData_startPlot {
-  PlotReply toPlotReply(GStartPlotReq req) => PlotReply(
-    plotId: plotId,
-    requestTime: timestamp,
-    triggerTimestamp: triggerTimestamp,
+  PlotReply _toPlotReply(
+    Map<String, dynamic>? plotInfo,
+    List<String> drfs,
+    double? xMin,
+    double? xMax,
+    int? windowSize,
+  ) => PlotReply(
+    plotId: plotInfo?['plotId'],
+    requestTime: plotInfo?['timestamp'],
+    triggerTimestamp: plotInfo?['triggerTimestamp'],
     xAxisUnits: "Time",
-    xAxisMin: req.vars.xMin?.toDouble(),
-    xAxisMax: req.vars.xMax?.toDouble(),
-    windowSize: req.vars.windowSize,
-    data: data.indexed.map((e) => e.$2.toPlotChannelData(e.$1, req)).toList(),
+    xAxisMin: xMin,
+    xAxisMax: xMax,
+    windowSize: windowSize, //name within map
+    data: plotInfo?['data'].indexed
+        .map(
+          (indx) => indx.$2._toPlotChannelData(drfs[indx.$1], plotInfo['data']),
+        )
+        .toList(),
   );
-}
 
-// And an extension to the DevValue hierarchy which translates a value into a
-// GraphQL `GDevValue` type. No other code needs to be exposed to this
-// interface, so we only make the extension visible in this module.
+  PlotChannelData _toPlotChannelData(
+    String name,
+    Map<String, dynamic>? plotData,
+  ) => PlotChannelData(
+    name: name,
+    units: plotData?['channelUnits'],
+    rate: plotData?['channelRate'],
+    status: plotData?['channelStatus'],
+    points: [
+      ...plotData?['channelData'].map(
+        (e) => PlotPoint(t: e?['timestamp'], value: devVal(e['result'])),
+      ),
+    ],
+  );
 
-extension on DeviceValue {
-  GDevValueBuilder _toGDevValue() => switch (this) {
-    DevRaw(value: var v) => GDevValueBuilder()..rawVal = ListBuilder(v),
-    DevScalar(value: var v) => GDevValueBuilder()..scalarVal = v,
-    DevScalarArray(value: var v) =>
-      GDevValueBuilder()..scalarArrayVal = ListBuilder(v),
-    DevText(value: var v) => GDevValueBuilder()..textVal = v,
-    DevTextArray(value: var v) =>
-      GDevValueBuilder()..textArrayVal = ListBuilder(v),
-    DevTimeSeries(values: var v) =>
-      GDevValueBuilder()..timeSeriesVal = ListBuilder(v),
-    DevStatusCode() => throw ACSysGraphQLException(
-      "can't send DevStatusCode types",
-    ),
+  // Converts the map value to a DeviceValue type
+
+  static DeviceValue devVal(Map<String, dynamic> jsonMap) => switch (jsonMap) {
+    {
+      "StatusReply": int v,
+      "Scalar": null,
+      "ScalarArray": null,
+      "Raw": null,
+      "Text": null,
+      "TextArray": null,
+    } =>
+      DevStatusCode(Status.fromInt(v)),
+    {
+      "StatusReply": null,
+      "Scalar": double v,
+      "ScalarArray": null,
+      "Raw": null,
+      "Text": null,
+      "TextArray": null,
+    } =>
+      DevScalar(v),
+    {
+      "StatusReply": null,
+      "Scalar": null,
+      "ScalarArray": List<double> v,
+      "Raw": null,
+      "Text": null,
+      "TextArray": null,
+    } =>
+      DevScalarArray(v),
+    {
+      "StatusReply": null,
+      "Scalar": null,
+      "ScalarArray": null,
+      "Raw": List<int> v,
+      "Text": null,
+      "TextArray": null,
+    } =>
+      DevRaw((v)),
+    {
+      "StatusReply": null,
+      "Scalar": null,
+      "ScalarArray": null,
+      "Raw": null,
+      "Text": String v,
+      "TextArray": null,
+    } =>
+      DevText(v),
+    {
+      "StatusReply": null,
+      "Scalar": null,
+      "ScalarArray": null,
+      "Raw": null,
+      "Text": null,
+      "TextArray": List<String> v,
+    } =>
+      DevTextArray(v),
+    _ => throw ACSysGraphQLException("DeviceValue type not found"),
   };
 }
 
