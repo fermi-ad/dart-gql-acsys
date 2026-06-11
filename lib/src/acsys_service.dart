@@ -133,21 +133,6 @@ final class ChannelSettingSnapshot {
   });
 }
 
-// Only used by the plot ID class to generate IDs for testing.
-
-int _genPlotId = 1000000;
-
-/// Wrap an integer with the semantics of a plot configuration ID. An ID
-/// is only an identifer and can't be manipulated as an integer. It only
-/// supports comparisons.
-
-extension type PlotConfigId._(int raw) implements Comparable {
-  PlotConfigId._fromInt(this.raw);
-  PlotConfigId.generate() : raw = _genPlotId++;
-  int get _value => raw;
-  int compareTo(PlotConfigId other) => raw.compareTo(other.raw);
-}
-
 abstract interface class ACSysServiceAPI {
   /// Takes a list of data acquisition strings and returns a stream that
   /// provides readings for the requests.
@@ -429,21 +414,6 @@ final class ACSysService implements ACSysServiceAPI {
           (indx) => indx.$2._toPlotChannelData(drfs[indx.$1], plotInfo['data']),
         )
         .toList(),
-  );
-
-  PlotChannelData _toPlotChannelData(
-    String name,
-    Map<String, dynamic>? plotData,
-  ) => PlotChannelData(
-    name: name,
-    units: plotData?['channelUnits'],
-    rate: plotData?['channelRate'],
-    status: plotData?['channelStatus'],
-    points: [
-      ...plotData?['channelData'].map(
-        (e) => PlotPoint(t: e?['timestamp'], value: devVal(e['result'])),
-      ),
-    ],
   );
 
   // Converts the map value to a DeviceValue type
