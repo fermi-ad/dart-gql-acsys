@@ -1,10 +1,28 @@
+schema {
+  query: AcsysQueries
+  mutation: AcsysMutations
+  subscription: AcsysSubscriptions
+}
+
 """
-Indicates that an Input Object is a OneOf Input Object (and thus requires
-                        exactly one of its field be provided)
+Indicates that an Input Object is a OneOf Input Object (and thus requires exactly one of its field be provided)
 """
 directive @oneOf on INPUT_OBJECT
 
+"""
+Implement the DateTime<Utc> scalar
+
+The input/output is a string in RFC3339 format.
+"""
 scalar Timestamp
+
+enum AcquisitionMode {
+  ONE_SHOT
+  ONE_SHOT_TRIGGERED_ON_EVENT
+  REPETITIVE_PERIODIC
+  REPETITIVE_TRIGGERED_ON_EVENT
+  SAMPLE_ON_EVENT
+}
 
 """
 Holds the configuration for a plot channel.
@@ -49,7 +67,7 @@ type DataInfo {
 }
 
 """
-This structure wraps a device reading with some routing information: a `refId` to correlate which device, in the array of devices passed, this reply is for. It also has a `cycle` field so that reading from different devices can correlate which cycle they correspond.
+This structure wraps a device's reading(s) with some routing information: a `refId` to correlate which device, in the array of devices passed, this reply is for. It also has a `cycle` field so that reading from different devices can correlate which cycle they correspond.
 """
 type DataReply {
   """
@@ -87,17 +105,9 @@ input DevValue {
 }
 
 """
-Contains information about a clock event that occurred.
-"""
-type EventInfo {
-  timestamp: Timestamp!
-  event: Int!
-}
-
-"""
 Queries in this section will affect the control system; updating database tables and/or controlling accelerator hardware are possible. These requests will always need to be accompanied by an authentication token and will, most-likely, be tracked and audited.
 """
-type Mutation {
+type AcsysMutations {
   """
   Sends a setting to a device.
 
@@ -140,6 +150,7 @@ type PlotChannelData {
   The negotiated return rate for the data. If a device's readings are requested at a higher rate than the device can support, the front-end will negotiate down to an acheivable rate. This field represents the actual sample rate of the data.
   """
   channelRate: String!
+  statusString: String
 
   """
   The global status of the reading. This field will either be `0` (successful reads) or a negative status, indicating a fatal error occurred trying to get the device's data.
@@ -168,6 +179,8 @@ type PlotConfigurationSnapshot {
   isOneShot: Boolean!
   isShowLabels: Boolean!
   isPersistent: Boolean!
+  isBlink: Boolean!
+  acquisitionMode: AcquisitionMode
   dataLimit: Int!
 
   """
@@ -180,6 +193,8 @@ type PlotConfigurationSnapshot {
   """
   nAcquisitions: Int
   tclkEvent: Int
+  sampleOnEvent: String
+  chXAxis: String
 }
 
 input PlotConfigurationSnapshotIn {
@@ -198,6 +213,8 @@ input PlotConfigurationSnapshotIn {
   isOneShot: Boolean!
   isShowLabels: Boolean!
   isPersistent: Boolean!
+  isBlink: Boolean!
+  acquisitionMode: AcquisitionMode
   dataLimit: Int!
 
   """
@@ -210,6 +227,8 @@ input PlotConfigurationSnapshotIn {
   """
   nAcquisitions: Int
   tclkEvent: Int
+  sampleOnEvent: String
+  chXAxis: String
 }
 
 """
@@ -220,16 +239,28 @@ type PlotReplyData {
   A unique identifier for the plot request. This identifier will be cached for a limited time. Other clients can specify it to re-use the configuration.
   """
   plotId: String!
+
+  """
+  The time of the original request.
+  """
   timestamp: Float!
+
+  """
+  If requesting a triggered plot, this will be the timestamp of the last clock event (i.e. the "trigger"). All the timestamps in the data will be relative to this timestamp.
+  """
   triggerTimestamp: Float
+
+  """
+  The latest set of data points for the plot. Depending on the sample rate or how much history is requested, this array will contain a chunk of data.
+  """
   data: [PlotChannelData!]!
   isoTimestamp: Timestamp!
 }
 
 """
-Fields in this section return data and won't cause side-effects in the control system. Some queries may require privileges, but none will affect the accelerator.
+These queries are used to access accelerator data.
 """
-type Query {
+type AcsysQueries {
   """
   Retrieve the next data point for the specified devices.
 
@@ -240,11 +271,6 @@ type Query {
     An array of device names. The returned values will be in the same order as specified in this array.
     """
     deviceList: [String!]!
-
-    """
-    Returns device values that are equal to or greater than this timestamp. If this parameter is `null`, then the current, live value is returned. NOTE: THIS FEATURE HAS NOT BEEN ADDED YET.
-    """
-    when: Timestamp
   ): [DataReply!]!
 
   """
@@ -262,18 +288,6 @@ type Query {
   TEMPORARY: The `user` parameter can be used to retrieve a user's last configuration. The convention is to prepend an underscore to the account name. Once we use the new authentication method, we'll be able to look-up the username and this parameter will be removed.
   """
   usersLastConfiguration(user: String): PlotConfigurationSnapshot
-
-  """
-  Converts "clinks" to a Unix timestamp (seconds since Jan 1, 1970 UTC.)
-  """
-  clinksToUnix(clinks: Int!): Int!
-    @deprecated(reason: "This is a test API and will be removed.")
-
-  """
-  Converts a Unix timestamp (seconds since Jan 1, 1970 UTC) into "clinks". Since there is a range of Unix time that can't be represented in "clinks", `null` will be returned when the conversion fails.
-  """
-  unixToClinks(time: Int!): Int
-    @deprecated(reason: "This is a test API and will be removed.")
 }
 
 """
@@ -333,7 +347,7 @@ type Subscription {
   """
   Retrieve data from accelerator devices.
 
-  Accepts a list of DRF strings and streams the resulting data as it gets generated.
+  Accepts a list of DRF strings and streams the resulting data. The `start_time` and `end_time` parameters determine the range in which data should be returned for the device(s). Dates in the past will retrieve data from archivers and dates in the future will return live data.
   """
   acceleratorData(
     """
@@ -342,14 +356,19 @@ type Subscription {
     drfs: [String!]!
 
     """
-    The stream will return device data starting at this timestamp. If the control system cannot find data at the actual timestamp, it will return the oldest data it has that's greater then the timestamp. If this parameter is `null`, it will simply return live data. NOTE: THIS FEATURE HAS NOT BEEN ADDED YET.
+    The stream will return device data starting at this timestamp -- represented as seconds since Jan 1st, 1970 UTC. If the control system cannot find data at the actual timestamp, it will return the oldest data it has that's greater then the timestamp. If this parameter is `null`, it will simply return live data.
     """
-    startTime: Timestamp
+    startTime: Float
 
     """
-    The stream will close once the device data's timestamp reaches this value. This parameter must be greater than the `startTime` parameter. If this parameter is `null`, the stream will return live data until the client closes it. NOTE: THIS FEATURE HAS NOT BEEN ADDED YET.
+    The stream will close once the device data's timestamp reaches this value -- represented as seconds since Jan 1st, 1970 UTC. This parameter must be greater than the `startTime` parameter. If this parameter is `null`, the stream will return live data until the client closes it.
     """
-    endTime: Timestamp
+    endTime: Float
+
+    """
+    If `true`, data points won't be returned if their timestamp is deemed "invalid". Right now, this test is only done on live data and the condition is that live data timestamps must be greater than the time of the request. If the `start_time` would require archived data to be included, then timestamp validation is always done.
+    """
+    validateTimestamp: Boolean
   ): DataReply!
 
   """
@@ -384,19 +403,19 @@ type Subscription {
     triggerEvent: Int
 
     """
-    Minimum timestamp. All data before this timestamp will be filtered from the result set.
+    Minimum timestamp. DEPRECATED: This does nothing. Still in spec for backwards compatibility.
     """
     xMin: Float
 
     """
-    Maximum timestamp. All data after this timestamp will be filtered from the result set.
+    Maximum timestamp. DEPRECATED: This does nothing. Still in spec for backwards compatibility.
     """
     xMax: Float
     startTime: Float
     endTime: Float
+    sampleOnEvent: Int
+    chXAxis: String
   ): PlotReplyData!
-  reportEvents(events: [Int!]!): EventInfo!
-  calcStream(config: XformRequest!): XformResult!
 }
 
 """
@@ -411,35 +430,4 @@ Represents an array of textual values.
 """
 type TextArray {
   textArrayValue: [String!]!
-}
-
-input XformAvgExpr {
-  expr: XformExpr!
-  n: Int!
-}
-
-input XformDeviceExpr {
-  device: String!
-}
-
-input XformExpr {
-  devEx: XformDeviceExpr
-  avgEx: XformAvgExpr
-}
-
-input XformRequest {
-  event: String!
-  expr: XformExpr!
-}
-
-type XformResult {
-  """
-  Timestamp representing when the data was sampled. This value is provided as milliseconds since 1970, UTC.
-  """
-  timestamp: Timestamp!
-
-  """
-  The value of the device when sampled.
-  """
-  result: Scalar!
 }
