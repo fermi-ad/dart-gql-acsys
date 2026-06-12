@@ -44,19 +44,19 @@ sealed class DeviceValue {
     if (identical(this, other)) return true;
 
     switch ((this, other)) {
-      case ((DevRaw(value: var v), DevRaw(value: var o))):
+      case ((DevRaw(value: final v), DevRaw(value: final o))):
         return ListEquality().equals(v, o);
-      case ((DevScalar(value: var v), DevScalar(value: var o))):
+      case ((DevScalar(value: final v), DevScalar(value: final o))):
         return v == o;
-      case ((DevScalarArray(value: var v), DevScalarArray(value: var o))):
+      case ((DevScalarArray(value: final v), DevScalarArray(value: final o))):
         return ListEquality().equals(v, o);
-      case ((DevText(value: var v), DevText(value: var o))):
+      case ((DevText(value: final v), DevText(value: final o))):
         return v == o;
-      case ((DevTextArray(value: var v), DevTextArray(value: var o))):
+      case ((DevTextArray(value: final v), DevTextArray(value: final o))):
         return ListEquality().equals(v, o);
-      case ((DevTimeSeries(value: var v), DevTimeSeries(value: var o))):
+      case ((DevTimeSeries(value: final v), DevTimeSeries(value: final o))):
         return ListEquality().equals(v, o);
-      case ((DevStatusCode(status: var v), DevStatusCode(status: var o))):
+      case ((DevStatusCode(status: final v), DevStatusCode(status: final o))):
         return v == o;
       default:
         return false;
@@ -65,13 +65,13 @@ sealed class DeviceValue {
 
   @override
   int get hashCode => switch (this) {
-    DevRaw(value: var v) => v.hashCode,
-    DevScalar(value: var v) => v.hashCode,
-    DevText(value: var v) => v.hashCode,
-    DevScalarArray(value: var v) => v.hashCode,
-    DevTextArray(value: var v) => v.hashCode,
-    DevTimeSeries(value: var v) => v.hashCode,
-    DevStatusCode(status: var v) => v.hashCode,
+    DevRaw(value: final v) => v.hashCode,
+    DevScalar(value: final v) => v.hashCode,
+    DevText(value: final v) => v.hashCode,
+    DevScalarArray(value: final v) => v.hashCode,
+    DevTextArray(value: final v) => v.hashCode,
+    DevTimeSeries(value: final v) => v.hashCode,
+    DevStatusCode(status: final v) => v.hashCode,
   };
 }
 
@@ -185,43 +185,43 @@ extension TimeSeriesToDeviceValue on List<(DateTime, double)> {
 
 extension FromDeviceValue on DeviceValue {
   Status? toStatus() => switch (this) {
-    DevStatusCode(status: var value) => value,
+    DevStatusCode(status: final v) => v,
     _ => null,
   };
 
   double? toDouble() => switch (this) {
-    DevScalar(value: var value) => value,
+    DevScalar(value: final v) => v,
     _ => null,
   };
 
   String? toText() => switch (this) {
-    DevText(value: var value) => value,
+    DevText(value: final v) => v,
     _ => null,
   };
 
   List<int>? toRaw() => switch (this) {
-    DevRaw(value: var value) => value,
+    DevRaw(value: final v) => v,
     _ => null,
   };
 
   List<double>? toDoubleArray() => switch (this) {
-    DevScalarArray(value: var value) => value,
+    DevScalarArray(value: final v) => v,
     _ => null,
   };
 
   List<String>? toTextArray() => switch (this) {
-    DevTextArray(value: var value) => value,
+    DevTextArray(value: final v) => v,
     _ => null,
   };
 
   List<(double, double)>? toTimeSeries() => switch (this) {
-    DevTimeSeries(value: var value) => value,
+    DevTimeSeries(value: final v) => v,
     _ => null,
   };
 
   List<(DateTime, double)>? toTimeSeriesWithDates() => switch (this) {
-    DevTimeSeries(value: var value) => [
-      ...value.map(
+    DevTimeSeries(value: final v) => [
+      ...v.map(
         (e) =>
             (DateTime.fromMillisecondsSinceEpoch((e.$1 * 1000).toInt()), e.$2),
       ),
