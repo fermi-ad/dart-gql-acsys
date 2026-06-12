@@ -13,7 +13,6 @@ import 'package:graphql/client.dart';
 import 'package:pure_dart_ui/pure_dart_ui.dart';
 
 import 'package:dart_gql_acsys/src/schema/mutations.dart';
-import 'package:dart_gql_acsys/src/schema/subscriptions.dart';
 
 import 'device_values.dart';
 import 'acsys_api.dart';
@@ -95,7 +94,7 @@ final class ACSysService implements ACSysServiceAPI {
               autoReconnect: true,
               headers: _buildAuthHeader(jwt),
               queryAndMutationTimeout: const Duration(seconds: 5),
-              inactivityTimeout: const Duration(seconds: 30),
+              inactivityTimeout: null,
             ),
             subProtocol: "graphql-ws",
           ),
@@ -119,7 +118,7 @@ final class ACSysService implements ACSysServiceAPI {
   //
   // All errors are logged and thrown as [ACSysGraphQLException] with
   // meaningful error messages for easier debugging.
-  Future<QueryResult> _doGraphQL({
+  Future<QueryResult> _doQuery({
     required String query,
     required Map<String, dynamic> withVariables,
     required FetchPolicy withPolicy,
@@ -236,12 +235,86 @@ final class ACSysService implements ACSysServiceAPI {
       }""";
 
     return _convertReading(
-      await _doGraphQL(
+      await _doQuery(
         query: devicesRead,
         withVariables: {'devList': devices},
         withPolicy: .networkOnly,
       ),
     );
+  }
+
+  // Executes a GraphQL subscription with per-event error handling and
+  // validation. Each event emitted by the underlying WebSocket stream is
+  // inspected for link-level and GraphQL-level errors before being forwarded.
+  // Errors are logged and re-thrown as [ACSysGraphQLException] so that stream
+  // consumers receive them via the stream's error channel rather than having
+  // them silently swallowed.
+  Stream<QueryResult> _doSubscription({
+    required String query,
+    required Map<String, dynamic> withVariables,
+    required FetchPolicy withPolicy,
+  }) {
+    final options = SubscriptionOptions(
+      document: gql(query),
+      variables: withVariables,
+      fetchPolicy: withPolicy,
+    );
+
+    return _client.subscribe(options).where((event) => event.isNotLoading).map((
+      result,
+    ) {
+      // Handle link-level errors (network, connection, timeout, etc.)
+      if (result.exception?.linkException != null) {
+        final linkEx = result.exception!.linkException!;
+        final errorMsg =
+            'Network error: ${linkEx.originalException ?? linkEx.toString()}';
+
+        dev.log(
+          errorMsg,
+          name: 'ACSYS.GraphQL',
+          error: linkEx,
+          stackTrace: StackTrace.current,
+        );
+
+        throw ACSysGraphQLException(errorMsg);
+      }
+
+      // Handle GraphQL-level errors (query syntax, validation, resolver errors)
+      if (result.exception?.graphqlErrors.isNotEmpty ?? false) {
+        final errors = result.exception!.graphqlErrors;
+        final errorMessages = errors
+            .map(
+              (e) =>
+                  '${e.message}${e.path != null ? " at path: ${e.path}" : ""}',
+            )
+            .join('; ');
+        final errorMsg = 'GraphQL errors: $errorMessages';
+
+        dev.log(errorMsg, name: 'ACSYS.GraphQL', error: errors);
+
+        throw ACSysGraphQLException(errorMsg);
+      }
+
+      // Handle unexpected exception state (shouldn't happen, but be defensive)
+      if (result.hasException) {
+        final errorMsg =
+            'Unknown GraphQL exception: ${result.exception.toString()}';
+
+        dev.log(errorMsg, name: 'ACSYS.GraphQL', error: result.exception);
+
+        throw ACSysGraphQLException(errorMsg);
+      }
+
+      // Verify we actually got data back
+      if (result.data == null) {
+        const errorMsg = 'Subscription event returned no data';
+
+        dev.log(errorMsg, name: 'ACSYS.GraphQL');
+        throw ACSysGraphQLException(errorMsg);
+      }
+
+      return result;
+    });
   }
 
   // Returns a stream of readings for the devices specified in the parameter
@@ -251,19 +324,41 @@ final class ACSysService implements ACSysServiceAPI {
   // be sent for a device in error.
   @override
   Stream<Reading> monitorDevices(List<String> drfs) {
-    return _client
-        .subscribe(
-          SubscriptionOptions(
-            document: gql(devicesMonitor),
-            variables: {'drfList': drfs},
-            fetchPolicy: .networkOnly,
-          ),
-        )
-        .handleError(
-          (err) => dev.log("error: $err", name: "gql.monitorDevices"),
-        )
-        .where((event) => event.isNotLoading)
-        .expand((element) => _convertMonitor(element));
+    const subscription = r"""
+      subscription StreamData($drfs: [String!]!) {
+        acceleratorData(drfs: $drfs) {
+          refId
+          data {
+            timestamp
+            result {
+              ... on StatusReply {
+                status
+              }
+              ... on Scalar {
+                scalarValue
+              }
+              ... on ScalarArray {
+                scalarArrayValue
+              }
+              ... on Raw {
+                rawValue
+              }
+              ... on Text {
+                textValue
+              }
+              ... on TextArray {
+                textArrayValue
+              }
+            }
+          }
+        }
+      }""";
+
+    return _doSubscription(
+      query: subscription,
+      withVariables: {'drfs': drfs},
+      withPolicy: .networkOnly,
+    ).expand(_convertMonitor);
   }
 
   static DateTime fromFloatTs(double ts) =>
@@ -271,24 +366,23 @@ final class ACSysService implements ACSysServiceAPI {
 
   // Convert the incoming GraphQL messages into `Reading` objects.
 
-  static Iterable<Reading> _convertMonitor(QueryResult queryResult) sync* {
-    // If the packet doesn't have GraphQL errors, then we can process the
-    // payload.
-    if (queryResult.data?['acceleratorData'] case {
-      "refId": int refId,
-      "data": List<Object?> rawData,
-    }) {
-      final data = rawData.cast<Map<String, dynamic>>();
+  static Iterable<Reading> _convertMonitor(QueryResult queryResult) {
+    final {"refId": int refId, "data": List<Object?> rawData} =
+        queryResult.data!['acceleratorData'] as Map<String, dynamic>;
 
-      for (final {"timestamp": double stamp, "result": dynamic result}
-          in data) {
-        yield (Reading(
-          refId: refId,
-          timestamp: fromFloatTs(stamp),
-          value: devVal(result as Map<String, dynamic>),
-        ));
-      }
-    }
+    return rawData.cast<Map<String, dynamic>>().map(
+      (row) => switch (row) {
+        {"timestamp": double stamp, "result": Map<String, dynamic> result} =>
+          Reading(
+            refId: refId,
+            timestamp: fromFloatTs(stamp),
+            value: devVal(result),
+          ),
+        _ => throw ACSysGraphQLException(
+          'Unexpected acceleratorData row shape: $row',
+        ),
+      },
+    );
   }
 
   // Performs a setting request. `forDRF` is the DRF string representing the
@@ -309,7 +403,7 @@ final class ACSysService implements ACSysServiceAPI {
       errorCode: e.data?['status'] & 255,
     );
 
-    return _doGraphQL(
+    return _doQuery(
       query: deviceSet,
       withVariables: {'device': forDRF, 'value': newSetting},
       withPolicy: .networkOnly,
@@ -335,6 +429,37 @@ final class ACSysService implements ACSysServiceAPI {
     int? nAcquisitions,
     int? triggerEvent,
   }) {
+    const plotStart = r"""
+      subscription StartPlot($drfList: [String!]!, $xMin: Float, $xMax: Float, 
+                             $windowSize: Int, $updateDelay: Int,
+                             $nAcquisitions: Int, $triggerEvent: Int,
+                             $startTime: Float, $endTime: Float) {
+        startPlot(drfList: $drfList, xMin: $xMin, xMax: $xMax,
+                  windowSize: $windowSize, updateDelay: $updateDelay,
+                  nAcquisitions: $nAcquisitions, triggerEvent: $triggerEvent,
+                  startTime: $startTime, endTime: $endTime) {
+          plotId
+          timestamp
+          triggerTimestamp
+          data {
+            channelRate
+            channelUnits
+            channelStatus
+            channelData {
+              timestamp
+              result {
+                ... on Scalar {
+                  scalarValue
+                }
+                ... on ScalarArray {
+                  scalarArrayValue
+                }
+              }
+            }
+          }
+        }
+      }""";
+
     return _client
         .subscribe(
           SubscriptionOptions(
