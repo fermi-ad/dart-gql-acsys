@@ -480,7 +480,6 @@ final class ACSysService implements ACSysServiceAPI {
 
 extension on DeviceValue {
   Map<String, dynamic> toDevValIn() => switch (this) {
-    DevStatusCode(status: var s) => {'intVal': s.code},
     DevScalar(value: var s) => {'scalarVal': s},
     DevScalarArray(value: var arr) => {'scalarArrayVal': arr},
     DevRaw(value: var raw) => {'rawVal': raw},
@@ -489,5 +488,8 @@ extension on DeviceValue {
     DevTimeSeries(value: var ts) => {
       'timeSeriesVal': ts.map((e) => {'stamp': e.$1, 'value': e.$2}).toList(),
     },
+    DevStatusCode() => throw ACSysGraphQLException(
+      'Status codes cannot be used as input values',
+    ),
   };
 }
