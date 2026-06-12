@@ -76,36 +76,36 @@ final class ChannelSettingSnapshot {
 /// widget which manages an object of this class.
 
 final class ACSysService implements ACSysServiceAPI {
-  final GraphQLClient _q;
-  final GraphQLClient _s;
+  final GraphQLClient _client;
 
   static Map<String, String> _buildAuthHeader(String? jwt) =>
       jwt != null ? {"Authorization": "Bearer $jwt"} : {};
 
-  // Constructor. This creates the HTTP links needed to communicate with our
-  // GraphQL endpoints.
+  // Constructor. This creates the HTTP and WebSocket links needed to
+  // communicate with our GraphQL endpoints, then splits them so that
+  // subscriptions go over WebSocket and everything else goes over HTTP.
 
   ACSysService({String? jwt})
-    : _q = GraphQLClient(
-        link: HttpLink(
-          "https://ad-api.fnal.gov/acsys",
-          defaultHeaders: _buildAuthHeader(jwt),
-          httpClient: http.Client(),
+    : _client = GraphQLClient(
+        link: Link.split(
+          (request) => request.isSubscription,
+          WebSocketLink(
+            "wss://ad-api.fnal.gov/acsys/s",
+            config: SocketClientConfig(
+              autoReconnect: true,
+              headers: _buildAuthHeader(jwt),
+              queryAndMutationTimeout: const Duration(seconds: 5),
+              inactivityTimeout: const Duration(seconds: 30),
+            ),
+            subProtocol: "graphql-ws",
+          ),
+          HttpLink(
+            "https://ad-api.fnal.gov/acsys",
+            defaultHeaders: _buildAuthHeader(jwt),
+            httpClient: http.Client(),
+          ),
         ),
         queryRequestTimeout: const Duration(seconds: 5),
-        cache: GraphQLCache(store: InMemoryStore()),
-      ),
-      _s = GraphQLClient(
-        link: WebSocketLink(
-          "wss://ad-api.fnal.gov/acsys/s",
-          config: SocketClientConfig(
-            autoReconnect: true,
-            headers: _buildAuthHeader(jwt),
-            queryAndMutationTimeout: const Duration(seconds: 5),
-            inactivityTimeout: const Duration(seconds: 30),
-          ),
-          subProtocol: "graphql-ws",
-        ),
         cache: GraphQLCache(store: InMemoryStore()),
       );
 
@@ -130,7 +130,7 @@ final class ACSysService implements ACSysServiceAPI {
       fetchPolicy: withPolicy,
     );
 
-    final QueryResult result = await _q.query(options);
+    final QueryResult result = await _client.query(options);
 
     // Handle link-level errors (network, connection, timeout, etc.)
     if (result.exception?.linkException != null) {
@@ -251,7 +251,7 @@ final class ACSysService implements ACSysServiceAPI {
   // be sent for a device in error.
   @override
   Stream<Reading> monitorDevices(List<String> drfs) {
-    return _s
+    return _client
         .subscribe(
           SubscriptionOptions(
             document: gql(devicesMonitor),
@@ -335,7 +335,7 @@ final class ACSysService implements ACSysServiceAPI {
     int? nAcquisitions,
     int? triggerEvent,
   }) {
-    return _s
+    return _client
         .subscribe(
           SubscriptionOptions(
             document: gql(plotStart),
