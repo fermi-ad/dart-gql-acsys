@@ -1,6 +1,7 @@
 // This example starts a plot request for the outdoor temperature. The
 // data is collected as 1 Hz.
 
+import 'dart:io';
 import 'package:dart_gql_acsys/dart_gql_acsys.dart';
 
 Future<void> main() async {
@@ -24,4 +25,6 @@ Future<void> main() async {
   } catch (e) {
     print("exception: $e");
   }
+
+  exit(0);
 }
