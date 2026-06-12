@@ -478,13 +478,6 @@ final class ACSysService implements ACSysServiceAPI {
       };
 }
 
-DeviceValue? xlat(Map<String, dynamic> json) => switch (json) {
-  {"status": int v, "scalarValue": null, "scalarArray": null} => DevStatusCode(
-    Status.fromInt(v),
-  ),
-  _ => null,
-};
-
 extension on DeviceValue {
   Map<String, dynamic> toDevValIn() => switch (this) {
     DevStatusCode(status: var s) => {'intVal': s.code},
