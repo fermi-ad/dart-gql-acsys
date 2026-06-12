@@ -1,4 +1,5 @@
 import 'device_values.dart';
+import 'status.dart';
 
 final class Reading {
   final int refId;
@@ -57,13 +58,6 @@ final class PlotReply {
   });
 }
 
-final class SettingStatus {
-  final int facilityCode;
-  final int errorCode;
-
-  const SettingStatus({required this.facilityCode, required this.errorCode});
-}
-
 abstract interface class ACSysServiceAPI {
   /// Takes a list of data acquisition strings and returns a stream that
   /// provides readings for the requests.
@@ -90,15 +84,12 @@ abstract interface class ACSysServiceAPI {
 
   /// Takes a device name and a value and sends a request to apply the value to
   /// the device.
-  Future<SettingStatus> submit({
+  Future<Status> submit({
     required String forDRF,
     required DeviceValue newSetting,
   });
 
   /// Takes a device name and a value and sends a request to apply the value to
   /// the device's digital control property.
-  Future<SettingStatus> sendCommand({
-    required String toDRF,
-    required String value,
-  });
+  Future<Status> sendCommand({required String toDRF, required String value});
 }

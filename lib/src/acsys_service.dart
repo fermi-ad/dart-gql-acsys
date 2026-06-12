@@ -12,8 +12,6 @@ import 'package:http/http.dart' as http;
 import 'package:graphql/client.dart';
 import 'package:pure_dart_ui/pure_dart_ui.dart';
 
-import 'package:dart_gql_acsys/src/schema/mutations.dart';
-
 import 'device_values.dart';
 import 'acsys_api.dart';
 import 'status.dart';
@@ -391,30 +389,29 @@ final class ACSysService implements ACSysServiceAPI {
   // status of the setting.
 
   @override
-  Future<SettingStatus> submit({
+  Future<Status> submit({
     required String forDRF,
     required DeviceValue newSetting,
   }) {
-    // Define a nested function which converts the GraphQL reply into a
-    // SettingStatus.
-
-    xlat(QueryResult e) => SettingStatus(
-      facilityCode: e.data?['status'] ~/ 256,
-      errorCode: e.data?['status'] & 255,
-    );
+    const deviceSet = r"""
+      mutation SetDevice($device: String!, $value: DevValue!) {
+        setDevice(device: $device, value: $value) {
+          status
+        }
+      }""";
 
     return _doQuery(
       query: deviceSet,
-      withVariables: {'device': forDRF, 'value': newSetting},
+      withVariables: {'device': forDRF, 'value': newSetting.toDevValIn()},
       withPolicy: .networkOnly,
-    ).then((res) => xlat(res));
+    ).then(
+      (QueryResult e) => Status.fromInt(e.data!['setDevice']!['status'] as int),
+    );
   }
 
   @override
-  Future<SettingStatus> sendCommand({
-    required String toDRF,
-    required String value,
-  }) => submit(forDRF: toDRF, newSetting: DevText(value));
+  Future<Status> sendCommand({required String toDRF, required String value}) =>
+      submit(forDRF: toDRF, newSetting: DevText(value));
 
   //NEEDS ADJUSTMENT
   @override
@@ -542,3 +539,17 @@ DeviceValue? xlat(Map<String, dynamic> json) => switch (json) {
   ),
   _ => null,
 };
+
+extension on DeviceValue {
+  Map<String, dynamic> toDevValIn() => switch (this) {
+    DevStatusCode(status: var s) => {'intVal': s.code},
+    DevScalar(value: var s) => {'scalarVal': s},
+    DevScalarArray(value: var arr) => {'scalarArrayVal': arr},
+    DevRaw(value: var raw) => {'rawVal': raw},
+    DevText(value: var t) => {'textVal': t},
+    DevTextArray(value: var arr) => {'textArrayVal': arr},
+    DevTimeSeries(value: var ts) => {
+      'timeSeriesVal': ts.map((e) => {'stamp': e.$1, 'value': e.$2}).toList(),
+    },
+  };
+}

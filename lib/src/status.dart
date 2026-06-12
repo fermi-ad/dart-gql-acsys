@@ -12,6 +12,8 @@ extension type Status._(int code) {
   bool get warning => error > 0;
   bool get fatal => error < 0;
 
+  String toStr() => "[$facility $error]";
+
   // Global, predefined status codes.
 
   static const Status SUCCESS = Status.fromInt(0);

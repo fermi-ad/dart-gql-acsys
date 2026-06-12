@@ -54,7 +54,7 @@ sealed class DeviceValue {
         return v == o;
       case ((DevTextArray(value: var v), DevTextArray(value: var o))):
         return ListEquality().equals(v, o);
-      case ((DevTimeSeries(values: var v), DevTimeSeries(values: var o))):
+      case ((DevTimeSeries(value: var v), DevTimeSeries(value: var o))):
         return ListEquality().equals(v, o);
       case ((DevStatusCode(status: var v), DevStatusCode(status: var o))):
         return v == o;
@@ -70,7 +70,7 @@ sealed class DeviceValue {
     DevText(value: var v) => v.hashCode,
     DevScalarArray(value: var v) => v.hashCode,
     DevTextArray(value: var v) => v.hashCode,
-    DevTimeSeries(values: var v) => v.hashCode,
+    DevTimeSeries(value: var v) => v.hashCode,
     DevStatusCode(status: var v) => v.hashCode,
   };
 }
@@ -138,9 +138,9 @@ final class DevTextArray extends DeviceValue {
 /// Represents time-series data (i.e. a list of timestamp/value pairs.)
 
 final class DevTimeSeries extends DeviceValue {
-  final List<(double, double)> values;
+  final List<(double, double)> value;
 
-  const DevTimeSeries(this.values);
+  const DevTimeSeries(this.value);
 }
 
 // The `ToDeviceValue` extension allows us to convert primitive types into a
@@ -215,13 +215,13 @@ extension FromDeviceValue on DeviceValue {
   };
 
   List<(double, double)>? toTimeSeries() => switch (this) {
-    DevTimeSeries(values: var values) => values,
+    DevTimeSeries(value: var value) => value,
     _ => null,
   };
 
   List<(DateTime, double)>? toTimeSeriesWithDates() => switch (this) {
-    DevTimeSeries(values: var values) => [
-      ...values.map(
+    DevTimeSeries(value: var value) => [
+      ...value.map(
         (e) =>
             (DateTime.fromMillisecondsSinceEpoch((e.$1 * 1000).toInt()), e.$2),
       ),
