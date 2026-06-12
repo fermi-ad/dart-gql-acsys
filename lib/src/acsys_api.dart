@@ -80,6 +80,8 @@ abstract interface class ACSysServiceAPI {
     int? updateRate,
     int? nAcquisitions,
     int? triggerEvent,
+    int? sampleOnEvent,
+    String? chXAxis,
   });
 
   /// Takes a device name and a value and sends a request to apply the value to

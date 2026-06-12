@@ -358,7 +358,6 @@ final class ACSysService implements ACSysServiceAPI {
   Future<Status> sendCommand({required String toDRF, required String value}) =>
       submit(forDRF: toDRF, newSetting: value.toDevVal());
 
-  //NEEDS ADJUSTMENT
   @override
   Stream<PlotReply> startPlot(
     List<String> drfs, {
@@ -370,16 +369,20 @@ final class ACSysService implements ACSysServiceAPI {
     int? updateRate,
     int? nAcquisitions,
     int? triggerEvent,
+    int? sampleOnEvent,
+    String? chXAxis,
   }) {
     const plotStart = r"""
-      subscription StartPlot($drfList: [String!]!, $xMin: Float, $xMax: Float, 
+      subscription StartPlot($drfList: [String!]!, $xMin: Float, $xMax: Float,
                              $windowSize: Int, $updateDelay: Int,
                              $nAcquisitions: Int, $triggerEvent: Int,
-                             $startTime: Float, $endTime: Float) {
+                             $startTime: Float, $endTime: Float,
+                             $sampleOnEvent: Int, $chXAxis: String) {
         startPlot(drfList: $drfList, xMin: $xMin, xMax: $xMax,
                   windowSize: $windowSize, updateDelay: $updateDelay,
                   nAcquisitions: $nAcquisitions, triggerEvent: $triggerEvent,
-                  startTime: $startTime, endTime: $endTime) {
+                  startTime: $startTime, endTime: $endTime,
+                  sampleOnEvent: $sampleOnEvent, chXAxis: $chXAxis) {
           plotId
           timestamp
           triggerTimestamp
@@ -416,6 +419,8 @@ final class ACSysService implements ACSysServiceAPI {
               'triggerEvent': triggerEvent,
               'startTime': startTime,
               'endTime': endTime,
+              'sampleOnEvent': sampleOnEvent,
+              'chXAxis': chXAxis,
             },
             fetchPolicy: .networkOnly,
           ),
@@ -423,31 +428,61 @@ final class ACSysService implements ACSysServiceAPI {
         .handleError((err) => dev.log("error: $err", name: "gql.startPlot"))
         .where((event) => event.isNotLoading)
         .map(
-          (startPlot) =>
-              _toPlotReply(startPlot.data!, drfs, xMin, xMax, windowSize),
+          (event) => _toPlotReply(event.data!, drfs, xMin, xMax, windowSize),
         );
   }
 
   PlotReply _toPlotReply(
-    Map<String, dynamic>? plotInfo,
+    Map<String, dynamic> eventData,
     List<String> drfs,
     double? xMin,
     double? xMax,
     int? windowSize,
-  ) => PlotReply(
-    plotId: plotInfo?['plotId'],
-    requestTime: plotInfo?['timestamp'],
-    triggerTimestamp: plotInfo?['triggerTimestamp'],
-    xAxisUnits: "Time",
-    xAxisMin: xMin,
-    xAxisMax: xMax,
-    windowSize: windowSize, //name within map
-    data: plotInfo?['data'].indexed
-        .map(
-          (indx) => indx.$2._toPlotChannelData(drfs[indx.$1], plotInfo['data']),
-        )
-        .toList(),
-  );
+  ) {
+    // The GraphQL client wraps the response under the operation field name.
+    final plotInfo = eventData['startPlot'] as Map<String, dynamic>;
+
+    final rawChannels = (plotInfo['data'] as List<Object?>)
+        .cast<Map<String, dynamic>>();
+
+    final channels = rawChannels.indexed
+        .map((entry) => _toPlotChannelData(entry.$2, drfs[entry.$1]))
+        .toList();
+
+    return PlotReply(
+      plotId: plotInfo['plotId'] as String,
+      requestTime: (plotInfo['timestamp'] as num).toDouble(),
+      triggerTimestamp: (plotInfo['triggerTimestamp'] as num?)?.toDouble(),
+      xAxisUnits: "Time",
+      xAxisMin: xMin,
+      xAxisMax: xMax,
+      windowSize: windowSize,
+      data: channels,
+    );
+  }
+
+  static PlotChannelData _toPlotChannelData(
+    Map<String, dynamic> ch,
+    String deviceName,
+  ) {
+    final rawPoints = (ch['channelData'] as List<Object?>)
+        .cast<Map<String, dynamic>>();
+
+    final points = rawPoints.map((row) {
+      final t = (row['timestamp'] as num).toDouble();
+      final result = row['result'] as Map<String, dynamic>;
+
+      return PlotPoint(t: t, value: devVal(result));
+    }).toList();
+
+    return PlotChannelData(
+      name: deviceName,
+      units: ch['channelUnits'] as String,
+      rate: ch['channelRate'] as String,
+      status: ch['channelStatus'] as int,
+      points: points,
+    );
+  }
 
   // Converts the map value to a DeviceValue type.
   //
