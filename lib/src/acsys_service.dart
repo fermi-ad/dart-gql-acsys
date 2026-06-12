@@ -106,29 +106,11 @@ final class ACSysService implements ACSysServiceAPI {
         cache: GraphQLCache(store: InMemoryStore()),
       );
 
-  // Executes a GraphQL query with comprehensive error handling and validation.
-  //
-  // This method handles all common GraphQL error scenarios including:
-  // - Network/connection errors (link exceptions)
-  // - GraphQL query errors (syntax, validation, resolver errors)
-  // - Null data responses
-  // - Unknown exception states
-  //
-  // All errors are logged and thrown as [ACSysGraphQLException] with
-  // meaningful error messages for easier debugging.
-  Future<QueryResult> _doQuery({
-    required String query,
-    required Map<String, dynamic> withVariables,
-    required FetchPolicy withPolicy,
-  }) async {
-    final QueryOptions options = QueryOptions(
-      document: gql(query),
-      variables: withVariables,
-      fetchPolicy: withPolicy,
-    );
-
-    final QueryResult result = await _client.query(options);
-
+  // Validates a [QueryResult] for all common GraphQL error scenarios and
+  // returns it unchanged if healthy. Throws [ACSysGraphQLException] on any
+  // error. [nullDataMsg] is the message used when the result carries no data,
+  // allowing callers to provide context-specific wording.
+  static QueryResult _checkResult(QueryResult result, String nullDataMsg) {
     // Handle link-level errors (network, connection, timeout, etc.)
     if (result.exception?.linkException != null) {
       final linkEx = result.exception!.linkException!;
@@ -170,17 +152,54 @@ final class ACSysService implements ACSysServiceAPI {
       throw ACSysGraphQLException(errorMsg);
     }
 
-    // Verify we actually got data back (successful query should have data)
+    // Verify we actually got data back
     if (result.data == null) {
-      const errorMsg = 'Query succeeded but returned no data';
-
-      dev.log(errorMsg, name: 'ACSYS.GraphQL');
-      throw ACSysGraphQLException(errorMsg);
+      dev.log(nullDataMsg, name: 'ACSYS.GraphQL');
+      throw ACSysGraphQLException(nullDataMsg);
     }
 
-    // All checks passed - return the successful result
     return result;
   }
+
+  // Executes a GraphQL query with comprehensive error handling and validation.
+  Future<QueryResult> _doQuery({
+    required String query,
+    required Map<String, dynamic> withVariables,
+    required FetchPolicy withPolicy,
+  }) async {
+    final QueryResult result = await _client.query(
+      QueryOptions(
+        document: gql(query),
+        variables: withVariables,
+        fetchPolicy: withPolicy,
+      ),
+    );
+
+    return _checkResult(result, 'Query succeeded but returned no data');
+  }
+
+  // Executes a GraphQL subscription with per-event error handling and
+  // validation. Each event emitted by the underlying WebSocket stream is
+  // inspected for link-level and GraphQL-level errors before being forwarded.
+  // Errors are logged and re-thrown as [ACSysGraphQLException] so that stream
+  // consumers receive them via the stream's error channel rather than having
+  // them silently swallowed.
+  Stream<QueryResult> _doSubscription({
+    required String query,
+    required Map<String, dynamic> withVariables,
+    required FetchPolicy withPolicy,
+  }) => _client
+      .subscribe(
+        SubscriptionOptions(
+          document: gql(query),
+          variables: withVariables,
+          fetchPolicy: withPolicy,
+        ),
+      )
+      .where((event) => event.isNotLoading)
+      .map(
+        (result) => _checkResult(result, 'Subscription event returned no data'),
+      );
 
   static List<Reading> _convertReading(QueryResult queryResult) =>
       (queryResult.data?['acceleratorData'] as List<Object?>)
@@ -239,80 +258,6 @@ final class ACSysService implements ACSysServiceAPI {
         withPolicy: .networkOnly,
       ),
     );
-  }
-
-  // Executes a GraphQL subscription with per-event error handling and
-  // validation. Each event emitted by the underlying WebSocket stream is
-  // inspected for link-level and GraphQL-level errors before being forwarded.
-  // Errors are logged and re-thrown as [ACSysGraphQLException] so that stream
-  // consumers receive them via the stream's error channel rather than having
-  // them silently swallowed.
-  Stream<QueryResult> _doSubscription({
-    required String query,
-    required Map<String, dynamic> withVariables,
-    required FetchPolicy withPolicy,
-  }) {
-    final options = SubscriptionOptions(
-      document: gql(query),
-      variables: withVariables,
-      fetchPolicy: withPolicy,
-    );
-
-    return _client.subscribe(options).where((event) => event.isNotLoading).map((
-      result,
-    ) {
-      // Handle link-level errors (network, connection, timeout, etc.)
-      if (result.exception?.linkException != null) {
-        final linkEx = result.exception!.linkException!;
-        final errorMsg =
-            'Network error: ${linkEx.originalException ?? linkEx.toString()}';
-
-        dev.log(
-          errorMsg,
-          name: 'ACSYS.GraphQL',
-          error: linkEx,
-          stackTrace: StackTrace.current,
-        );
-
-        throw ACSysGraphQLException(errorMsg);
-      }
-
-      // Handle GraphQL-level errors (query syntax, validation, resolver errors)
-      if (result.exception?.graphqlErrors.isNotEmpty ?? false) {
-        final errors = result.exception!.graphqlErrors;
-        final errorMessages = errors
-            .map(
-              (e) =>
-                  '${e.message}${e.path != null ? " at path: ${e.path}" : ""}',
-            )
-            .join('; ');
-        final errorMsg = 'GraphQL errors: $errorMessages';
-
-        dev.log(errorMsg, name: 'ACSYS.GraphQL', error: errors);
-
-        throw ACSysGraphQLException(errorMsg);
-      }
-
-      // Handle unexpected exception state (shouldn't happen, but be defensive)
-      if (result.hasException) {
-        final errorMsg =
-            'Unknown GraphQL exception: ${result.exception.toString()}';
-
-        dev.log(errorMsg, name: 'ACSYS.GraphQL', error: result.exception);
-
-        throw ACSysGraphQLException(errorMsg);
-      }
-
-      // Verify we actually got data back
-      if (result.data == null) {
-        const errorMsg = 'Subscription event returned no data';
-
-        dev.log(errorMsg, name: 'ACSYS.GraphQL');
-        throw ACSysGraphQLException(errorMsg);
-      }
-
-      return result;
-    });
   }
 
   // Returns a stream of readings for the devices specified in the parameter
