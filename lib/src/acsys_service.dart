@@ -356,7 +356,7 @@ final class ACSysService implements ACSysServiceAPI {
 
   @override
   Future<Status> sendCommand({required String toDRF, required String value}) =>
-      submit(forDRF: toDRF, newSetting: DevText(value));
+      submit(forDRF: toDRF, newSetting: value.toDevVal());
 
   //NEEDS ADJUSTMENT
   @override
