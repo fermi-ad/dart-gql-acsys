@@ -605,10 +605,12 @@ final class ACSysService implements ACSysServiceAPI {
     'StatusReply' => DevStatusCode(Status.fromInt(jsonMap['status'] as int)),
     'Scalar' => DevScalar((jsonMap['scalarValue'] as num).toDouble()),
     'ScalarArray' => DevScalarArray(
-      (jsonMap['scalarArrayValue'] as List<Object?>)
-          .cast<num>()
-          .map((n) => n.toDouble())
-          .toList(),
+      Float64List.fromList(
+        (jsonMap['scalarArrayValue'] as List<Object?>)
+            .cast<num>()
+            .map((n) => n.toDouble())
+            .toList(),
+      ),
     ),
     'Raw' => DevRaw(
       Uint8List.fromList((jsonMap['rawValue'] as List<Object?>).cast<int>()),

@@ -4,7 +4,8 @@ import 'package:dart_gql_acsys/dart_gql_acsys.dart';
 
 DeviceValue _makeScalar(double v) => DevScalar(v);
 
-DeviceValue _makeScalarArray(List<double> s) => DevScalarArray(s);
+DeviceValue _makeScalarArray(List<double> s) =>
+    DevScalarArray(Float64List.fromList(s));
 
 DeviceValue _makeText(String s) => DevText(s);
 

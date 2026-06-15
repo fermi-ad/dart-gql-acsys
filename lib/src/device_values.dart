@@ -117,7 +117,7 @@ final class DevScalar extends DeviceValue {
 /// values. This type is also used by EPICS "waveform" devices.
 
 final class DevScalarArray extends DeviceValue {
-  final List<double> value;
+  final Float64List value;
 
   const DevScalarArray(this.value);
 }
@@ -165,7 +165,7 @@ extension RawToDeviceValue on Uint8List {
   DeviceValue toDevVal() => DevRaw(this);
 }
 
-extension DoubleArrayToDeviceValue on List<double> {
+extension DoubleArrayToDeviceValue on Float64List {
   DeviceValue toDevVal() => DevScalarArray(this);
 }
 
@@ -207,7 +207,7 @@ extension FromDeviceValue on DeviceValue {
     _ => null,
   };
 
-  List<double>? toDoubleArray() => switch (this) {
+  Float64List? toDoubleArray() => switch (this) {
     DevScalarArray(value: final v) => v,
     _ => null,
   };
