@@ -541,7 +541,7 @@ final class ACSysService implements ACSysServiceAPI {
         );
   }
 
-  PlotReply _toPlotReply(
+  static PlotReply _toPlotReply(
     Map<String, dynamic> eventData,
     List<String> drfs,
     double? xMin,
