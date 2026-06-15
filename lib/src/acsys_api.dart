@@ -1,3 +1,4 @@
+import 'exceptions.dart';
 import 'device_values.dart';
 import 'status.dart';
 
