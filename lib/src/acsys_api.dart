@@ -373,7 +373,7 @@ abstract interface class ACSysServiceAPI {
   });
 
   /// Returns every plot configuration in the database.
-  //Future<List<PlotConfigurationListing>> listPlotConfigurations();
+  Future<List<PlotConfigurationListing>> listPlotConfigurations();
 
   /// Removes a plot configuration from the database.
   //Future<void> removePlotConfiguration({required PlotConfigId configurationId});

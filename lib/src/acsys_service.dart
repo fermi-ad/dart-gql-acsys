@@ -341,73 +341,63 @@ final class ACSysService implements ACSysServiceAPI {
     return snapshot;
   }
 
+  // Shared query for both retrievePlotConfiguration and listPlotConfigurations.
+  // Passing null for $id returns all configurations; passing an Int returns the
+  // matching one (0 or 1 element). The server stores the full configuration as
+  // a JSON string in the `config` field, which we decode client-side.
+  static const _plotConfigQuery = r"""
+    query PlotConfigs($id: Int) {
+      plotConfiguration(id: $id) {
+        configId
+        configName
+        config
+      }
+    }""";
+
+  // Decodes a single PlotConfig row from the GraphQL response into a
+  // PlotConfigurationSnapshot.
+  static PlotConfigurationSnapshot _snapshotFromRow(Map<String, dynamic> row) {
+    final id = PlotConfigId.fromInt(row['configId'] as int);
+    final name = row['configName'] as String;
+    final configJson =
+        jsonDecode(row['config'] as String) as Map<String, dynamic>;
+
+    return PlotConfigurationSnapshot.fromJson(id, name, configJson);
+  }
+
   @override
   Future<PlotConfigurationSnapshot?> retrievePlotConfiguration({
     required PlotConfigId configurationId,
   }) async {
-    const plotConfigs = r"""
-      query PlotConfigs($id: Int) {
-        plotConfiguration(configurationId: $id) {
-          configurationId
-          configurationName
-          channels {
-            device
-            yMin
-            yMax
-            lineColor
-            markerIndex
-          }
-          xMin
-          xMax
-          startTime
-          endTime
-          timeDelta
-          isScalar
-          isOneShot
-          isShowLabels
-          updateDelay
-          nAcquisitions
-          tclkEvent
-          isPersistent
-          dataLimit
-        }
-      }""";
-
     final result = await _doQuery(
-      query: plotConfigs,
+      query: _plotConfigQuery,
       withVariables: {'id': configurationId.value},
       withPolicy: .networkOnly,
     );
 
-    final raw = result.data!['plotConfiguration'];
-
-    if (raw == null) return null;
-
-    final data = raw as Map<String, dynamic>;
-
-    // The GraphQL schema returns channels as an array of objects with a
-    // `device` key. PlotConfigurationSnapshot.fromJson() expects a map keyed
-    // by device name, so we reshape it here.
-    final channelsList = (data['channels'] as List<Object?>)
+    final rows = (result.data!['plotConfiguration'] as List<Object?>)
         .cast<Map<String, dynamic>>();
 
-    final channelsMap = {
-      for (final ch in channelsList)
-        ch['device'] as String: {
-          'lineColor': ch['lineColor'],
-          'markerIndex': ch['markerIndex'],
-          'yMin': ch['yMin'],
-          'yMax': ch['yMax'],
-        },
-    };
+    return rows.isEmpty ? null : _snapshotFromRow(rows.first);
+  }
 
-    final id = PlotConfigId.fromInt(data['configurationId'] as int);
-    final name = data['configurationName'] as String;
+  @override
+  Future<List<PlotConfigurationListing>> listPlotConfigurations() async {
+    final result = await _doQuery(
+      query: _plotConfigQuery,
+      withVariables: {'id': null},
+      withPolicy: .networkOnly,
+    );
 
-    return PlotConfigurationSnapshot.fromJson(id, name, {
-      ...data,
-      'channels': channelsMap,
-    });
+    return (result.data!['plotConfiguration'] as List<Object?>)
+        .cast<Map<String, dynamic>>()
+        .map(
+          (row) => PlotConfigurationListing(
+            configurationId: PlotConfigId.fromInt(row['configId'] as int),
+            configurationName: row['configName'] as String,
+          ),
+        )
+        .toList();
   }
 
   @override
