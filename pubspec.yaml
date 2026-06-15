@@ -12,8 +12,6 @@ dependencies:
   http: ^1.1.0
   web_socket_channel: ^3.0.3
 
-  built_value: ^8.9.5
-  collection: ^1.19.1 # Use the latest version
   pure_dart_ui: ^0.1.10
   gql: ^1.0.1
 
