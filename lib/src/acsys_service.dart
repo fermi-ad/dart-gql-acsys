@@ -156,6 +156,22 @@ final class ACSysService implements ACSysServiceAPI {
         (result) => _checkResult(result, 'Subscription event returned no data'),
       );
 
+  // Converts a single acceleratorData row map into a [Reading]. The [refId]
+  // is passed in from the enclosing entry because it lives one level up in the
+  // response structure.
+  static Reading _rowToReading(Map<String, dynamic> row, int refId) =>
+      switch (row) {
+        {"timestamp": double stamp, "result": Map<String, dynamic> result} =>
+          Reading(
+            refId: refId,
+            timestamp: fromFloatTs(stamp),
+            value: devVal(result),
+          ),
+        _ => throw ACSysGraphQLException(
+          'Unexpected acceleratorData row shape: $row',
+        ),
+      };
+
   static List<Reading> _convertReading(QueryResult queryResult) =>
       (queryResult.data?['acceleratorData'] as List<Object?>)
           .cast<Map<String, dynamic>>()
@@ -164,13 +180,7 @@ final class ACSysService implements ACSysServiceAPI {
 
             return (entry['data'] as List<Object?>)
                 .cast<Map<String, dynamic>>()
-                .map(
-                  (row) => Reading(
-                    refId: refId,
-                    timestamp: fromFloatTs(row['timestamp'] as double),
-                    value: devVal(row['result'] as Map<String, dynamic>),
-                  ),
-                );
+                .map((row) => _rowToReading(row, refId));
           })
           .toList();
 
@@ -262,24 +272,13 @@ final class ACSysService implements ACSysServiceAPI {
   static DateTime fromFloatTs(double ts) =>
       DateTime.fromMicrosecondsSinceEpoch((ts * 1000000.0).toInt());
 
-  // Convert the incoming GraphQL messages into `Reading` objects.
-
+  // Convert the incoming GraphQL subscription event into [Reading] objects.
   static Iterable<Reading> _convertMonitor(QueryResult queryResult) {
     final {"refId": int refId, "data": List<Object?> rawData} =
         queryResult.data!['acceleratorData'] as Map<String, dynamic>;
 
     return rawData.cast<Map<String, dynamic>>().map(
-      (row) => switch (row) {
-        {"timestamp": double stamp, "result": Map<String, dynamic> result} =>
-          Reading(
-            refId: refId,
-            timestamp: fromFloatTs(stamp),
-            value: devVal(result),
-          ),
-        _ => throw ACSysGraphQLException(
-          'Unexpected acceleratorData row shape: $row',
-        ),
-      },
+      (row) => _rowToReading(row, refId),
     );
   }
 
