@@ -119,14 +119,14 @@ final class ACSysService implements ACSysServiceAPI {
   // Executes a GraphQL query with comprehensive error handling and validation.
   Future<QueryResult> _doQuery({
     required String query,
-    required Map<String, dynamic> withVariables,
-    required FetchPolicy withPolicy,
+    required Map<String, dynamic> variables,
+    required FetchPolicy fetchPolicy,
   }) async {
     final QueryResult result = await _client.query(
       QueryOptions(
         document: gql(query),
-        variables: withVariables,
-        fetchPolicy: withPolicy,
+        variables: variables,
+        fetchPolicy: fetchPolicy,
       ),
     );
 
@@ -141,14 +141,14 @@ final class ACSysService implements ACSysServiceAPI {
   // them silently swallowed.
   Stream<QueryResult> _doSubscription({
     required String query,
-    required Map<String, dynamic> withVariables,
-    required FetchPolicy withPolicy,
+    required Map<String, dynamic> variables,
+    required FetchPolicy fetchPolicy,
   }) => _client
       .subscribe(
         SubscriptionOptions(
           document: gql(query),
-          variables: withVariables,
-          fetchPolicy: withPolicy,
+          variables: variables,
+          fetchPolicy: fetchPolicy,
         ),
       )
       .where((event) => event.isNotLoading)
@@ -209,8 +209,8 @@ final class ACSysService implements ACSysServiceAPI {
     return _convertReading(
       await _doQuery(
         query: devicesRead,
-        withVariables: {'devList': devices},
-        withPolicy: .networkOnly,
+        variables: {'devList': devices},
+        fetchPolicy: .networkOnly,
       ),
     );
   }
@@ -254,8 +254,8 @@ final class ACSysService implements ACSysServiceAPI {
 
     return _doSubscription(
       query: subscription,
-      withVariables: {'drfs': drfs},
-      withPolicy: .networkOnly,
+      variables: {'drfs': drfs},
+      fetchPolicy: .networkOnly,
     ).expand(_convertMonitor);
   }
 
@@ -302,8 +302,8 @@ final class ACSysService implements ACSysServiceAPI {
 
     return _doQuery(
       query: deviceSet,
-      withVariables: {'device': forDRF, 'value': newSetting.toDevValIn()},
-      withPolicy: .networkOnly,
+      variables: {'device': forDRF, 'value': newSetting.toDevValIn()},
+      fetchPolicy: .networkOnly,
     ).then(
       (QueryResult e) => Status.fromInt(e.data!['setDevice']!['status'] as int),
     );
@@ -324,12 +324,12 @@ final class ACSysService implements ACSysServiceAPI {
 
     final result = await _doQuery(
       query: updatePlotConfig,
-      withVariables: {
+      variables: {
         'id': snapshot.configurationId?.value,
         'name': snapshot.configurationName,
         'config': jsonEncode(snapshot.toJson()),
       },
-      withPolicy: .networkOnly,
+      fetchPolicy: .networkOnly,
     );
 
     // The mutation returns the confirmed ID (Int!) — stamp it onto the snapshot
@@ -372,8 +372,8 @@ final class ACSysService implements ACSysServiceAPI {
   }) async {
     final result = await _doQuery(
       query: _plotConfigQuery,
-      withVariables: {'id': configurationId.value},
-      withPolicy: .networkOnly,
+      variables: {'id': configurationId.value},
+      fetchPolicy: .networkOnly,
     );
 
     final rows = (result.data!['plotConfiguration'] as List<Object?>)
@@ -386,8 +386,8 @@ final class ACSysService implements ACSysServiceAPI {
   Future<List<PlotConfigurationListing>> listPlotConfigurations() async {
     final result = await _doQuery(
       query: _plotConfigQuery,
-      withVariables: {'id': null},
-      withPolicy: .networkOnly,
+      variables: {'id': null},
+      fetchPolicy: .networkOnly,
     );
 
     return (result.data!['plotConfiguration'] as List<Object?>)
@@ -414,8 +414,8 @@ final class ACSysService implements ACSysServiceAPI {
 
     await _doQuery(
       query: deletePlotConfig,
-      withVariables: {'id': configurationId.value},
-      withPolicy: .networkOnly,
+      variables: {'id': configurationId.value},
+      fetchPolicy: .networkOnly,
     );
   }
 
@@ -428,8 +428,8 @@ final class ACSysService implements ACSysServiceAPI {
 
     final result = await _doQuery(
       query: usersLastConfig,
-      withVariables: {},
-      withPolicy: .networkOnly,
+      variables: {},
+      fetchPolicy: .networkOnly,
     );
 
     final raw = result.data!['usersLastConfiguration'];
@@ -462,8 +462,8 @@ final class ACSysService implements ACSysServiceAPI {
 
     await _doQuery(
       query: setUsersConfig,
-      withVariables: {'cfg': jsonEncode(snapshot.toJson())},
-      withPolicy: .networkOnly,
+      variables: {'cfg': jsonEncode(snapshot.toJson())},
+      fetchPolicy: .networkOnly,
     );
   }
 
@@ -516,7 +516,7 @@ final class ACSysService implements ACSysServiceAPI {
 
     return _doSubscription(
       query: plotStart,
-      withVariables: {
+      variables: {
         'drfList': drfs,
         'xMin': xMin,
         'xMax': xMax,
@@ -529,7 +529,7 @@ final class ACSysService implements ACSysServiceAPI {
         'sampleOnEvent': sampleOnEvent,
         'chXAxis': chXAxis,
       },
-      withPolicy: .networkOnly,
+      fetchPolicy: .networkOnly,
     ).map((result) => _toPlotReply(result.data!, drfs, xMin, xMax, windowSize));
   }
 
