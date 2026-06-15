@@ -1,5 +1,0 @@
-mutation SetUsersConfig($cfg: PlotConfigurationSnapshotIn!) {
-  usersConfiguration(config: $cfg) {
-    status
-  }
-}

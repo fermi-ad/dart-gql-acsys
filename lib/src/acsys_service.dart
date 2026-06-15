@@ -449,6 +449,24 @@ final class ACSysService implements ACSysServiceAPI {
   }
 
   @override
+  Future<void> saveUserConfiguration({
+    required PlotConfigurationSnapshot snapshot,
+  }) async {
+    const setUsersConfig = r"""
+      mutation SetUsersConfig($cfg: String!) {
+        usersConfiguration(config: $cfg) {
+          status
+        }
+      }""";
+
+    await _doQuery(
+      query: setUsersConfig,
+      withVariables: {'cfg': jsonEncode(snapshot.toJson())},
+      withPolicy: .networkOnly,
+    );
+  }
+
+  @override
   Stream<PlotReply> startPlot(
     List<String> drfs, {
     double? xMin,
