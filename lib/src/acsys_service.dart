@@ -514,31 +514,23 @@ final class ACSysService implements ACSysServiceAPI {
         }
       }""";
 
-    return _client
-        .subscribe(
-          SubscriptionOptions(
-            document: gql(plotStart),
-            variables: {
-              'drfList': drfs,
-              'xMin': xMin,
-              'xMax': xMax,
-              'windowSize': windowSize,
-              'nAcquisitions': nAcquisitions,
-              'updateDelay': updateRate,
-              'triggerEvent': triggerEvent,
-              'startTime': startTime,
-              'endTime': endTime,
-              'sampleOnEvent': sampleOnEvent,
-              'chXAxis': chXAxis,
-            },
-            fetchPolicy: .networkOnly,
-          ),
-        )
-        .handleError((err) => dev.log("error: $err", name: "gql.startPlot"))
-        .where((event) => event.isNotLoading)
-        .map(
-          (event) => _toPlotReply(event.data!, drfs, xMin, xMax, windowSize),
-        );
+    return _doSubscription(
+      query: plotStart,
+      withVariables: {
+        'drfList': drfs,
+        'xMin': xMin,
+        'xMax': xMax,
+        'windowSize': windowSize,
+        'nAcquisitions': nAcquisitions,
+        'updateDelay': updateRate,
+        'triggerEvent': triggerEvent,
+        'startTime': startTime,
+        'endTime': endTime,
+        'sampleOnEvent': sampleOnEvent,
+        'chXAxis': chXAxis,
+      },
+      withPolicy: .networkOnly,
+    ).map((result) => _toPlotReply(result.data!, drfs, xMin, xMax, windowSize));
   }
 
   static PlotReply _toPlotReply(
