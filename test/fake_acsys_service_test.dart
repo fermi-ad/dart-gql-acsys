@@ -66,10 +66,10 @@ final class FakeACSysService implements ACSysServiceAPI {
     required PlotConfigurationSnapshot snapshot,
   }) async {
     final id = snapshot.configurationId?.value ?? _nextId++;
+    final saved = snapshot.withId(PlotConfigId.fromInt(id));
 
-    snapshot.configurationId = PlotConfigId.fromInt(id);
-    _configs[id] = snapshot;
-    return snapshot;
+    _configs[id] = saved;
+    return saved;
   }
 
   @override
@@ -107,8 +107,9 @@ final class FakeACSysService implements ACSysServiceAPI {
 // Helpers
 // ---------------------------------------------------------------------------
 
-PlotConfigurationSnapshot _makeSnapshot({String name = 'Config'}) =>
+PlotConfigurationSnapshot _makeSnapshot({String name = 'Config', int? id}) =>
     PlotConfigurationSnapshot(
+      configurationId: id != null ? PlotConfigId.fromInt(id) : null,
       configurationName: name,
       channels: {},
       isShowLabels: true,
@@ -223,9 +224,7 @@ void main() {
     });
 
     test('preserves an existing ID on update', () async {
-      final snap = _makeSnapshot(name: 'Existing');
-
-      snap.configurationId = PlotConfigId.fromInt(99);
+      final snap = _makeSnapshot(name: 'Existing', id: 99);
 
       final saved = await svc.savePlotConfiguration(snapshot: snap);
 

@@ -394,14 +394,12 @@ final class ACSysService implements ACSysServiceAPI {
       fetchPolicy: .networkOnly,
     );
 
-    // The mutation returns the confirmed ID (Int!) — stamp it onto the snapshot
-    // and return the same object. This handles the new-config case where the
-    // caller didn't have an ID yet.
-    snapshot.configurationId = PlotConfigId.fromInt(
-      result.data!['updatePlotConfiguration'] as int,
+    // The mutation returns the confirmed ID (Int!) — return a copy of the
+    // snapshot with the ID stamped in. This handles the new-config case where
+    // the caller didn't have an ID yet, without mutating the caller's object.
+    return snapshot.withId(
+      PlotConfigId.fromInt(result.data!['updatePlotConfiguration'] as int),
     );
-
-    return snapshot;
   }
 
   // Decodes a single PlotConfig row from the GraphQL response into a

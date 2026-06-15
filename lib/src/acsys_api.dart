@@ -118,10 +118,10 @@ final class PlotReply {
 }
 
 class PlotConfigurationListing {
-  PlotConfigId? configurationId;
-  String configurationName;
+  final PlotConfigId? configurationId;
+  final String configurationName;
 
-  PlotConfigurationListing({
+  const PlotConfigurationListing({
     this.configurationId,
     required this.configurationName,
   });
@@ -221,6 +221,36 @@ final class PlotConfigurationSnapshot extends PlotConfigurationListing {
     this.readingMode,
     this.waveformDuration,
   });
+
+  /// Returns a copy of this snapshot with [id] stamped in as the
+  /// [configurationId]. All other fields are shared by reference (they are
+  /// either immutable value types or collections that callers are expected not
+  /// to mutate after saving).
+  PlotConfigurationSnapshot withId(PlotConfigId id) =>
+      PlotConfigurationSnapshot(
+        configurationId: id,
+        configurationName: configurationName,
+        channels: channels,
+        xMin: xMin,
+        xMax: xMax,
+        startTime: startTime,
+        endTime: endTime,
+        timeDelta: timeDelta,
+        isShowLabels: isShowLabels,
+        isScalar: isScalar,
+        isOneShot: isOneShot,
+        isPersistent: isPersistent,
+        isBlink: isBlink,
+        updateDelay: updateDelay,
+        nAcquisitions: nAcquisitions,
+        tclkEvent: tclkEvent,
+        sampleOnEvent: sampleOnEvent,
+        acquisitionMode: acquisitionMode,
+        xAxis: xAxis,
+        dataLimit: dataLimit,
+        readingMode: readingMode,
+        waveformDuration: waveformDuration,
+      );
 
   factory PlotConfigurationSnapshot.fromJson(
     PlotConfigId id,
