@@ -401,6 +401,24 @@ final class ACSysService implements ACSysServiceAPI {
   }
 
   @override
+  Future<void> removePlotConfiguration({
+    required PlotConfigId configurationId,
+  }) async {
+    const deletePlotConfig = r"""
+      mutation DeletePlotConfig($id: Int!) {
+        deletePlotConfiguration(configurationId: $id) {
+          status
+        }
+      }""";
+
+    await _doQuery(
+      query: deletePlotConfig,
+      withVariables: {'id': configurationId.value},
+      withPolicy: .networkOnly,
+    );
+  }
+
+  @override
   Stream<PlotReply> startPlot(
     List<String> drfs, {
     double? xMin,
