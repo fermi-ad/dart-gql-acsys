@@ -1,10 +1,11 @@
 // This example starts a plot request for the outdoor temperature. The
 // data is collected as 1 Hz.
 
+import 'dart:io';
 import 'package:dart_gql_acsys/dart_gql_acsys.dart';
 
 Future<void> main() async {
-  final strm = ACSysService().startPlot(["M:OUTTMP"], updateRate: 10000);
+  final strm = ACSysService().startPlot(["G:HUMID"], updateRate: 10000);
 
   try {
     // Wait for each reply packet.
@@ -24,4 +25,6 @@ Future<void> main() async {
   } catch (e) {
     print("exception: $e");
   }
+
+  exit(0);
 }

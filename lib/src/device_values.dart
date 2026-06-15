@@ -27,6 +27,7 @@
 /// ```
 library;
 
+import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'status.dart';
 
@@ -37,6 +38,8 @@ import 'status.dart';
 /// derived types.
 
 sealed class DeviceValue {
+  static const _listEq = ListEquality<dynamic>();
+
   const DeviceValue();
 
   @override
@@ -44,19 +47,19 @@ sealed class DeviceValue {
     if (identical(this, other)) return true;
 
     switch ((this, other)) {
-      case ((DevRaw(value: var v), DevRaw(value: var o))):
-        return ListEquality().equals(v, o);
-      case ((DevScalar(value: var v), DevScalar(value: var o))):
+      case ((DevRaw(value: final v), DevRaw(value: final o))):
+        return _listEq.equals(v, o);
+      case ((DevScalar(value: final v), DevScalar(value: final o))):
         return v == o;
-      case ((DevScalarArray(value: var v), DevScalarArray(value: var o))):
-        return ListEquality().equals(v, o);
-      case ((DevText(value: var v), DevText(value: var o))):
+      case ((DevScalarArray(value: final v), DevScalarArray(value: final o))):
+        return _listEq.equals(v, o);
+      case ((DevText(value: final v), DevText(value: final o))):
         return v == o;
-      case ((DevTextArray(value: var v), DevTextArray(value: var o))):
-        return ListEquality().equals(v, o);
-      case ((DevTimeSeries(values: var v), DevTimeSeries(values: var o))):
-        return ListEquality().equals(v, o);
-      case ((DevStatusCode(status: var v), DevStatusCode(status: var o))):
+      case ((DevTextArray(value: final v), DevTextArray(value: final o))):
+        return _listEq.equals(v, o);
+      case ((DevTimeSeries(value: final v), DevTimeSeries(value: final o))):
+        return _listEq.equals(v, o);
+      case ((DevStatusCode(status: final v), DevStatusCode(status: final o))):
         return v == o;
       default:
         return false;
@@ -65,13 +68,13 @@ sealed class DeviceValue {
 
   @override
   int get hashCode => switch (this) {
-    DevRaw(value: var v) => v.hashCode,
-    DevScalar(value: var v) => v.hashCode,
-    DevText(value: var v) => v.hashCode,
-    DevScalarArray(value: var v) => v.hashCode,
-    DevTextArray(value: var v) => v.hashCode,
-    DevTimeSeries(values: var v) => v.hashCode,
-    DevStatusCode(status: var v) => v.hashCode,
+    DevRaw(value: final v) => _listEq.hash(v),
+    DevScalar(value: final v) => v.hashCode,
+    DevText(value: final v) => v.hashCode,
+    DevScalarArray(value: final v) => _listEq.hash(v),
+    DevTextArray(value: final v) => _listEq.hash(v),
+    DevTimeSeries(value: final v) => _listEq.hash(v),
+    DevStatusCode(status: final v) => v.hashCode,
   };
 }
 
@@ -92,7 +95,7 @@ final class DevStatusCode extends DeviceValue {
 /// data buffers (i.e. image data.)
 
 final class DevRaw extends DeviceValue {
-  final List<int> value;
+  final Uint8List value;
 
   const DevRaw(this.value);
 }
@@ -114,7 +117,7 @@ final class DevScalar extends DeviceValue {
 /// values. This type is also used by EPICS "waveform" devices.
 
 final class DevScalarArray extends DeviceValue {
-  final List<double> value;
+  final Float64List value;
 
   const DevScalarArray(this.value);
 }
@@ -138,9 +141,9 @@ final class DevTextArray extends DeviceValue {
 /// Represents time-series data (i.e. a list of timestamp/value pairs.)
 
 final class DevTimeSeries extends DeviceValue {
-  final List<(double, double)> values;
+  final List<(double, double)> value;
 
-  const DevTimeSeries(this.values);
+  const DevTimeSeries(this.value);
 }
 
 // The `ToDeviceValue` extension allows us to convert primitive types into a
@@ -158,11 +161,11 @@ extension TextToDeviceValue on String {
   DeviceValue toDevVal() => DevText(this);
 }
 
-extension RawToDeviceValue on List<int> {
+extension RawToDeviceValue on Uint8List {
   DeviceValue toDevVal() => DevRaw(this);
 }
 
-extension DoubleArrayToDeviceValue on List<double> {
+extension DoubleArrayToDeviceValue on Float64List {
   DeviceValue toDevVal() => DevScalarArray(this);
 }
 
@@ -175,9 +178,9 @@ extension RawTimeSeriesToDeviceValue on List<(double, double)> {
 }
 
 extension TimeSeriesToDeviceValue on List<(DateTime, double)> {
-  DeviceValue toDevVal() => DevTimeSeries([
-    ...map((e) => (e.$1.millisecondsSinceEpoch / 1000.0, e.$2)),
-  ]);
+  DeviceValue toDevVal() => DevTimeSeries(
+    map((e) => (e.$1.millisecondsSinceEpoch / 1000.0, e.$2)).toList(),
+  );
 }
 
 // The `FromDeviceValue` extension allows us to convert a `DeviceValue` into a
@@ -185,47 +188,50 @@ extension TimeSeriesToDeviceValue on List<(DateTime, double)> {
 
 extension FromDeviceValue on DeviceValue {
   Status? toStatus() => switch (this) {
-    DevStatusCode(status: var value) => value,
+    DevStatusCode(status: final v) => v,
     _ => null,
   };
 
   double? toDouble() => switch (this) {
-    DevScalar(value: var value) => value,
+    DevScalar(value: final v) => v,
     _ => null,
   };
 
   String? toText() => switch (this) {
-    DevText(value: var value) => value,
+    DevText(value: final v) => v,
     _ => null,
   };
 
-  List<int>? toRaw() => switch (this) {
-    DevRaw(value: var value) => value,
+  Uint8List? toRaw() => switch (this) {
+    DevRaw(value: final v) => v,
     _ => null,
   };
 
-  List<double>? toDoubleArray() => switch (this) {
-    DevScalarArray(value: var value) => value,
+  Float64List? toDoubleArray() => switch (this) {
+    DevScalarArray(value: final v) => v,
     _ => null,
   };
 
   List<String>? toTextArray() => switch (this) {
-    DevTextArray(value: var value) => value,
+    DevTextArray(value: final v) => v,
     _ => null,
   };
 
   List<(double, double)>? toTimeSeries() => switch (this) {
-    DevTimeSeries(values: var values) => values,
+    DevTimeSeries(value: final v) => v,
     _ => null,
   };
 
   List<(DateTime, double)>? toTimeSeriesWithDates() => switch (this) {
-    DevTimeSeries(values: var values) => [
-      ...values.map(
-        (e) =>
-            (DateTime.fromMillisecondsSinceEpoch((e.$1 * 1000).toInt()), e.$2),
-      ),
-    ],
+    DevTimeSeries(value: final v) =>
+      v
+          .map(
+            (e) => (
+              DateTime.fromMillisecondsSinceEpoch((e.$1 * 1000).toInt()),
+              e.$2,
+            ),
+          )
+          .toList(),
     _ => null,
   };
 }

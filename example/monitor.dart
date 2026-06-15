@@ -1,6 +1,7 @@
 // This example sets up a subscription to receive the outdoor temperature
 // readings forever.
 
+import 'dart:io';
 import 'package:dart_gql_acsys/dart_gql_acsys.dart';
 
 const units = ["F", "%"];
@@ -37,4 +38,6 @@ Future<void> main() async {
   } catch (e) {
     print("exception: $e");
   }
+
+  exit(0);
 }
