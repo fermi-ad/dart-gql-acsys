@@ -37,6 +37,8 @@ import 'status.dart';
 /// derived types.
 
 sealed class DeviceValue {
+  static const _listEq = ListEquality<dynamic>();
+
   const DeviceValue();
 
   @override
@@ -45,17 +47,17 @@ sealed class DeviceValue {
 
     switch ((this, other)) {
       case ((DevRaw(value: final v), DevRaw(value: final o))):
-        return ListEquality().equals(v, o);
+        return _listEq.equals(v, o);
       case ((DevScalar(value: final v), DevScalar(value: final o))):
         return v == o;
       case ((DevScalarArray(value: final v), DevScalarArray(value: final o))):
-        return ListEquality().equals(v, o);
+        return _listEq.equals(v, o);
       case ((DevText(value: final v), DevText(value: final o))):
         return v == o;
       case ((DevTextArray(value: final v), DevTextArray(value: final o))):
-        return ListEquality().equals(v, o);
+        return _listEq.equals(v, o);
       case ((DevTimeSeries(value: final v), DevTimeSeries(value: final o))):
-        return ListEquality().equals(v, o);
+        return _listEq.equals(v, o);
       case ((DevStatusCode(status: final v), DevStatusCode(status: final o))):
         return v == o;
       default:
@@ -65,12 +67,12 @@ sealed class DeviceValue {
 
   @override
   int get hashCode => switch (this) {
-    DevRaw(value: final v) => v.hashCode,
+    DevRaw(value: final v) => _listEq.hash(v),
     DevScalar(value: final v) => v.hashCode,
     DevText(value: final v) => v.hashCode,
-    DevScalarArray(value: final v) => v.hashCode,
-    DevTextArray(value: final v) => v.hashCode,
-    DevTimeSeries(value: final v) => v.hashCode,
+    DevScalarArray(value: final v) => _listEq.hash(v),
+    DevTextArray(value: final v) => _listEq.hash(v),
+    DevTimeSeries(value: final v) => _listEq.hash(v),
     DevStatusCode(status: final v) => v.hashCode,
   };
 }
