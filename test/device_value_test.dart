@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+import 'dart:typed_data';
 import 'package:dart_gql_acsys/dart_gql_acsys.dart';
 
 DeviceValue _makeScalar(double v) => DevScalar(v);
@@ -9,7 +10,7 @@ DeviceValue _makeText(String s) => DevText(s);
 
 DeviceValue _makeTextArray(List<String> s) => DevTextArray(s);
 
-DeviceValue _makeRaw(List<int> v) => DevRaw(v);
+DeviceValue _makeRaw(List<int> v) => DevRaw(Uint8List.fromList(v));
 
 void main() {
   // This test verifies the equality operator is working for `DeviceValue`
@@ -66,7 +67,7 @@ void main() {
 
     expect(_makeRaw([]).toDevVal(), equals(_makeRaw([])));
     expect(_makeRaw([1, 2]).toDevVal(), equals(_makeRaw([1, 2])));
-    expect([1, 2].toDevVal(), equals(_makeRaw([1, 2])));
+    expect(Uint8List.fromList([1, 2]).toDevVal(), equals(_makeRaw([1, 2])));
 
     expect(_makeScalar(1.0).toDevVal(), equals(_makeScalar(1.0)));
     expect(1.0.toDevVal(), equals(_makeScalar(1.0)));

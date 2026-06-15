@@ -7,6 +7,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:typed_data';
 import 'dart:developer' as dev;
 
 import 'package:http/http.dart' as http;
@@ -598,27 +599,28 @@ final class ACSysService implements ACSysServiceAPI {
   // only the fields that were actually selected, plus a "__typename" key. We
   // dispatch on "__typename" and then pull the single relevant field.
 
-  static DeviceValue devVal(Map<String, dynamic> jsonMap) =>
-      switch (jsonMap['__typename'] as String?) {
-        'StatusReply' => DevStatusCode(
-          Status.fromInt(jsonMap['status'] as int),
-        ),
-        'Scalar' => DevScalar((jsonMap['scalarValue'] as num).toDouble()),
-        'ScalarArray' => DevScalarArray(
-          (jsonMap['scalarArrayValue'] as List<Object?>)
-              .cast<num>()
-              .map((n) => n.toDouble())
-              .toList(),
-        ),
-        'Raw' => DevRaw((jsonMap['rawValue'] as List<Object?>).cast<int>()),
-        'Text' => DevText(jsonMap['textValue'] as String),
-        'TextArray' => DevTextArray(
-          (jsonMap['textArrayValue'] as List<Object?>).cast<String>(),
-        ),
-        _ => throw ACSysGraphQLException(
-          "DeviceValue type not found: __typename=${jsonMap['__typename']}",
-        ),
-      };
+  static DeviceValue devVal(
+    Map<String, dynamic> jsonMap,
+  ) => switch (jsonMap['__typename'] as String?) {
+    'StatusReply' => DevStatusCode(Status.fromInt(jsonMap['status'] as int)),
+    'Scalar' => DevScalar((jsonMap['scalarValue'] as num).toDouble()),
+    'ScalarArray' => DevScalarArray(
+      (jsonMap['scalarArrayValue'] as List<Object?>)
+          .cast<num>()
+          .map((n) => n.toDouble())
+          .toList(),
+    ),
+    'Raw' => DevRaw(
+      Uint8List.fromList((jsonMap['rawValue'] as List<Object?>).cast<int>()),
+    ),
+    'Text' => DevText(jsonMap['textValue'] as String),
+    'TextArray' => DevTextArray(
+      (jsonMap['textArrayValue'] as List<Object?>).cast<String>(),
+    ),
+    _ => throw ACSysGraphQLException(
+      "DeviceValue type not found: __typename=${jsonMap['__typename']}",
+    ),
+  };
 }
 
 extension on DeviceValue {

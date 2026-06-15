@@ -27,6 +27,7 @@
 /// ```
 library;
 
+import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'status.dart';
 
@@ -94,7 +95,7 @@ final class DevStatusCode extends DeviceValue {
 /// data buffers (i.e. image data.)
 
 final class DevRaw extends DeviceValue {
-  final List<int> value;
+  final Uint8List value;
 
   const DevRaw(this.value);
 }
@@ -160,7 +161,7 @@ extension TextToDeviceValue on String {
   DeviceValue toDevVal() => DevText(this);
 }
 
-extension RawToDeviceValue on List<int> {
+extension RawToDeviceValue on Uint8List {
   DeviceValue toDevVal() => DevRaw(this);
 }
 
@@ -201,7 +202,7 @@ extension FromDeviceValue on DeviceValue {
     _ => null,
   };
 
-  List<int>? toRaw() => switch (this) {
+  Uint8List? toRaw() => switch (this) {
     DevRaw(value: final v) => v,
     _ => null,
   };
