@@ -16,36 +16,6 @@ The input/output is a string in RFC3339 format.
 """
 scalar Timestamp
 
-enum AcquisitionMode {
-  ONE_SHOT
-  ONE_SHOT_TRIGGERED_ON_EVENT
-  REPETITIVE_PERIODIC
-  REPETITIVE_TRIGGERED_ON_EVENT
-  SAMPLE_ON_EVENT
-}
-
-"""
-Holds the configuration for a plot channel.
-"""
-type ChannelSettingSnapshot {
-  device: String!
-  yMin: Float
-  yMax: Float
-  lineColor: Int
-  markerIndex: Int
-}
-
-"""
-Holds the configuration for a plot channel.
-"""
-input ChannelSettingSnapshotIn {
-  device: String!
-  yMin: Float
-  yMax: Float
-  lineColor: Int
-  markerIndex: Int
-}
-
 """
 This structure holds information associated with a device's reading, A "reading" is the latest value of any of a device's properties.
 """
@@ -124,21 +94,23 @@ type AcsysMutations {
     """
     value: DevValue!
   ): StatusReply!
-  updatePlotConfiguration(config: PlotConfigurationSnapshotIn!): Int
+
+  """
+  Add/Update a plot configuration
+  """
+  updatePlotConfiguration(id: Int, name: String!, config: String!): Int!
+
+  """
+  Delete a plot configuration
+  """
   deletePlotConfiguration(configurationId: Int!): StatusReply!
 
   """
   Sets the user's default configuration.
 
   The content of the configuration are used to set the default configuration for the user. All fields, except the ID and name fields, are used. The user's account name is obtained from the authentication token that accompanies the request.
-
-  TEMPORARY: The `user` parameter can be used to specify the user account with which to associate the configuration. The convention is to prepend an underscore to the account name. Once we use the new authentication method, we'll be able to look-up the username and this parameter will be removed.
   """
-  usersConfiguration(
-    user: String
-    config: PlotConfigurationSnapshotIn!
-  ): StatusReply!
-}
+  usersConfiguration(config: String!): StatusReply!
 
 type PlotChannelData {
   """
@@ -163,72 +135,6 @@ type PlotChannelData {
   channelData: [DataInfo!]!
 }
 
-type PlotConfigurationSnapshot {
-  """
-  Unique identifier for the plot configuration
-  """
-  configurationId: Int
-  configurationName: String!
-  channels: [ChannelSettingSnapshot!]!
-  xMin: Float
-  xMax: Float
-  startTime: Float
-  endTime: Float
-  timeDelta: Float
-  isScalar: Boolean!
-  isOneShot: Boolean!
-  isShowLabels: Boolean!
-  isPersistent: Boolean!
-  isBlink: Boolean!
-  acquisitionMode: AcquisitionMode
-  dataLimit: Int!
-
-  """
-  If `triggerEvent` is null, this parameter specifies the delay, in milliseconds, between points in a waveform. If a trigger event is specified, then this specifies the delay after the event when the signal should be sampled. If this parameter is null, then there will be no delay after a trigger event or a 1 Hz sample rate will be used.
-  """
-  updateDelay: Int
-
-  """
-  The number of waveforms to return. If omitted, the service will return waveforms until the client cancels the subscription.
-  """
-  nAcquisitions: Int
-  tclkEvent: Int
-  sampleOnEvent: String
-  chXAxis: String
-}
-
-input PlotConfigurationSnapshotIn {
-  """
-  Unique identifier for the plot configuration
-  """
-  configurationId: Int
-  configurationName: String!
-  channels: [ChannelSettingSnapshotIn!]!
-  xMin: Float
-  xMax: Float
-  startTime: Float
-  endTime: Float
-  timeDelta: Float
-  isScalar: Boolean!
-  isOneShot: Boolean!
-  isShowLabels: Boolean!
-  isPersistent: Boolean!
-  isBlink: Boolean!
-  acquisitionMode: AcquisitionMode
-  dataLimit: Int!
-
-  """
-  If `triggerEvent` is null, this parameter specifies the delay, in milliseconds, between points in a waveform. If a trigger event is specified, then this specifies the delay after the event when the signal should be sampled. If this parameter is null, then there will be no delay after a trigger event or a 1 Hz sample rate will be used.
-  """
-  updateDelay: Int
-
-  """
-  The number of waveforms to return. If omitted, the service will return waveforms until the client cancels the subscription.
-  """
-  nAcquisitions: Int
-  tclkEvent: Int
-  sampleOnEvent: String
-  chXAxis: String
 }
 
 """
@@ -278,16 +184,14 @@ type AcsysQueries {
 
   Returns a plot configuration associated with the specified ID. If the ID is `null`, all configurations are returned. Both style of requests return an array result -- it's just that specifying an ID will return an array with 0 or 1 element.
   """
-  plotConfiguration(configurationId: Int): [PlotConfigurationSnapshot!]!
+  plotConfiguration(id: Int): [PlotConfig!]!
 
   """
   Obtain the user's last configuration.
 
   If the application saved the user's last plot configuration, this query will return it. If there is no configuration for the user, `null` is returned. The user's account is retrieved from the authentication token that is included in the request.
-
-  TEMPORARY: The `user` parameter can be used to retrieve a user's last configuration. The convention is to prepend an underscore to the account name. Once we use the new authentication method, we'll be able to look-up the username and this parameter will be removed.
   """
-  usersLastConfiguration(user: String): PlotConfigurationSnapshot
+  usersLastConfiguration: String
 }
 
 """
@@ -343,7 +247,7 @@ type StructData {
 """
 This section contains requests that return a stream of results. These requests are similar to Queries in that they don't affect the state of the accelerator or any other state of the control system.
 """
-type Subscription {
+type AcsysSubscriptions {
   """
   Retrieve data from accelerator devices.
 
@@ -415,7 +319,14 @@ type Subscription {
     endTime: Float
     sampleOnEvent: Int
     chXAxis: String
+    waveformDuration: Float
   ): PlotReplyData!
+}
+
+type PlotConfig {
+  configId: Int!
+  configName: String!
+  config: String!
 }
 
 """

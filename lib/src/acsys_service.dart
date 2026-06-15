@@ -6,11 +6,11 @@
 /// known data responses.
 library;
 
+import 'dart:convert';
 import 'dart:developer' as dev;
 
 import 'package:http/http.dart' as http;
 import 'package:graphql/client.dart';
-import 'package:pure_dart_ui/pure_dart_ui.dart';
 
 import 'exceptions.dart';
 import 'device_values.dart';
@@ -18,20 +18,6 @@ import 'acsys_api.dart';
 import 'status.dart';
 
 export 'acsys_api.dart';
-
-final class ChannelSettingSnapshot {
-  final Color? lineColor;
-  final int? markerIndex;
-  final double? yMin;
-  final double? yMax;
-
-  const ChannelSettingSnapshot({
-    this.lineColor,
-    this.markerIndex,
-    this.yMin,
-    this.yMax,
-  });
-}
 export 'exceptions.dart';
 
 /// Provides an interface to Fermi's data acquisition API.
@@ -325,6 +311,35 @@ final class ACSysService implements ACSysServiceAPI {
   @override
   Future<Status> sendCommand({required String toDRF, required String value}) =>
       submit(forDRF: toDRF, newSetting: value.toDevVal());
+
+  @override
+  Future<PlotConfigurationSnapshot> savePlotConfiguration({
+    required PlotConfigurationSnapshot snapshot,
+  }) async {
+    const updatePlotConfig = r"""
+      mutation UpdatePlotConfig($id: Int, $name: String!, $config: String!) {
+        updatePlotConfiguration(id: $id, name: $name, config: $config)
+      }""";
+
+    final result = await _doQuery(
+      query: updatePlotConfig,
+      withVariables: {
+        'id': snapshot.configurationId?.value,
+        'name': snapshot.configurationName,
+        'config': jsonEncode(snapshot.toJson()),
+      },
+      withPolicy: .networkOnly,
+    );
+
+    // The mutation returns the confirmed ID (Int!) — stamp it onto the snapshot
+    // and return the same object. This handles the new-config case where the
+    // caller didn't have an ID yet.
+    snapshot.configurationId = PlotConfigId.fromInt(
+      result.data!['updatePlotConfiguration'] as int,
+    );
+
+    return snapshot;
+  }
 
   @override
   Stream<PlotReply> startPlot(
