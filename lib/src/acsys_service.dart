@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:developer' as dev;
 
+import 'package:gql/ast.dart' show DocumentNode;
 import 'package:http/http.dart' as http;
 import 'package:graphql/client.dart';
 
@@ -29,6 +30,143 @@ export 'exceptions.dart';
 
 final class ACSysService implements ACSysServiceAPI {
   final GraphQLClient _client;
+
+  // Pre-parsed GraphQL documents. Parsing is done once at class initialisation
+  // rather than on every method call, avoiding repeated AST allocation on hot
+  // paths like monitorDevices and startPlot.
+
+  static final _docReadDevices = gql(r"""
+      query ReadDevices($devList: [String!]!) {
+        acceleratorData(deviceList: $devList) {
+          refId
+          data {
+            timestamp
+            result {
+              ... on StatusReply {
+                status
+              }
+              ... on Scalar {
+                scalarValue
+              }
+              ... on ScalarArray {
+                scalarArrayValue
+              }
+              ... on Raw {
+                rawValue
+              }
+              ... on Text {
+                textValue
+              }
+              ... on TextArray {
+                textArrayValue
+              }
+            }
+          }
+        }
+      }""");
+
+  static final _docMonitorDevices = gql(r"""
+      subscription StreamData($drfs: [String!]!) {
+        acceleratorData(drfs: $drfs) {
+          refId
+          data {
+            timestamp
+            result {
+              ... on StatusReply {
+                status
+              }
+              ... on Scalar {
+                scalarValue
+              }
+              ... on ScalarArray {
+                scalarArrayValue
+              }
+              ... on Raw {
+                rawValue
+              }
+              ... on Text {
+                textValue
+              }
+              ... on TextArray {
+                textArrayValue
+              }
+            }
+          }
+        }
+      }""");
+
+  static final _docSetDevice = gql(r"""
+      mutation SetDevice($device: String!, $value: DevValue!) {
+        setDevice(device: $device, value: $value) {
+          status
+        }
+      }""");
+
+  static final _docUpdatePlotConfig = gql(r"""
+      mutation UpdatePlotConfig($id: Int, $name: String!, $config: String!) {
+        updatePlotConfiguration(id: $id, name: $name, config: $config)
+      }""");
+
+  static final _docPlotConfig = gql(r"""
+      query PlotConfigs($id: Int) {
+        plotConfiguration(id: $id) {
+          configId
+          configName
+          config
+        }
+      }""");
+
+  static final _docDeletePlotConfig = gql(r"""
+      mutation DeletePlotConfig($id: Int!) {
+        deletePlotConfiguration(configurationId: $id) {
+          status
+        }
+      }""");
+
+  static final _docUsersLastConfig = gql(r"""
+      query UsersLastConfig {
+        usersLastConfiguration
+      }""");
+
+  static final _docSetUsersConfig = gql(r"""
+      mutation SetUsersConfig($cfg: String!) {
+        usersConfiguration(config: $cfg) {
+          status
+        }
+      }""");
+
+  static final _docStartPlot = gql(r"""
+      subscription StartPlot($drfList: [String!]!, $xMin: Float, $xMax: Float,
+                             $windowSize: Int, $updateDelay: Int,
+                             $nAcquisitions: Int, $triggerEvent: Int,
+                             $startTime: Float, $endTime: Float,
+                             $sampleOnEvent: Int, $chXAxis: String) {
+        startPlot(drfList: $drfList, xMin: $xMin, xMax: $xMax,
+                  windowSize: $windowSize, updateDelay: $updateDelay,
+                  nAcquisitions: $nAcquisitions, triggerEvent: $triggerEvent,
+                  startTime: $startTime, endTime: $endTime,
+                  sampleOnEvent: $sampleOnEvent, chXAxis: $chXAxis) {
+          plotId
+          timestamp
+          triggerTimestamp
+          data {
+            channelRate
+            channelUnits
+            channelStatus
+            channelData {
+              timestamp
+              result {
+                ... on Scalar {
+                  scalarValue
+                }
+                ... on ScalarArray {
+                  scalarArrayValue
+                }
+              }
+            }
+          }
+        }
+      }""");
 
   static Map<String, String> _buildAuthHeader(String? jwt) =>
       jwt != null ? {"Authorization": "Bearer $jwt"} : {};
@@ -118,13 +256,13 @@ final class ACSysService implements ACSysServiceAPI {
 
   // Executes a GraphQL query with comprehensive error handling and validation.
   Future<QueryResult> _doQuery({
-    required String query,
+    required DocumentNode document,
     required Map<String, dynamic> variables,
     required FetchPolicy fetchPolicy,
   }) async {
     final QueryResult result = await _client.query(
       QueryOptions(
-        document: gql(query),
+        document: document,
         variables: variables,
         fetchPolicy: fetchPolicy,
       ),
@@ -140,13 +278,13 @@ final class ACSysService implements ACSysServiceAPI {
   // consumers receive them via the stream's error channel rather than having
   // them silently swallowed.
   Stream<QueryResult> _doSubscription({
-    required String query,
+    required DocumentNode document,
     required Map<String, dynamic> variables,
     required FetchPolicy fetchPolicy,
   }) => _client
       .subscribe(
         SubscriptionOptions(
-          document: gql(query),
+          document: document,
           variables: variables,
           fetchPolicy: fetchPolicy,
         ),
@@ -185,45 +323,14 @@ final class ACSysService implements ACSysServiceAPI {
           .toList();
 
   @override
-  Future<List<Reading>> readDevices(List<String> devices) async {
-    const devicesRead = r"""
-      query ReadDevices($devList: [String!]!) {
-        acceleratorData(deviceList: $devList) {
-          refId
-          data {
-            timestamp
-            result {
-              ... on StatusReply {
-                status
-              }
-              ... on Scalar {
-                scalarValue
-              }
-              ... on ScalarArray {
-                scalarArrayValue
-              }
-              ... on Raw {
-                rawValue
-              }
-              ... on Text {
-                textValue
-              }
-              ... on TextArray {
-                textArrayValue
-              }
-            }
-          }
-        }
-      }""";
-
-    return _convertReading(
-      await _doQuery(
-        query: devicesRead,
-        variables: {'devList': devices},
-        fetchPolicy: .networkOnly,
-      ),
-    );
-  }
+  Future<List<Reading>> readDevices(List<String> devices) async =>
+      _convertReading(
+        await _doQuery(
+          document: _docReadDevices,
+          variables: {'devList': devices},
+          fetchPolicy: .networkOnly,
+        ),
+      );
 
   // Returns a stream of readings for the devices specified in the parameter
   // list. The `Reading` class has a `refId` field which indicates to which
@@ -231,43 +338,11 @@ final class ACSysService implements ACSysServiceAPI {
   // the `status` field will hold the ACNET error status. No more readings will
   // be sent for a device in error.
   @override
-  Stream<Reading> monitorDevices(List<String> drfs) {
-    const subscription = r"""
-      subscription StreamData($drfs: [String!]!) {
-        acceleratorData(drfs: $drfs) {
-          refId
-          data {
-            timestamp
-            result {
-              ... on StatusReply {
-                status
-              }
-              ... on Scalar {
-                scalarValue
-              }
-              ... on ScalarArray {
-                scalarArrayValue
-              }
-              ... on Raw {
-                rawValue
-              }
-              ... on Text {
-                textValue
-              }
-              ... on TextArray {
-                textArrayValue
-              }
-            }
-          }
-        }
-      }""";
-
-    return _doSubscription(
-      query: subscription,
-      variables: {'drfs': drfs},
-      fetchPolicy: .networkOnly,
-    ).expand(_convertMonitor);
-  }
+  Stream<Reading> monitorDevices(List<String> drfs) => _doSubscription(
+    document: _docMonitorDevices,
+    variables: {'drfs': drfs},
+    fetchPolicy: .networkOnly,
+  ).expand(_convertMonitor);
 
   static DateTime fromFloatTs(double ts) =>
       DateTime.fromMicrosecondsSinceEpoch((ts * 1000000.0).toInt());
@@ -291,22 +366,15 @@ final class ACSysService implements ACSysServiceAPI {
   Future<Status> submit({
     required String forDRF,
     required DeviceValue newSetting,
-  }) {
-    const deviceSet = r"""
-      mutation SetDevice($device: String!, $value: DevValue!) {
-        setDevice(device: $device, value: $value) {
-          status
-        }
-      }""";
-
-    return _doQuery(
-      query: deviceSet,
-      variables: {'device': forDRF, 'value': newSetting.toDevValIn()},
-      fetchPolicy: .networkOnly,
-    ).then(
-      (QueryResult e) => Status.fromInt(e.data!['setDevice']!['status'] as int),
-    );
-  }
+  }) =>
+      _doQuery(
+        document: _docSetDevice,
+        variables: {'device': forDRF, 'value': newSetting.toDevValIn()},
+        fetchPolicy: .networkOnly,
+      ).then(
+        (QueryResult e) =>
+            Status.fromInt(e.data!['setDevice']!['status'] as int),
+      );
 
   @override
   Future<Status> sendCommand({required String toDRF, required String value}) =>
@@ -316,13 +384,8 @@ final class ACSysService implements ACSysServiceAPI {
   Future<PlotConfigurationSnapshot> savePlotConfiguration({
     required PlotConfigurationSnapshot snapshot,
   }) async {
-    const updatePlotConfig = r"""
-      mutation UpdatePlotConfig($id: Int, $name: String!, $config: String!) {
-        updatePlotConfiguration(id: $id, name: $name, config: $config)
-      }""";
-
     final result = await _doQuery(
-      query: updatePlotConfig,
+      document: _docUpdatePlotConfig,
       variables: {
         'id': snapshot.configurationId?.value,
         'name': snapshot.configurationName,
@@ -341,19 +404,6 @@ final class ACSysService implements ACSysServiceAPI {
     return snapshot;
   }
 
-  // Shared query for both retrievePlotConfiguration and listPlotConfigurations.
-  // Passing null for $id returns all configurations; passing an Int returns the
-  // matching one (0 or 1 element). The server stores the full configuration as
-  // a JSON string in the `config` field, which we decode client-side.
-  static const _plotConfigQuery = r"""
-    query PlotConfigs($id: Int) {
-      plotConfiguration(id: $id) {
-        configId
-        configName
-        config
-      }
-    }""";
-
   // Decodes a single PlotConfig row from the GraphQL response into a
   // PlotConfigurationSnapshot.
   static PlotConfigurationSnapshot _snapshotFromRow(Map<String, dynamic> row) {
@@ -370,7 +420,7 @@ final class ACSysService implements ACSysServiceAPI {
     required PlotConfigId configurationId,
   }) async {
     final result = await _doQuery(
-      query: _plotConfigQuery,
+      document: _docPlotConfig,
       variables: {'id': configurationId.value},
       fetchPolicy: .networkOnly,
     );
@@ -384,7 +434,7 @@ final class ACSysService implements ACSysServiceAPI {
   @override
   Future<List<PlotConfigurationListing>> listPlotConfigurations() async {
     final result = await _doQuery(
-      query: _plotConfigQuery,
+      document: _docPlotConfig,
       variables: {'id': null},
       fetchPolicy: .networkOnly,
     );
@@ -403,30 +453,16 @@ final class ACSysService implements ACSysServiceAPI {
   @override
   Future<void> removePlotConfiguration({
     required PlotConfigId configurationId,
-  }) async {
-    const deletePlotConfig = r"""
-      mutation DeletePlotConfig($id: Int!) {
-        deletePlotConfiguration(configurationId: $id) {
-          status
-        }
-      }""";
-
-    await _doQuery(
-      query: deletePlotConfig,
-      variables: {'id': configurationId.value},
-      fetchPolicy: .networkOnly,
-    );
-  }
+  }) => _doQuery(
+    document: _docDeletePlotConfig,
+    variables: {'id': configurationId.value},
+    fetchPolicy: .networkOnly,
+  );
 
   @override
   Future<PlotConfigurationSnapshot?> retrieveLastUserConfiguration() async {
-    const usersLastConfig = r"""
-      query UsersLastConfig {
-        usersLastConfiguration
-      }""";
-
     final result = await _doQuery(
-      query: usersLastConfig,
+      document: _docUsersLastConfig,
       variables: {},
       fetchPolicy: .networkOnly,
     );
@@ -451,20 +487,11 @@ final class ACSysService implements ACSysServiceAPI {
   @override
   Future<void> saveUserConfiguration({
     required PlotConfigurationSnapshot snapshot,
-  }) async {
-    const setUsersConfig = r"""
-      mutation SetUsersConfig($cfg: String!) {
-        usersConfiguration(config: $cfg) {
-          status
-        }
-      }""";
-
-    await _doQuery(
-      query: setUsersConfig,
-      variables: {'cfg': jsonEncode(snapshot.toJson())},
-      fetchPolicy: .networkOnly,
-    );
-  }
+  }) => _doQuery(
+    document: _docSetUsersConfig,
+    variables: {'cfg': jsonEncode(snapshot.toJson())},
+    fetchPolicy: .networkOnly,
+  );
 
   @override
   Stream<PlotReply> startPlot(
@@ -479,58 +506,23 @@ final class ACSysService implements ACSysServiceAPI {
     int? triggerEvent,
     int? sampleOnEvent,
     String? chXAxis,
-  }) {
-    const plotStart = r"""
-      subscription StartPlot($drfList: [String!]!, $xMin: Float, $xMax: Float,
-                             $windowSize: Int, $updateDelay: Int,
-                             $nAcquisitions: Int, $triggerEvent: Int,
-                             $startTime: Float, $endTime: Float,
-                             $sampleOnEvent: Int, $chXAxis: String) {
-        startPlot(drfList: $drfList, xMin: $xMin, xMax: $xMax,
-                  windowSize: $windowSize, updateDelay: $updateDelay,
-                  nAcquisitions: $nAcquisitions, triggerEvent: $triggerEvent,
-                  startTime: $startTime, endTime: $endTime,
-                  sampleOnEvent: $sampleOnEvent, chXAxis: $chXAxis) {
-          plotId
-          timestamp
-          triggerTimestamp
-          data {
-            channelRate
-            channelUnits
-            channelStatus
-            channelData {
-              timestamp
-              result {
-                ... on Scalar {
-                  scalarValue
-                }
-                ... on ScalarArray {
-                  scalarArrayValue
-                }
-              }
-            }
-          }
-        }
-      }""";
-
-    return _doSubscription(
-      query: plotStart,
-      variables: {
-        'drfList': drfs,
-        'xMin': xMin,
-        'xMax': xMax,
-        'windowSize': windowSize,
-        'nAcquisitions': nAcquisitions,
-        'updateDelay': updateRate,
-        'triggerEvent': triggerEvent,
-        'startTime': startTime,
-        'endTime': endTime,
-        'sampleOnEvent': sampleOnEvent,
-        'chXAxis': chXAxis,
-      },
-      fetchPolicy: .networkOnly,
-    ).map((result) => _toPlotReply(result.data!, drfs, xMin, xMax, windowSize));
-  }
+  }) => _doSubscription(
+    document: _docStartPlot,
+    variables: {
+      'drfList': drfs,
+      'xMin': xMin,
+      'xMax': xMax,
+      'windowSize': windowSize,
+      'nAcquisitions': nAcquisitions,
+      'updateDelay': updateRate,
+      'triggerEvent': triggerEvent,
+      'startTime': startTime,
+      'endTime': endTime,
+      'sampleOnEvent': sampleOnEvent,
+      'chXAxis': chXAxis,
+    },
+    fetchPolicy: .networkOnly,
+  ).map((result) => _toPlotReply(result.data!, drfs, xMin, xMax, windowSize));
 
   static PlotReply _toPlotReply(
     Map<String, dynamic> eventData,
