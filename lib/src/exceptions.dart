@@ -31,5 +31,5 @@ class ACSysStatusException extends ACSysException {
   final Status status;
 
   ACSysStatusException(String message, {required this.status})
-    : super("ACNET status: [${status.facility} ${status.error}]");
+    : super("ACNET status: [${status.facility} ${status.error}]: $message");
 }
