@@ -178,9 +178,9 @@ extension RawTimeSeriesToDeviceValue on List<(double, double)> {
 }
 
 extension TimeSeriesToDeviceValue on List<(DateTime, double)> {
-  DeviceValue toDevVal() => DevTimeSeries([
-    ...map((e) => (e.$1.millisecondsSinceEpoch / 1000.0, e.$2)),
-  ]);
+  DeviceValue toDevVal() => DevTimeSeries(
+    map((e) => (e.$1.millisecondsSinceEpoch / 1000.0, e.$2)).toList(),
+  );
 }
 
 // The `FromDeviceValue` extension allows us to convert a `DeviceValue` into a
@@ -223,12 +223,15 @@ extension FromDeviceValue on DeviceValue {
   };
 
   List<(DateTime, double)>? toTimeSeriesWithDates() => switch (this) {
-    DevTimeSeries(value: final v) => [
-      ...v.map(
-        (e) =>
-            (DateTime.fromMillisecondsSinceEpoch((e.$1 * 1000).toInt()), e.$2),
-      ),
-    ],
+    DevTimeSeries(value: final v) =>
+      v
+          .map(
+            (e) => (
+              DateTime.fromMillisecondsSinceEpoch((e.$1 * 1000).toInt()),
+              e.$2,
+            ),
+          )
+          .toList(),
     _ => null,
   };
 }
