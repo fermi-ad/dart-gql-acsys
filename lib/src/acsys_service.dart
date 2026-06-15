@@ -419,6 +419,36 @@ final class ACSysService implements ACSysServiceAPI {
   }
 
   @override
+  Future<PlotConfigurationSnapshot?> retrieveLastUserConfiguration() async {
+    const usersLastConfig = r"""
+      query UsersLastConfig {
+        usersLastConfiguration
+      }""";
+
+    final result = await _doQuery(
+      query: usersLastConfig,
+      withVariables: {},
+      withPolicy: .networkOnly,
+    );
+
+    final raw = result.data!['usersLastConfiguration'];
+
+    if (raw == null) return null;
+
+    // The server returns the configuration as a raw JSON string. Decode it and
+    // reconstruct the snapshot. There is no persisted ID for a user's last
+    // config, so we generate a transient one; the name is left empty since the
+    // server doesn't store one for this record.
+    final configJson = jsonDecode(raw as String) as Map<String, dynamic>;
+
+    return PlotConfigurationSnapshot.fromJson(
+      PlotConfigId.generate(),
+      '',
+      configJson,
+    );
+  }
+
+  @override
   Stream<PlotReply> startPlot(
     List<String> drfs, {
     double? xMin,

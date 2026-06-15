@@ -379,7 +379,7 @@ abstract interface class ACSysServiceAPI {
   Future<void> removePlotConfiguration({required PlotConfigId configurationId});
 
   /// Returns the last plot configuration that the user saved.
-  //Future<PlotConfigurationSnapshot?> retrieveLastUserConfiguration();
+  Future<PlotConfigurationSnapshot?> retrieveLastUserConfiguration();
 
   /// Sets the provided plot configuration as the last one the user saved.
   //Future<void> saveUserConfiguration({
