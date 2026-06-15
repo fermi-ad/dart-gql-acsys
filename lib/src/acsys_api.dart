@@ -368,9 +368,9 @@ abstract interface class ACSysServiceAPI {
   });
 
   /// Queries the database for a plot configuration.
-  //Future<PlotConfigurationSnapshot?> retrievePlotConfiguration({
-  //  required PlotConfigId configurationId,
-  //});
+  Future<PlotConfigurationSnapshot?> retrievePlotConfiguration({
+    required PlotConfigId configurationId,
+  });
 
   /// Returns every plot configuration in the database.
   //Future<List<PlotConfigurationListing>> listPlotConfigurations();

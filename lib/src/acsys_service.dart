@@ -342,6 +342,75 @@ final class ACSysService implements ACSysServiceAPI {
   }
 
   @override
+  Future<PlotConfigurationSnapshot?> retrievePlotConfiguration({
+    required PlotConfigId configurationId,
+  }) async {
+    const plotConfigs = r"""
+      query PlotConfigs($id: Int) {
+        plotConfiguration(configurationId: $id) {
+          configurationId
+          configurationName
+          channels {
+            device
+            yMin
+            yMax
+            lineColor
+            markerIndex
+          }
+          xMin
+          xMax
+          startTime
+          endTime
+          timeDelta
+          isScalar
+          isOneShot
+          isShowLabels
+          updateDelay
+          nAcquisitions
+          tclkEvent
+          isPersistent
+          dataLimit
+        }
+      }""";
+
+    final result = await _doQuery(
+      query: plotConfigs,
+      withVariables: {'id': configurationId.value},
+      withPolicy: .networkOnly,
+    );
+
+    final raw = result.data!['plotConfiguration'];
+
+    if (raw == null) return null;
+
+    final data = raw as Map<String, dynamic>;
+
+    // The GraphQL schema returns channels as an array of objects with a
+    // `device` key. PlotConfigurationSnapshot.fromJson() expects a map keyed
+    // by device name, so we reshape it here.
+    final channelsList = (data['channels'] as List<Object?>)
+        .cast<Map<String, dynamic>>();
+
+    final channelsMap = {
+      for (final ch in channelsList)
+        ch['device'] as String: {
+          'lineColor': ch['lineColor'],
+          'markerIndex': ch['markerIndex'],
+          'yMin': ch['yMin'],
+          'yMax': ch['yMax'],
+        },
+    };
+
+    final id = PlotConfigId.fromInt(data['configurationId'] as int);
+    final name = data['configurationName'] as String;
+
+    return PlotConfigurationSnapshot.fromJson(id, name, {
+      ...data,
+      'channels': channelsMap,
+    });
+  }
+
+  @override
   Stream<PlotReply> startPlot(
     List<String> drfs, {
     double? xMin,
