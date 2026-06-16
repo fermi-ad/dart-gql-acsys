@@ -271,6 +271,26 @@ final class ACSysService implements ACSysServiceAPI {
     return _checkResult(result, 'Query succeeded but returned no data');
   }
 
+  // Executes a GraphQL mutation with comprehensive error handling and
+  // validation. Mutations must go through [GraphQLClient.mutate] so that the
+  // underlying link receives a request whose [isSubscription] flag is false
+  // *and* whose operation type is correctly identified as a mutation — which
+  // ensures the Authorization header is forwarded by HttpLink.
+  Future<QueryResult> _doMutation({
+    required DocumentNode document,
+    required Map<String, dynamic> variables,
+  }) async {
+    final QueryResult result = await _client.mutate(
+      MutationOptions(
+        document: document,
+        variables: variables,
+        fetchPolicy: FetchPolicy.networkOnly,
+      ),
+    );
+
+    return _checkResult(result, 'Mutation succeeded but returned no data');
+  }
+
   // Executes a GraphQL subscription with per-event error handling and
   // validation. Each event emitted by the underlying WebSocket stream is
   // inspected for link-level and GraphQL-level errors before being forwarded.
@@ -367,10 +387,9 @@ final class ACSysService implements ACSysServiceAPI {
     required String forDRF,
     required DeviceValue newSetting,
   }) =>
-      _doQuery(
+      _doMutation(
         document: _docSetDevice,
         variables: {'device': forDRF, 'value': newSetting.toDevValIn()},
-        fetchPolicy: .networkOnly,
       ).then(
         (QueryResult e) =>
             Status.fromInt(e.data!['setDevice']!['status'] as int),
@@ -384,14 +403,13 @@ final class ACSysService implements ACSysServiceAPI {
   Future<PlotConfigurationSnapshot> savePlotConfiguration({
     required PlotConfigurationSnapshot snapshot,
   }) async {
-    final result = await _doQuery(
+    final result = await _doMutation(
       document: _docUpdatePlotConfig,
       variables: {
         'id': snapshot.configurationId?.value,
         'name': snapshot.configurationName,
         'config': jsonEncode(snapshot.toJson()),
       },
-      fetchPolicy: .networkOnly,
     );
 
     // The mutation returns the confirmed ID (Int!) — return a copy of the
@@ -451,10 +469,9 @@ final class ACSysService implements ACSysServiceAPI {
   @override
   Future<void> removePlotConfiguration({
     required PlotConfigId configurationId,
-  }) => _doQuery(
+  }) => _doMutation(
     document: _docDeletePlotConfig,
     variables: {'id': configurationId.value},
-    fetchPolicy: .networkOnly,
   );
 
   @override
@@ -485,10 +502,9 @@ final class ACSysService implements ACSysServiceAPI {
   @override
   Future<void> saveUserConfiguration({
     required PlotConfigurationSnapshot snapshot,
-  }) => _doQuery(
+  }) => _doMutation(
     document: _docSetUsersConfig,
     variables: {'cfg': jsonEncode(snapshot.toJson())},
-    fetchPolicy: .networkOnly,
   );
 
   @override
