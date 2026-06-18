@@ -480,7 +480,7 @@ abstract interface class ACSysServiceAPI {
 
   /// Takes no parameters and returns a stream that provides the current
   /// alarm info for all alarms.
-  //Stream<Alarm> monitorAlarms();
+  Stream<Alarm> monitorAlarms();
 
   /// Takes a list of data acquisition strings and returns a stream that
   /// provides a sample of the analog alarm property.

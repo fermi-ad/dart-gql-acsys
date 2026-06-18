@@ -107,6 +107,9 @@ final class FakeACSysService implements ACSysServiceAPI {
 
   @override
   Future<List<Alarm>> getAlarmsSnapshot() async => List.of(cannedAlarms);
+
+  @override
+  Stream<Alarm> monitorAlarms() => Stream.fromIterable(cannedAlarms);
 }
 
 // ---------------------------------------------------------------------------

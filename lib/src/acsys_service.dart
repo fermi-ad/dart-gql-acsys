@@ -183,6 +183,21 @@ final class ACSysService implements ACSysServiceAPI {
       }
     }""");
 
+  static final _docMonitorAlarms = gql(r"""
+    subscription StreamAlarms {
+      alarms {
+        device
+        source
+        state
+        severity
+        acknowledgeable
+        time
+        epicsType
+        user
+        wake
+      }
+    }""");
+
   static Map<String, String> _buildAuthHeader(String? jwt) =>
       jwt != null ? {"Authorization": "Bearer $jwt"} : {};
 
@@ -642,6 +657,18 @@ final class ACSysService implements ACSysServiceAPI {
       wake: fromFloatTs((row['wake'] as num).toDouble()),
     );
   }
+
+  @override
+  Stream<Alarm> monitorAlarms() =>
+      _doSubscription(
+        document: _docMonitorAlarms,
+        variables: {},
+        fetchPolicy: .networkOnly,
+      ).expand(
+        (result) => (result.data!['alarms'] as List<Object?>)
+            .cast<Map<String, dynamic>>()
+            .map(_rowToAlarm),
+      );
 
   @override
   Future<List<Alarm>> getAlarmsSnapshot() async {
