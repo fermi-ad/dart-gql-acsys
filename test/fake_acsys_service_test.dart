@@ -26,6 +26,9 @@ final class FakeACSysService implements ACSysServiceAPI {
   // Canned status returned by submit / sendCommand.
   Status cannedStatus = Status.SUCCESS;
 
+  // Canned alarms returned by getAlarmsSnapshot.
+  List<Alarm> cannedAlarms = [];
+
   @override
   Future<List<Reading>> readDevices(List<String> devices) async =>
       List.of(cannedReadings);
@@ -101,6 +104,9 @@ final class FakeACSysService implements ACSysServiceAPI {
   Future<void> saveUserConfiguration({
     required PlotConfigurationSnapshot snapshot,
   }) async => _userConfig = snapshot;
+
+  @override
+  Future<List<Alarm>> getAlarmsSnapshot() async => List.of(cannedAlarms);
 }
 
 // ---------------------------------------------------------------------------

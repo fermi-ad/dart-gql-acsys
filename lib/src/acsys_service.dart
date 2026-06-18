@@ -168,6 +168,21 @@ final class ACSysService implements ACSysServiceAPI {
         }
       }""");
 
+  static final _docAlarmsSnapshot = gql(r"""
+    query AlarmsSnapshot {
+      alarmsSnapshot {
+        device
+        source
+        state
+        severity
+        acknowledgeable
+        time
+        epicsType
+        user
+        wake
+      }
+    }""");
+
   static Map<String, String> _buildAuthHeader(String? jwt) =>
       jwt != null ? {"Authorization": "Bearer $jwt"} : {};
 
@@ -588,6 +603,58 @@ final class ACSysService implements ACSysServiceAPI {
       status: ch['channelStatus'] as int,
       points: points,
     );
+  }
+
+  // Converts a single alarmsSnapshot row map into an [Alarm].
+  static Alarm _rowToAlarm(Map<String, dynamic> row) {
+    final AlarmSource source = switch (row['source'] as String?) {
+      'analog' => .analog,
+      'digital' => .digital,
+      'epics' => .epics,
+      _ => .unknown,
+    };
+
+    final AlarmState state = switch (row['state'] as String?) {
+      'ok' => .ok,
+      'alarmed' => .alarmed,
+      'bypassed' => .bypassed,
+      'latched' => .latched,
+      'acknowledged' => .acknowledged,
+      'unbypassed' => .unbypassed,
+      _ => .unknown,
+    };
+
+    final AlarmSeverity severity = switch (row['severity'] as String?) {
+      'low' => .low,
+      'high' => .high,
+      _ => .unknown,
+    };
+
+    return Alarm(
+      device: row['device'] as String,
+      source: source,
+      state: state,
+      severity: severity,
+      acknowledgeable: row['acknowledgeable'] as bool,
+      time: fromFloatTs((row['time'] as num).toDouble()),
+      epicsType: row['epicsType'] as String,
+      user: row['user'] as String,
+      wake: fromFloatTs((row['wake'] as num).toDouble()),
+    );
+  }
+
+  @override
+  Future<List<Alarm>> getAlarmsSnapshot() async {
+    final result = await _doQuery(
+      document: _docAlarmsSnapshot,
+      variables: {},
+      fetchPolicy: .networkOnly,
+    );
+
+    return (result.data!['alarmsSnapshot'] as List<Object?>)
+        .cast<Map<String, dynamic>>()
+        .map(_rowToAlarm)
+        .toList();
   }
 
   // Converts the map value to a DeviceValue type.
