@@ -110,6 +110,10 @@ final class FakeACSysService implements ACSysServiceAPI {
 
   @override
   Stream<Alarm> monitorAlarms() => Stream.fromIterable(cannedAlarms);
+
+  @override
+  Stream<AnalogAlarmStatus> monitorAnalogAlarmProperty(List<String> drfs) =>
+      const Stream.empty();
 }
 
 // ---------------------------------------------------------------------------
