@@ -213,7 +213,12 @@ final class ACSysService implements ACSysServiceAPI {
             "wss://ad-api.fnal.gov/acsys/s",
             config: SocketClientConfig(
               autoReconnect: true,
-              headers: _buildAuthHeader(jwt),
+              // Browser WebSockets cannot send custom headers; pass the JWT
+              // via the graphql-ws connection_init payload instead so the
+              // server can authenticate the subscription connection.
+              initialPayload: jwt != null
+                  ? {"Authorization": "Bearer $jwt"}
+                  : null,
               queryAndMutationTimeout: const Duration(seconds: 5),
               inactivityTimeout: null,
             ),
