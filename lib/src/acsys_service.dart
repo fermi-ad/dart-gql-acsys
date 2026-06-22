@@ -689,6 +689,10 @@ final class ACSysService implements ACSysServiceAPI {
         .toList();
   }
 
+  @override
+  Stream<AnalogAlarmStatus> monitorAnalogAlarmProperty(List<String> drfs) =>
+      const Stream.empty();
+
   // Converts the map value to a DeviceValue type.
   //
   // The graphql client normalizes inline fragments into a flat map containing
