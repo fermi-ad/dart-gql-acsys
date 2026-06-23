@@ -4,6 +4,65 @@ import 'exceptions.dart';
 import 'device_values.dart';
 import 'status.dart';
 
+final class Alarm {
+  final String device;
+  final AlarmSource source;
+  final AlarmState state;
+  final AlarmSeverity severity;
+  final bool acknowledgeable;
+  final DateTime time;
+  final String epicsType;
+  final String user;
+  final DateTime wake;
+
+  const Alarm({
+    required this.device,
+    required this.source,
+    required this.state,
+    required this.severity,
+    required this.acknowledgeable,
+    required this.time,
+    required this.epicsType,
+    required this.user,
+    required this.wake,
+  });
+}
+
+/// Enumeration representing the Alarm Source
+enum AlarmSource { unknown, analog, digital, epics }
+
+/// Enumeration representing the alarm state
+enum AlarmState {
+  unknown,
+  ok,
+  alarmed,
+  bypassed,
+  latched,
+  acknowledged,
+  unbypassed,
+}
+
+/// Enumeration representing Alarm Severity
+enum AlarmSeverity { unknown, low, high }
+
+enum AnalogAlarmState { notAlarming, alarming, bypassed }
+
+final class AnalogAlarmStatus {
+  final int refId;
+  final int status;
+  final int cycle;
+  final DateTime timestamp;
+  final AnalogAlarmState state;
+
+  const AnalogAlarmStatus({
+    required this.refId,
+    this.status = 0,
+    required this.cycle,
+    required this.timestamp,
+    required this.state,
+  });
+}
+
 enum AcquisitionMode {
   oneShot,
   oneShotTriggeredOnEvent,
@@ -117,7 +176,7 @@ final class PlotReply {
   });
 }
 
-class PlotConfigurationListing {
+final class PlotConfigurationListing {
   final PlotConfigId? configurationId;
   final String configurationName;
 
@@ -415,4 +474,15 @@ abstract interface class ACSysServiceAPI {
   Future<void> saveUserConfiguration({
     required PlotConfigurationSnapshot snapshot,
   });
+
+  /// Gets a snapshot of the current alarms.
+  Future<List<Alarm>> getAlarmsSnapshot();
+
+  /// Takes no parameters and returns a stream that provides the current
+  /// alarm info for all alarms.
+  Stream<Alarm> monitorAlarms();
+
+  /// Takes a list of data acquisition strings and returns a stream that
+  /// provides a sample of the analog alarm property.
+  Stream<AnalogAlarmStatus> monitorAnalogAlarmProperty(List<String> drfs);
 }

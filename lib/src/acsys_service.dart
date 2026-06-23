@@ -168,6 +168,36 @@ final class ACSysService implements ACSysServiceAPI {
         }
       }""");
 
+  static final _docAlarmsSnapshot = gql(r"""
+    query AlarmsSnapshot {
+      alarmsSnapshot {
+        device
+        source
+        state
+        severity
+        acknowledgeable
+        time
+        epicsType
+        user
+        wake
+      }
+    }""");
+
+  static final _docMonitorAlarms = gql(r"""
+    subscription StreamAlarms {
+      alarms {
+        device
+        source
+        state
+        severity
+        acknowledgeable
+        time
+        epicsType
+        user
+        wake
+      }
+    }""");
+
   static Map<String, String> _buildAuthHeader(String? jwt) =>
       jwt != null ? {"Authorization": "Bearer $jwt"} : {};
 
@@ -183,7 +213,12 @@ final class ACSysService implements ACSysServiceAPI {
             "wss://ad-api.fnal.gov/acsys/s",
             config: SocketClientConfig(
               autoReconnect: true,
-              headers: _buildAuthHeader(jwt),
+              // Browser WebSockets cannot send custom headers; pass the JWT
+              // via the graphql-ws connection_init payload instead so the
+              // server can authenticate the subscription connection.
+              initialPayload: jwt != null
+                  ? {"Authorization": "Bearer $jwt"}
+                  : null,
               queryAndMutationTimeout: const Duration(seconds: 5),
               inactivityTimeout: null,
             ),
@@ -269,6 +304,26 @@ final class ACSysService implements ACSysServiceAPI {
     );
 
     return _checkResult(result, 'Query succeeded but returned no data');
+  }
+
+  // Executes a GraphQL mutation with comprehensive error handling and
+  // validation. Mutations must go through [GraphQLClient.mutate] so that the
+  // underlying link receives a request whose [isSubscription] flag is false
+  // *and* whose operation type is correctly identified as a mutation — which
+  // ensures the Authorization header is forwarded by HttpLink.
+  Future<QueryResult> _doMutation({
+    required DocumentNode document,
+    required Map<String, dynamic> variables,
+  }) async {
+    final QueryResult result = await _client.mutate(
+      MutationOptions(
+        document: document,
+        variables: variables,
+        fetchPolicy: FetchPolicy.networkOnly,
+      ),
+    );
+
+    return _checkResult(result, 'Mutation succeeded but returned no data');
   }
 
   // Executes a GraphQL subscription with per-event error handling and
@@ -367,10 +422,9 @@ final class ACSysService implements ACSysServiceAPI {
     required String forDRF,
     required DeviceValue newSetting,
   }) =>
-      _doQuery(
+      _doMutation(
         document: _docSetDevice,
         variables: {'device': forDRF, 'value': newSetting.toDevValIn()},
-        fetchPolicy: .networkOnly,
       ).then(
         (QueryResult e) =>
             Status.fromInt(e.data!['setDevice']!['status'] as int),
@@ -384,14 +438,13 @@ final class ACSysService implements ACSysServiceAPI {
   Future<PlotConfigurationSnapshot> savePlotConfiguration({
     required PlotConfigurationSnapshot snapshot,
   }) async {
-    final result = await _doQuery(
+    final result = await _doMutation(
       document: _docUpdatePlotConfig,
       variables: {
         'id': snapshot.configurationId?.value,
         'name': snapshot.configurationName,
         'config': jsonEncode(snapshot.toJson()),
       },
-      fetchPolicy: .networkOnly,
     );
 
     // The mutation returns the confirmed ID (Int!) — return a copy of the
@@ -451,11 +504,10 @@ final class ACSysService implements ACSysServiceAPI {
   @override
   Future<void> removePlotConfiguration({
     required PlotConfigId configurationId,
-  }) => _doQuery(
+  }) => _doMutation(
     document: _docDeletePlotConfig,
     variables: {'id': configurationId.value},
-    fetchPolicy: .networkOnly,
-  );
+  ).then((_) => ());
 
   @override
   Future<PlotConfigurationSnapshot?> retrieveLastUserConfiguration() async {
@@ -485,11 +537,10 @@ final class ACSysService implements ACSysServiceAPI {
   @override
   Future<void> saveUserConfiguration({
     required PlotConfigurationSnapshot snapshot,
-  }) => _doQuery(
+  }) => _doMutation(
     document: _docSetUsersConfig,
     variables: {'cfg': jsonEncode(snapshot.toJson())},
-    fetchPolicy: .networkOnly,
-  );
+  ).then((_) => ());
 
   @override
   Stream<PlotReply> startPlot(
@@ -573,6 +624,75 @@ final class ACSysService implements ACSysServiceAPI {
       points: points,
     );
   }
+
+  // Converts a single alarmsSnapshot row map into an [Alarm].
+  static Alarm _rowToAlarm(Map<String, dynamic> row) {
+    final AlarmSource source = switch (row['source'] as String?) {
+      'analog' => .analog,
+      'digital' => .digital,
+      'epics' => .epics,
+      _ => .unknown,
+    };
+
+    final AlarmState state = switch (row['state'] as String?) {
+      'ok' => .ok,
+      'alarmed' => .alarmed,
+      'bypassed' => .bypassed,
+      'latched' => .latched,
+      'acknowledged' => .acknowledged,
+      'unbypassed' => .unbypassed,
+      _ => .unknown,
+    };
+
+    final AlarmSeverity severity = switch (row['severity'] as String?) {
+      'low' => .low,
+      'high' => .high,
+      _ => .unknown,
+    };
+
+    return Alarm(
+      device: row['device'] as String,
+      source: source,
+      state: state,
+      severity: severity,
+      acknowledgeable: row['acknowledgeable'] as bool,
+      time: fromFloatTs((row['time'] as num).toDouble()),
+      epicsType: row['epicsType'] as String,
+      user: row['user'] as String,
+      wake: fromFloatTs((row['wake'] as num).toDouble()),
+    );
+  }
+
+  @override
+  Stream<Alarm> monitorAlarms() =>
+      _doSubscription(
+        document: _docMonitorAlarms,
+        variables: {},
+        fetchPolicy: .networkOnly,
+      ).expand(
+        (result) => (result.data!['alarms'] as List<Object?>)
+            .cast<Map<String, dynamic>>()
+            .map(_rowToAlarm),
+      );
+
+  @override
+  Future<List<Alarm>> getAlarmsSnapshot() async {
+    final result = await _doQuery(
+      document: _docAlarmsSnapshot,
+      variables: {},
+      fetchPolicy: .networkOnly,
+    );
+
+    return (result.data!['alarmsSnapshot'] as List<Object?>)
+        .cast<Map<String, dynamic>>()
+        .map(_rowToAlarm)
+        .toList();
+  }
+
+  Stream<AnalogAlarmStatus> monitorAnalogAlarmProperty(List<String> drfs) =>
+      Stream.error(
+        UnimplementedError('monitorAnalogAlarmProperty is not implemented yet'),
+      );
 
   // Converts the map value to a DeviceValue type.
   //
