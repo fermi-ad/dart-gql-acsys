@@ -689,9 +689,8 @@ final class ACSysService implements ACSysServiceAPI {
         .toList();
   }
 
-  @override
   Stream<AnalogAlarmStatus> monitorAnalogAlarmProperty(List<String> drfs) =>
-      const Stream.empty();
+      Stream.error(UnimplementedError('monitorAnalogAlarmProperty is not implemented yet'));
 
   // Converts the map value to a DeviceValue type.
   //
