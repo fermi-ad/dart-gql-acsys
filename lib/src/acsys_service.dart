@@ -507,7 +507,7 @@ final class ACSysService implements ACSysServiceAPI {
   }) => _doMutation(
     document: _docDeletePlotConfig,
     variables: {'id': configurationId.value},
-  );
+  ).then((_) => ());
 
   @override
   Future<PlotConfigurationSnapshot?> retrieveLastUserConfiguration() async {
@@ -540,7 +540,7 @@ final class ACSysService implements ACSysServiceAPI {
   }) => _doMutation(
     document: _docSetUsersConfig,
     variables: {'cfg': jsonEncode(snapshot.toJson())},
-  );
+  ).then((_) => ());
 
   @override
   Stream<PlotReply> startPlot(
@@ -690,7 +690,9 @@ final class ACSysService implements ACSysServiceAPI {
   }
 
   Stream<AnalogAlarmStatus> monitorAnalogAlarmProperty(List<String> drfs) =>
-      Stream.error(UnimplementedError('monitorAnalogAlarmProperty is not implemented yet'));
+      Stream.error(
+        UnimplementedError('monitorAnalogAlarmProperty is not implemented yet'),
+      );
 
   // Converts the map value to a DeviceValue type.
   //
