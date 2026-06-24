@@ -4,14 +4,14 @@
 import 'dart:io';
 import 'package:dart_gql_acsys/dart_gql_acsys.dart';
 
-Future<double> readAmanda() async => (await ACSysService().readDevices([
+final _service = ACSysService(jwt: Platform.environment['DART_JWT']);
+
+Future<double> readAmanda() async => (await _service.readDevices([
   "G:AMANDA.SETTING",
 ])).whereType<Reading>().first.value.toDouble()!;
 
-Future<Status> setAmanda(double newVal) async => ACSysService().submit(
-  forDRF: "G:AMANDA.SETTING",
-  newSetting: newVal.toDevVal(),
-);
+Future<Status> setAmanda(double newVal) async =>
+    _service.submit(forDRF: "G:AMANDA.SETTING", newSetting: newVal.toDevVal());
 
 Future<void> main() async {
   try {
