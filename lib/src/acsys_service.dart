@@ -292,7 +292,7 @@ final class ACSysService implements ACSysServiceAPI {
   // Executes a GraphQL query with comprehensive error handling and validation.
   Future<QueryResult> _doQuery({
     required DocumentNode document,
-    required Map<String, dynamic> variables,
+    Map<String, dynamic> variables = const {},
     required FetchPolicy fetchPolicy,
   }) async {
     final QueryResult result = await _client.query(
@@ -313,7 +313,7 @@ final class ACSysService implements ACSysServiceAPI {
   // ensures the Authorization header is forwarded by HttpLink.
   Future<QueryResult> _doMutation({
     required DocumentNode document,
-    required Map<String, dynamic> variables,
+    Map<String, dynamic> variables = const {},
   }) async {
     final QueryResult result = await _client.mutate(
       MutationOptions(
@@ -334,7 +334,7 @@ final class ACSysService implements ACSysServiceAPI {
   // them silently swallowed.
   Stream<QueryResult> _doSubscription({
     required DocumentNode document,
-    required Map<String, dynamic> variables,
+    Map<String, dynamic> variables = const {},
     required FetchPolicy fetchPolicy,
   }) => _client
       .subscribe(
@@ -486,7 +486,6 @@ final class ACSysService implements ACSysServiceAPI {
   Future<List<PlotConfigurationListing>> listPlotConfigurations() async {
     final result = await _doQuery(
       document: _docPlotConfig,
-      variables: {'id': null},
       fetchPolicy: .networkOnly,
     );
 
@@ -513,7 +512,6 @@ final class ACSysService implements ACSysServiceAPI {
   Future<PlotConfigurationSnapshot?> retrieveLastUserConfiguration() async {
     final result = await _doQuery(
       document: _docUsersLastConfig,
-      variables: {},
       fetchPolicy: .networkOnly,
     );
 
@@ -667,7 +665,6 @@ final class ACSysService implements ACSysServiceAPI {
   Stream<Alarm> monitorAlarms() =>
       _doSubscription(
         document: _docMonitorAlarms,
-        variables: {},
         fetchPolicy: .networkOnly,
       ).expand(
         (result) => (result.data!['alarms'] as List<Object?>)
@@ -679,7 +676,6 @@ final class ACSysService implements ACSysServiceAPI {
   Future<List<Alarm>> getAlarmsSnapshot() async {
     final result = await _doQuery(
       document: _docAlarmsSnapshot,
-      variables: {},
       fetchPolicy: .networkOnly,
     );
 
