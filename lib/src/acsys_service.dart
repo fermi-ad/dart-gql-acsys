@@ -393,9 +393,17 @@ final class ACSysService implements ACSysServiceAPI {
   // the `status` field will hold the ACNET error status. No more readings will
   // be sent for a device in error.
   @override
-  Stream<Reading> monitorDevices(List<String> drfs) => _doSubscription(
+  Stream<Reading> monitorDevices(
+    List<String> drfs, {
+    DateTime? startTime,
+    DateTime? endTime,
+  }) => _doSubscription(
     document: _docMonitorDevices,
-    variables: {'drfs': drfs},
+    variables: {
+      'drfs': drfs,
+      'startTime': startTime?.millisecondsSinceEpoch as double?,
+      'endTime': endTime?.millisecondsSinceEpoch as double?,
+    },
     fetchPolicy: .networkOnly,
   ).expand(_convertMonitor);
 
