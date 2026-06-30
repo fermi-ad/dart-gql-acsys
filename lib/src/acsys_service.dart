@@ -698,6 +698,7 @@ final class ACSysService implements ACSysServiceAPI {
         .toList();
   }
 
+  @override
   Stream<AnalogAlarmStatus> monitorAnalogAlarmProperty(List<String> drfs) =>
       Stream.error(
         UnimplementedError('monitorAnalogAlarmProperty is not implemented yet'),
