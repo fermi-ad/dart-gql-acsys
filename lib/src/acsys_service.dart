@@ -66,8 +66,8 @@ final class ACSysService implements ACSysServiceAPI {
       }""");
 
   static final _docMonitorDevices = gql(r"""
-      subscription StreamData($drfs: [String!]!) {
-        acceleratorData(drfs: $drfs) {
+      subscription StreamData($drfs: [String!]!, $startTime: Float, $endTime: Float) {
+        acceleratorData(drfs: $drfs, startTime: $startTime, endTime: $endTime) {
           refId
           data {
             timestamp
@@ -387,6 +387,11 @@ final class ACSysService implements ACSysServiceAPI {
         ),
       );
 
+  static double? toFloatTs(DateTime? dt) => switch (dt) {
+    null => null,
+    final d => d.microsecondsSinceEpoch.toDouble() / 1000000.0,
+  };
+
   // Returns a stream of readings for the devices specified in the parameter
   // list. The `Reading` class has a `refId` field which indicates to which
   // device in the passed array the current reading belongs. If `value` is null,
@@ -401,8 +406,8 @@ final class ACSysService implements ACSysServiceAPI {
     document: _docMonitorDevices,
     variables: {
       'drfs': drfs,
-      'startTime': startTime?.millisecondsSinceEpoch as double?,
-      'endTime': endTime?.millisecondsSinceEpoch as double?,
+      'startTime': toFloatTs(startTime),
+      'endTime': toFloatTs(endTime),
     },
     fetchPolicy: .networkOnly,
   ).expand(_convertMonitor);
