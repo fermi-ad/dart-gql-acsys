@@ -66,8 +66,8 @@ final class ACSysService implements ACSysServiceAPI {
       }""");
 
   static final _docMonitorDevices = gql(r"""
-      subscription StreamData($drfs: [String!]!) {
-        acceleratorData(drfs: $drfs) {
+      subscription StreamData($drfs: [String!]!, $startTime: Float, $endTime: Float) {
+        acceleratorData(drfs: $drfs, startTime: $startTime, endTime: $endTime) {
           refId
           data {
             timestamp
@@ -292,7 +292,7 @@ final class ACSysService implements ACSysServiceAPI {
   // Executes a GraphQL query with comprehensive error handling and validation.
   Future<QueryResult> _doQuery({
     required DocumentNode document,
-    required Map<String, dynamic> variables,
+    Map<String, dynamic> variables = const {},
     required FetchPolicy fetchPolicy,
   }) async {
     final QueryResult result = await _client.query(
@@ -313,7 +313,7 @@ final class ACSysService implements ACSysServiceAPI {
   // ensures the Authorization header is forwarded by HttpLink.
   Future<QueryResult> _doMutation({
     required DocumentNode document,
-    required Map<String, dynamic> variables,
+    Map<String, dynamic> variables = const {},
   }) async {
     final QueryResult result = await _client.mutate(
       MutationOptions(
@@ -334,7 +334,7 @@ final class ACSysService implements ACSysServiceAPI {
   // them silently swallowed.
   Stream<QueryResult> _doSubscription({
     required DocumentNode document,
-    required Map<String, dynamic> variables,
+    Map<String, dynamic> variables = const {},
     required FetchPolicy fetchPolicy,
   }) => _client
       .subscribe(
@@ -387,15 +387,28 @@ final class ACSysService implements ACSysServiceAPI {
         ),
       );
 
+  static double? toFloatTs(DateTime? dt) => switch (dt) {
+    null => null,
+    final d => d.microsecondsSinceEpoch.toDouble() / 1000000.0,
+  };
+
   // Returns a stream of readings for the devices specified in the parameter
   // list. The `Reading` class has a `refId` field which indicates to which
   // device in the passed array the current reading belongs. If `value` is null,
   // the `status` field will hold the ACNET error status. No more readings will
   // be sent for a device in error.
   @override
-  Stream<Reading> monitorDevices(List<String> drfs) => _doSubscription(
+  Stream<Reading> monitorDevices(
+    List<String> drfs, {
+    DateTime? startTime,
+    DateTime? endTime,
+  }) => _doSubscription(
     document: _docMonitorDevices,
-    variables: {'drfs': drfs},
+    variables: {
+      'drfs': drfs,
+      'startTime': toFloatTs(startTime),
+      'endTime': toFloatTs(endTime),
+    },
     fetchPolicy: .networkOnly,
   ).expand(_convertMonitor);
 
@@ -486,7 +499,6 @@ final class ACSysService implements ACSysServiceAPI {
   Future<List<PlotConfigurationListing>> listPlotConfigurations() async {
     final result = await _doQuery(
       document: _docPlotConfig,
-      variables: {'id': null},
       fetchPolicy: .networkOnly,
     );
 
@@ -513,7 +525,6 @@ final class ACSysService implements ACSysServiceAPI {
   Future<PlotConfigurationSnapshot?> retrieveLastUserConfiguration() async {
     final result = await _doQuery(
       document: _docUsersLastConfig,
-      variables: {},
       fetchPolicy: .networkOnly,
     );
 
@@ -667,7 +678,6 @@ final class ACSysService implements ACSysServiceAPI {
   Stream<Alarm> monitorAlarms() =>
       _doSubscription(
         document: _docMonitorAlarms,
-        variables: {},
         fetchPolicy: .networkOnly,
       ).expand(
         (result) => (result.data!['alarms'] as List<Object?>)
@@ -679,7 +689,6 @@ final class ACSysService implements ACSysServiceAPI {
   Future<List<Alarm>> getAlarmsSnapshot() async {
     final result = await _doQuery(
       document: _docAlarmsSnapshot,
-      variables: {},
       fetchPolicy: .networkOnly,
     );
 
@@ -689,6 +698,7 @@ final class ACSysService implements ACSysServiceAPI {
         .toList();
   }
 
+  @override
   Stream<AnalogAlarmStatus> monitorAnalogAlarmProperty(List<String> drfs) =>
       Stream.error(
         UnimplementedError('monitorAnalogAlarmProperty is not implemented yet'),

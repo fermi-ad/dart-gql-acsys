@@ -418,7 +418,11 @@ abstract interface class ACSysServiceAPI {
   /// Takes a list of data acquisition strings and returns a stream that
   /// provides readings for the requests.
 
-  Stream<Reading> monitorDevices(List<String> drfs);
+  Stream<Reading> monitorDevices(
+    List<String> drfs, {
+    DateTime? startTime,
+    DateTime? endTime,
+  });
 
   /// Takes a list of device names and returns their current reading.
 

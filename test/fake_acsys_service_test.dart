@@ -34,8 +34,11 @@ final class FakeACSysService implements ACSysServiceAPI {
       List.of(cannedReadings);
 
   @override
-  Stream<Reading> monitorDevices(List<String> drfs) =>
-      Stream.fromIterable(cannedReadings);
+  Stream<Reading> monitorDevices(
+    List<String> drfs, {
+    DateTime? startTime,
+    DateTime? endTime,
+  }) => Stream.fromIterable(cannedReadings);
 
   @override
   Stream<PlotReply> startPlot(
