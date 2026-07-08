@@ -117,6 +117,11 @@ final class FakeACSysService implements ACSysServiceAPI {
   @override
   Stream<AnalogAlarmStatus> monitorAnalogAlarmProperty(List<String> drfs) =>
       const Stream.empty();
+
+  @override
+  Future<void> dispose() async {
+    // No resources to release in the fake implementation.
+  }
 }
 
 // ---------------------------------------------------------------------------

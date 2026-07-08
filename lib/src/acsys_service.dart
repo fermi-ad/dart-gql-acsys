@@ -734,6 +734,14 @@ final class ACSysService implements ACSysServiceAPI {
       "DeviceValue type not found: __typename=${jsonMap['__typename']}",
     ),
   };
+
+  /// Releases resources held by this service.
+  ///
+  /// After calling [dispose] the service must not be used again.
+  @override
+  Future<void> dispose() async {
+    _client.link.dispose();
+  }
 }
 
 extension on DeviceValue {
