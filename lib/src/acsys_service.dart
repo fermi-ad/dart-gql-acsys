@@ -692,27 +692,34 @@ final class ACSysService implements ACSysServiceAPI {
   };
 
   // Converts a single alarmsSnapshot row map into an [Alarm].
+  //
+  // The alarms backend sends `source`/`state`/`severity` as upper-case
+  // strings (e.g. "ANALOG", "ALARMED", "LOW"), so the incoming value is
+  // upper-cased before matching to be resilient to any casing the backend
+  // might use.
   static Alarm _rowToAlarm(Map<String, dynamic> row) {
-    final AlarmSource source = switch (row['source'] as String?) {
-      'analog' => .analog,
-      'digital' => .digital,
-      'epics' => .epics,
+    final AlarmSource source = switch ((row['source'] as String?)
+        ?.toUpperCase()) {
+      'ANALOG' => .analog,
+      'DIGITAL' => .digital,
+      'EPICS' => .epics,
       _ => .unknown,
     };
 
-    final AlarmState state = switch (row['state'] as String?) {
-      'ok' => .ok,
-      'alarmed' => .alarmed,
-      'bypassed' => .bypassed,
-      'latched' => .latched,
-      'acknowledged' => .acknowledged,
-      'unbypassed' => .unbypassed,
+    final AlarmState state = switch ((row['state'] as String?)?.toUpperCase()) {
+      'OK' => .ok,
+      'ALARMED' => .alarmed,
+      'BYPASSED' => .bypassed,
+      'LATCHED' => .latched,
+      'ACKNOWLEDGED' => .acknowledged,
+      'UNBYPASSED' => .unbypassed,
       _ => .unknown,
     };
 
-    final AlarmSeverity severity = switch (row['severity'] as String?) {
-      'low' => .low,
-      'high' => .high,
+    final AlarmSeverity severity = switch ((row['severity'] as String?)
+        ?.toUpperCase()) {
+      'LOW' => .low,
+      'HIGH' => .high,
       _ => .unknown,
     };
 
