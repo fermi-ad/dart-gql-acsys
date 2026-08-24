@@ -29,7 +29,14 @@ export 'exceptions.dart';
 /// widget which manages an object of this class.
 
 final class ACSysService implements ACSysServiceAPI {
+  // Endpoint hosts for the two GraphQL backends this service talks to.
+  static const String _acsysWsUrl = "wss://ad-api.fnal.gov/acsys/s";
+  static const String _acsysHttpUrl = "https://ad-api.fnal.gov/acsys";
+  static const String _alarmsWsUrl = "wss://ad-api-dev.fnal.gov/alarms/s";
+  static const String _alarmsHttpUrl = "https://ad-api-dev.fnal.gov/alarms";
+
   final GraphQLClient _client;
+  final GraphQLClient _alarmsClient;
 
   // Pre-parsed GraphQL documents. Parsing is done once at class initialisation
   // rather than on every method call, avoiding repeated AST allocation on hot
@@ -201,37 +208,59 @@ final class ACSysService implements ACSysServiceAPI {
   static Map<String, String> _buildAuthHeader(String? jwt) =>
       jwt != null ? {"Authorization": "Bearer $jwt"} : {};
 
+  // Builds a GraphQLClient for a single GraphQL backend, given its
+  // WebSocket and HTTP URLs. Splits the link so that subscriptions go over
+  // WebSocket and everything else (queries/mutations) goes over HTTP. Shared
+  // by the constructor so both the acsys and alarms backends are configured
+  // identically (auth handling, timeouts, etc.).
+  static GraphQLClient _buildClient({
+    required String wsUrl,
+    required String httpUrl,
+    required String? jwt,
+  }) => GraphQLClient(
+    link: Link.split(
+      (request) => request.isSubscription,
+      WebSocketLink(
+        wsUrl,
+        config: SocketClientConfig(
+          autoReconnect: true,
+          // Browser WebSockets cannot send custom headers; pass the JWT
+          // via the graphql-ws connection_init payload instead so the
+          // server can authenticate the subscription connection.
+          initialPayload: jwt != null ? {"Authorization": "Bearer $jwt"} : null,
+          queryAndMutationTimeout: const Duration(seconds: 5),
+          inactivityTimeout: null,
+        ),
+        subProtocol: "graphql-ws",
+      ),
+      HttpLink(
+        httpUrl,
+        defaultHeaders: _buildAuthHeader(jwt),
+        httpClient: http.Client(),
+      ),
+    ),
+    queryRequestTimeout: const Duration(seconds: 5),
+    cache: GraphQLCache(store: InMemoryStore()),
+  );
+
   // Constructor. This creates the HTTP and WebSocket links needed to
   // communicate with our GraphQL endpoints, then splits them so that
   // subscriptions go over WebSocket and everything else goes over HTTP.
+  //
+  // Two separate clients are built: `_client` talks to the "acsys" backend
+  // (device data, plot configuration, settings) and `_alarmsClient` talks to
+  // the separate "alarms" backend.
 
   ACSysService({String? jwt})
-    : _client = GraphQLClient(
-        link: Link.split(
-          (request) => request.isSubscription,
-          WebSocketLink(
-            "wss://ad-api.fnal.gov/acsys/s",
-            config: SocketClientConfig(
-              autoReconnect: true,
-              // Browser WebSockets cannot send custom headers; pass the JWT
-              // via the graphql-ws connection_init payload instead so the
-              // server can authenticate the subscription connection.
-              initialPayload: jwt != null
-                  ? {"Authorization": "Bearer $jwt"}
-                  : null,
-              queryAndMutationTimeout: const Duration(seconds: 5),
-              inactivityTimeout: null,
-            ),
-            subProtocol: "graphql-ws",
-          ),
-          HttpLink(
-            "https://ad-api.fnal.gov/acsys",
-            defaultHeaders: _buildAuthHeader(jwt),
-            httpClient: http.Client(),
-          ),
-        ),
-        queryRequestTimeout: const Duration(seconds: 5),
-        cache: GraphQLCache(store: InMemoryStore()),
+    : _client = _buildClient(
+        wsUrl: _acsysWsUrl,
+        httpUrl: _acsysHttpUrl,
+        jwt: jwt,
+      ),
+      _alarmsClient = _buildClient(
+        wsUrl: _alarmsWsUrl,
+        httpUrl: _alarmsHttpUrl,
+        jwt: jwt,
       );
 
   // Validates a [QueryResult] for all common GraphQL error scenarios and
@@ -290,12 +319,15 @@ final class ACSysService implements ACSysServiceAPI {
   }
 
   // Executes a GraphQL query with comprehensive error handling and validation.
+  // [client] defaults to the "acsys" client; pass [_alarmsClient] to target
+  // the alarms backend instead.
   Future<QueryResult> _doQuery({
     required DocumentNode document,
     Map<String, dynamic> variables = const {},
     required FetchPolicy fetchPolicy,
+    GraphQLClient? client,
   }) async {
-    final QueryResult result = await _client.query(
+    final QueryResult result = await (client ?? _client).query(
       QueryOptions(
         document: document,
         variables: variables,
@@ -310,12 +342,15 @@ final class ACSysService implements ACSysServiceAPI {
   // validation. Mutations must go through [GraphQLClient.mutate] so that the
   // underlying link receives a request whose [isSubscription] flag is false
   // *and* whose operation type is correctly identified as a mutation — which
-  // ensures the Authorization header is forwarded by HttpLink.
+  // ensures the Authorization header is forwarded by HttpLink. [client]
+  // defaults to the "acsys" client; pass [_alarmsClient] to target the
+  // alarms backend instead.
   Future<QueryResult> _doMutation({
     required DocumentNode document,
     Map<String, dynamic> variables = const {},
+    GraphQLClient? client,
   }) async {
-    final QueryResult result = await _client.mutate(
+    final QueryResult result = await (client ?? _client).mutate(
       MutationOptions(
         document: document,
         variables: variables,
@@ -331,12 +366,14 @@ final class ACSysService implements ACSysServiceAPI {
   // inspected for link-level and GraphQL-level errors before being forwarded.
   // Errors are logged and re-thrown as [ACSysGraphQLException] so that stream
   // consumers receive them via the stream's error channel rather than having
-  // them silently swallowed.
+  // them silently swallowed. [client] defaults to the "acsys" client; pass
+  // [_alarmsClient] to target the alarms backend instead.
   Stream<QueryResult> _doSubscription({
     required DocumentNode document,
     Map<String, dynamic> variables = const {},
     required FetchPolicy fetchPolicy,
-  }) => _client
+    GraphQLClient? client,
+  }) => (client ?? _client)
       .subscribe(
         SubscriptionOptions(
           document: document,
@@ -636,6 +673,24 @@ final class ACSysService implements ACSysServiceAPI {
     );
   }
 
+  // Parses a timestamp field from an alarms row.
+  //
+  // The alarms backend has been observed to send timestamps either as a
+  // numeric epoch-seconds value (the same convention used by the acsys
+  // backend, see [fromFloatTs]) or as an ISO-8601 string (e.g.
+  // "2026-08-21T17:53:33+00:00"). Some alarm rows also omit these fields
+  // entirely (e.g. `wake` for alarms that have never been acknowledged), in
+  // which case the field is `null`; that case falls back to the Unix epoch
+  // rather than crashing the client.
+  static DateTime _parseAlarmTimestamp(Object? value) => switch (value) {
+    null => DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+    final num n => fromFloatTs(n.toDouble()),
+    final String s => DateTime.parse(s),
+    _ => throw ACSysGraphQLException(
+      'Unexpected timestamp format in alarm row: $value',
+    ),
+  };
+
   // Converts a single alarmsSnapshot row map into an [Alarm].
   static Alarm _rowToAlarm(Map<String, dynamic> row) {
     final AlarmSource source = switch (row['source'] as String?) {
@@ -667,10 +722,10 @@ final class ACSysService implements ACSysServiceAPI {
       state: state,
       severity: severity,
       acknowledgeable: row['acknowledgeable'] as bool,
-      time: fromFloatTs((row['time'] as num).toDouble()),
+      time: _parseAlarmTimestamp(row['time']),
       epicsType: row['epicsType'] as String,
       user: row['user'] as String,
-      wake: fromFloatTs((row['wake'] as num).toDouble()),
+      wake: _parseAlarmTimestamp(row['wake']),
     );
   }
 
@@ -679,6 +734,7 @@ final class ACSysService implements ACSysServiceAPI {
       _doSubscription(
         document: _docMonitorAlarms,
         fetchPolicy: .networkOnly,
+        client: _alarmsClient,
       ).expand(
         (result) => (result.data!['alarms'] as List<Object?>)
             .cast<Map<String, dynamic>>()
@@ -690,6 +746,7 @@ final class ACSysService implements ACSysServiceAPI {
     final result = await _doQuery(
       document: _docAlarmsSnapshot,
       fetchPolicy: .networkOnly,
+      client: _alarmsClient,
     );
 
     return (result.data!['alarmsSnapshot'] as List<Object?>)
@@ -741,6 +798,7 @@ final class ACSysService implements ACSysServiceAPI {
   @override
   Future<void> dispose() async {
     _client.link.dispose();
+    _alarmsClient.link.dispose();
   }
 }
 
