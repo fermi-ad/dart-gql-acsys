@@ -735,10 +735,11 @@ final class ACSysService implements ACSysServiceAPI {
         document: _docMonitorAlarms,
         fetchPolicy: .networkOnly,
         client: _alarmsClient,
-      ).expand(
-        (result) => (result.data!['alarms'] as List<Object?>)
-            .cast<Map<String, dynamic>>()
-            .map(_rowToAlarm),
+      ).map(
+        // Each subscription event carries a single changed alarm (not a
+        // list of all alarms), so the "alarms" field in the response is a
+        // single row object.
+        (result) => _rowToAlarm(result.data!['alarms'] as Map<String, dynamic>),
       );
 
   @override
