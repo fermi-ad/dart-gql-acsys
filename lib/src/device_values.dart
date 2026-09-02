@@ -28,7 +28,9 @@
 library;
 
 import 'dart:typed_data';
+
 import 'package:collection/collection.dart';
+
 import 'status.dart';
 
 /// Use this type to indicate any device type is allowed.
@@ -78,11 +80,7 @@ sealed class DeviceValue {
   };
 }
 
-final class DevStatusCode extends DeviceValue {
-  final Status status;
-
-  const DevStatusCode(this.status);
-
+final class const DevStatusCode(final Status status) extends DeviceValue {
   @override
   String toString() => "[${status.facility} ${status.error}]";
 }
@@ -94,57 +92,34 @@ final class DevStatusCode extends DeviceValue {
 /// scale it. This type is mostly useful for diagnostics or for actual, binary
 /// data buffers (i.e. image data.)
 
-final class DevRaw extends DeviceValue {
-  final Uint8List value;
-
-  const DevRaw(this.value);
-}
+final class const DevRaw(final Uint8List value) extends DeviceValue;
 
 /// Represents a single, floating point number.
 ///
 /// Most devices deal with floating point values. This is the type to send to
 /// a device and what would be returned when reading it.
 
-final class DevScalar extends DeviceValue {
-  final double value;
-
-  const DevScalar(this.value);
-}
+final class const DevScalar(final double value) extends DeviceValue;
 
 /// Represents an array of floating point values.
 ///
 /// Some devices are "array devices" and will return an array of floating point
 /// values. This type is also used by EPICS "waveform" devices.
 
-final class DevScalarArray extends DeviceValue {
-  final Float64List value;
-
-  const DevScalarArray(this.value);
-}
+final class const DevScalarArray(final Float64List value) extends DeviceValue;
 
 /// Represents a single string of characters.
 
-final class DevText extends DeviceValue {
-  final String value;
-
-  const DevText(this.value);
-}
+final class const DevText(final String value) extends DeviceValue;
 
 /// Represents an array of strings.
 
-final class DevTextArray extends DeviceValue {
-  final List<String> value;
-
-  const DevTextArray(this.value);
-}
+final class const DevTextArray(final List<String> value) extends DeviceValue;
 
 /// Represents time-series data (i.e. a list of timestamp/value pairs.)
 
-final class DevTimeSeries extends DeviceValue {
-  final List<(double, double)> value;
-
-  const DevTimeSeries(this.value);
-}
+final class const DevTimeSeries(final List<(double, double)> value)
+    extends DeviceValue;
 
 // The `ToDeviceValue` extension allows us to convert primitive types into a
 // `DeviceValue`.

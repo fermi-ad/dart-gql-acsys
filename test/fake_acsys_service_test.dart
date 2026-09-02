@@ -136,6 +136,8 @@ PlotConfigurationSnapshot _makeSnapshot({String name = 'Config', int? id}) =>
       isShowLabels: true,
       isScalar: true,
       isOneShot: false,
+      isPersistent: false,
+      isBlink: false,
       dataLimit: 1024,
     );
 

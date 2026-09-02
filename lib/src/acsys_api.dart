@@ -4,29 +4,17 @@ import 'exceptions.dart';
 import 'device_values.dart';
 import 'status.dart';
 
-final class Alarm {
-  final String device;
-  final AlarmSource source;
-  final AlarmState state;
-  final AlarmSeverity severity;
-  final bool acknowledgeable;
-  final DateTime time;
-  final String epicsType;
-  final String user;
-  final DateTime wake;
-
-  const Alarm({
-    required this.device,
-    required this.source,
-    required this.state,
-    required this.severity,
-    required this.acknowledgeable,
-    required this.time,
-    required this.epicsType,
-    required this.user,
-    required this.wake,
-  });
-}
+final class const Alarm({
+  required final String device,
+  required final AlarmSource source,
+  required final AlarmState state,
+  required final AlarmSeverity severity,
+  required final bool acknowledgeable,
+  required final DateTime time,
+  required final String epicsType,
+  required final String user,
+  required final DateTime wake,
+});
 
 /// Enumeration representing the Alarm Source
 enum AlarmSource { unknown, analog, digital, epics }
@@ -47,21 +35,13 @@ enum AlarmSeverity { unknown, low, high }
 
 enum AnalogAlarmState { notAlarming, alarming, bypassed }
 
-final class AnalogAlarmStatus {
-  final int refId;
-  final int status;
-  final int cycle;
-  final DateTime timestamp;
-  final AnalogAlarmState state;
-
-  const AnalogAlarmStatus({
-    required this.refId,
-    this.status = 0,
-    required this.cycle,
-    required this.timestamp,
-    required this.state,
-  });
-}
+final class const AnalogAlarmStatus({
+  required final int refId,
+  required final int status,
+  required final int cycle,
+  required final DateTime timestamp,
+  required final AnalogAlarmState state,
+});
 
 enum AcquisitionMode {
   oneShot,
@@ -106,17 +86,11 @@ ReadingMode _rmFromString(String? val) => switch (val) {
   _ => ReadingMode.array,
 };
 
-final class Reading {
-  final int refId;
-  final DateTime timestamp;
-  final DeviceValue value;
-
-  const Reading({
-    required this.refId,
-    required this.timestamp,
-    required this.value,
-  });
-}
+final class const Reading({
+  required final int refId,
+  required final DateTime timestamp,
+  required final DeviceValue value,
+});
 
 int _genPlotId = 1000000;
 
@@ -131,50 +105,29 @@ extension type PlotConfigId._(int raw) implements Comparable {
   int compareTo(PlotConfigId other) => raw.compareTo(other.raw);
 }
 
-final class PlotPoint {
-  final double t;
-  final DeviceValue value;
+final class const PlotPoint({
+  required final double t,
+  required final DeviceValue value,
+});
 
-  const PlotPoint({required this.t, required this.value});
-}
+final class const PlotChannelData({
+  required final String name,
+  required final String units,
+  required final String rate,
+  required final int status,
+  required final List<PlotPoint> points,
+});
 
-final class PlotChannelData {
-  final String name;
-  final String units;
-  final String rate;
-  final int status;
-  final List<PlotPoint> points;
-
-  const PlotChannelData({
-    required this.name,
-    required this.units,
-    required this.rate,
-    this.status = 0,
-    this.points = const [],
-  });
-}
-
-final class PlotReply {
-  final String plotId;
-  final double requestTime;
-  final double? triggerTimestamp;
-  final String xAxisUnits;
-  final double? xAxisMin;
-  final double? xAxisMax;
-  final int? windowSize;
-  final List<PlotChannelData> data;
-
-  const PlotReply({
-    required this.plotId,
-    required this.requestTime,
-    this.triggerTimestamp,
-    required this.xAxisUnits,
-    this.xAxisMin,
-    this.xAxisMax,
-    this.windowSize,
-    required this.data,
-  });
-}
+final class const PlotReply({
+  required final String plotId,
+  required final double requestTime,
+  final double? triggerTimestamp,
+  required final String xAxisUnits,
+  final double? xAxisMin,
+  final double? xAxisMax,
+  final int? windowSize,
+  required final List<PlotChannelData> data,
+});
 
 final class PlotConfigurationListing {
   final PlotConfigId? configurationId;
@@ -197,20 +150,13 @@ final class PlotConfigurationListing {
   }
 }
 
-final class ChannelSettingSnapshot {
-  final Color? lineColor;
-  final int? markerIndex;
-  final double? yMin;
-  final double? yMax;
-
-  const ChannelSettingSnapshot({
-    this.lineColor,
-    this.markerIndex,
-    this.yMin,
-    this.yMax,
-  });
-
-  factory ChannelSettingSnapshot.fromJson(Map<String, dynamic> json) {
+final class const ChannelSettingSnapshot({
+  final Color? lineColor,
+  final int? markerIndex,
+  final double? yMin,
+  final double? yMax,
+}) {
+  factory fromJson(Map<String, dynamic> json) {
     final lineColorVal = json['lineColor'];
     final markerIndexVal = json['markerIndex'];
     final yMinVal = json['yMin'];
@@ -234,53 +180,30 @@ final class ChannelSettingSnapshot {
   };
 }
 
-final class PlotConfigurationSnapshot extends PlotConfigurationListing {
-  Map<String, ChannelSettingSnapshot> channels;
-  double? xMin;
-  double? xMax;
-  double? timeDelta;
-  double? startTime;
-  double? endTime;
-  bool isShowLabels;
-  bool isScalar;
-  bool isOneShot;
-  bool isPersistent;
-  bool isBlink;
-  int? updateDelay;
-  int? nAcquisitions;
-  int? tclkEvent;
-  int? sampleOnEvent;
-  AcquisitionMode? acquisitionMode;
-  ReadingMode? readingMode;
-  String? xAxis;
-  int dataLimit;
-  double? waveformDuration;
-
-  PlotConfigurationSnapshot({
-    super.configurationId,
-    required super.configurationName,
-    required this.channels,
-    this.xMin,
-    this.xMax,
-    this.startTime,
-    this.endTime,
-    this.timeDelta,
-    required this.isShowLabels,
-    required this.isScalar,
-    required this.isOneShot,
-    this.isPersistent = false,
-    this.isBlink = false,
-    this.updateDelay,
-    this.nAcquisitions,
-    this.tclkEvent,
-    this.sampleOnEvent,
-    this.acquisitionMode,
-    this.xAxis,
-    required this.dataLimit,
-    this.readingMode,
-    this.waveformDuration,
-  });
-
+final class PlotConfigurationSnapshot({
+  super.configurationId,
+  required super.configurationName,
+  required final Map<String, ChannelSettingSnapshot> channels,
+  final double? xMin,
+  final double? xMax,
+  final double? timeDelta,
+  final double? startTime,
+  final double? endTime,
+  required final bool isShowLabels,
+  required final bool isScalar,
+  required final bool isOneShot,
+  required final bool isPersistent,
+  required final bool isBlink,
+  final int? updateDelay,
+  final int? nAcquisitions,
+  final int? tclkEvent,
+  final int? sampleOnEvent,
+  final AcquisitionMode? acquisitionMode,
+  final ReadingMode? readingMode,
+  final String? xAxis,
+  required final int dataLimit,
+  final double? waveformDuration,
+}) extends PlotConfigurationListing {
   /// Returns a copy of this snapshot with [id] stamped in as the
   /// [configurationId]. All other fields are shared by reference (they are
   /// either immutable value types or collections that callers are expected not
@@ -311,11 +234,7 @@ final class PlotConfigurationSnapshot extends PlotConfigurationListing {
         waveformDuration: waveformDuration,
       );
 
-  factory PlotConfigurationSnapshot.fromJson(
-    PlotConfigId id,
-    String name,
-    Map<String, dynamic> json,
-  ) {
+  factory fromJson(PlotConfigId id, String name, Map<String, dynamic> json) {
     // This is intentionally robust. If fields are missing or have the wrong
     // type, they will be set to null or a default value. Extra fields in the
     // JSON will be ignored.
