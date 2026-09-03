@@ -55,6 +55,8 @@ sealed class DeviceValue {
         return v == o;
       case ((DevScalarArray(value: final v), DevScalarArray(value: final o))):
         return _listEq.equals(v, o);
+      case ((DevIntArray(value: final v), DevIntArray(value: final o))):
+        return _listEq.equals(v, o);
       case ((DevText(value: final v), DevText(value: final o))):
         return v == o;
       case ((DevTextArray(value: final v), DevTextArray(value: final o))):
@@ -74,6 +76,7 @@ sealed class DeviceValue {
     DevScalar(value: final v) => v.hashCode,
     DevText(value: final v) => v.hashCode,
     DevScalarArray(value: final v) => _listEq.hash(v),
+    DevIntArray(value: final v) => _listEq.hash(v),
     DevTextArray(value: final v) => _listEq.hash(v),
     DevTimeSeries(value: final v) => _listEq.hash(v),
     DevStatusCode(status: final v) => v.hashCode,
@@ -107,6 +110,9 @@ final class const DevScalar(final double value) extends DeviceValue;
 /// values. This type is also used by EPICS "waveform" devices.
 
 final class const DevScalarArray(final Float64List value) extends DeviceValue;
+
+/// Represents an array of 32-bit integers.
+final class const DevIntArray(final Int32List value) extends DeviceValue;
 
 /// Represents a single string of characters.
 
@@ -142,6 +148,10 @@ extension RawToDeviceValue on Uint8List {
 
 extension DoubleArrayToDeviceValue on Float64List {
   DeviceValue toDevVal() => DevScalarArray(this);
+}
+
+extension IntArrayToDeviceValue on Int32List {
+  DeviceValue toDevVal() => DevIntArray(this);
 }
 
 extension TextArrayToDeviceValue on List<String> {
@@ -184,6 +194,11 @@ extension FromDeviceValue on DeviceValue {
 
   Float64List? toDoubleArray() => switch (this) {
     DevScalarArray(value: final v) => v,
+    _ => null,
+  };
+
+  Int32List? toIntArray() => switch (this) {
+    DevIntArray(value: final v) => v,
     _ => null,
   };
 

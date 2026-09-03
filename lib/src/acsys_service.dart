@@ -772,6 +772,11 @@ final class ACSysService implements ACSysServiceAPI {
         (jsonMap['scalarArrayValue'] as List<Object?>).map(_toDouble).toList(),
       ),
     ),
+    'IntArray' => DevIntArray(
+      Int32List.fromList(
+        (jsonMap['intArrayValue'] as List<Object?>).cast<int>().toList(),
+      ),
+    ),
     'Raw' => DevRaw(
       Uint8List.fromList((jsonMap['rawValue'] as List<Object?>).cast<int>()),
     ),
@@ -804,6 +809,9 @@ extension on DeviceValue {
     DevTimeSeries(value: var ts) => {
       'timeSeriesVal': ts.map((e) => {'stamp': e.$1, 'value': e.$2}).toList(),
     },
+    DevIntArray(value: var _) => throw ACSysGraphQLException(
+      'Integer arrays aren\'t supported in the API',
+    ),
     DevStatusCode() => throw ACSysGraphQLException(
       'Status codes cannot be used as input values',
     ),
