@@ -6,6 +6,7 @@
 //   5. Verifies the configuration is no longer listed.
 
 import 'dart:io';
+
 import 'package:dart_gql_acsys/dart_gql_acsys.dart';
 
 const _testName = r'$API TEST$';
@@ -51,6 +52,8 @@ Future<void> main() async {
       isShowLabels: true,
       isScalar: false,
       isOneShot: false,
+      isPersistent: false,
+      isBlink: false,
       dataLimit: 4096,
     );
 
