@@ -324,14 +324,14 @@ final class ACSysService implements ACSysServiceAPI {
   Future<QueryResult> _doQuery({
     required DocumentNode document,
     Map<String, dynamic> variables = const {},
-    required FetchPolicy fetchPolicy,
+    FetchPolicy? fetchPolicy,
     GraphQLClient? client,
   }) async {
     final QueryResult result = await (client ?? _client).query(
       QueryOptions(
         document: document,
         variables: variables,
-        fetchPolicy: fetchPolicy,
+        fetchPolicy: fetchPolicy ?? .noCache,
       ),
     );
 
@@ -354,7 +354,7 @@ final class ACSysService implements ACSysServiceAPI {
       MutationOptions(
         document: document,
         variables: variables,
-        fetchPolicy: FetchPolicy.networkOnly,
+        fetchPolicy: .noCache,
       ),
     );
 
@@ -371,14 +371,14 @@ final class ACSysService implements ACSysServiceAPI {
   Stream<QueryResult> _doSubscription({
     required DocumentNode document,
     Map<String, dynamic> variables = const {},
-    required FetchPolicy fetchPolicy,
+    FetchPolicy? fetchPolicy,
     GraphQLClient? client,
   }) => (client ?? _client)
       .subscribe(
         SubscriptionOptions(
           document: document,
           variables: variables,
-          fetchPolicy: fetchPolicy,
+          fetchPolicy: fetchPolicy ?? .noCache,
         ),
       )
       .where((event) => event.isNotLoading)
@@ -420,7 +420,6 @@ final class ACSysService implements ACSysServiceAPI {
         await _doQuery(
           document: _docReadDevices,
           variables: {'devList': devices},
-          fetchPolicy: .networkOnly,
         ),
       );
 
@@ -446,7 +445,6 @@ final class ACSysService implements ACSysServiceAPI {
       'startTime': toFloatTs(startTime),
       'endTime': toFloatTs(endTime),
     },
-    fetchPolicy: .networkOnly,
   ).expand(_convertMonitor);
 
   static DateTime fromFloatTs(double ts) =>
@@ -523,7 +521,6 @@ final class ACSysService implements ACSysServiceAPI {
     final result = await _doQuery(
       document: _docPlotConfig,
       variables: {'id': configurationId.value},
-      fetchPolicy: .networkOnly,
     );
 
     final rows = (result.data!['plotConfiguration'] as List<Object?>)
@@ -534,10 +531,7 @@ final class ACSysService implements ACSysServiceAPI {
 
   @override
   Future<List<PlotConfigurationListing>> listPlotConfigurations() async {
-    final result = await _doQuery(
-      document: _docPlotConfig,
-      fetchPolicy: .networkOnly,
-    );
+    final result = await _doQuery(document: _docPlotConfig);
 
     return (result.data!['plotConfiguration'] as List<Object?>)
         .cast<Map<String, dynamic>>()
@@ -560,11 +554,7 @@ final class ACSysService implements ACSysServiceAPI {
 
   @override
   Future<PlotConfigurationSnapshot?> retrieveLastUserConfiguration() async {
-    final result = await _doQuery(
-      document: _docUsersLastConfig,
-      fetchPolicy: .networkOnly,
-    );
-
+    final result = await _doQuery(document: _docUsersLastConfig);
     final raw = result.data!['usersLastConfiguration'];
 
     if (raw == null) return null;
@@ -618,7 +608,6 @@ final class ACSysService implements ACSysServiceAPI {
       'sampleOnEvent': sampleOnEvent,
       'chXAxis': chXAxis,
     },
-    fetchPolicy: .networkOnly,
   ).map((result) => _toPlotReply(result.data!, drfs, xMin, xMax, windowSize));
 
   static PlotReply _toPlotReply(
@@ -738,11 +727,7 @@ final class ACSysService implements ACSysServiceAPI {
 
   @override
   Stream<Alarm> monitorAlarms() =>
-      _doSubscription(
-        document: _docMonitorAlarms,
-        fetchPolicy: .networkOnly,
-        client: _alarmsClient,
-      ).map(
+      _doSubscription(document: _docMonitorAlarms, client: _alarmsClient).map(
         // Each subscription event carries a single changed alarm (not a
         // list of all alarms), so the "alarms" field in the response is a
         // single row object.
@@ -753,7 +738,6 @@ final class ACSysService implements ACSysServiceAPI {
   Future<List<Alarm>> getAlarmsSnapshot() async {
     final result = await _doQuery(
       document: _docAlarmsSnapshot,
-      fetchPolicy: .networkOnly,
       client: _alarmsClient,
     );
 
