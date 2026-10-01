@@ -6,7 +6,12 @@ extension type Status._(int code) {
   const Status.fromInt(int value) : code = value;
 
   int get facility => code & 255;
-  int get error => code >> 8;
+  // Arithmetic, not `>>`: on the web, bitwise operators work on unsigned
+  // 32-bit values, so `-12271 >> 8` there is 16777168, not -48.
+  int get error {
+    final c = code.toSigned(32);
+    return (c - (c & 255)) ~/ 256;
+  }
 
   bool get success => error >= 0;
   bool get warning => error > 0;
