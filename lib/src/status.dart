@@ -6,7 +6,8 @@ extension type Status._(int code) {
   const Status.fromInt(int value) : code = value;
 
   int get facility => code & 255;
-  int get error => code >> 8;
+  // toSigned(8): on the web `>>` is unsigned, so `-12271 >> 8` is 16777168.
+  int get error => (code >> 8).toSigned(8);
 
   bool get success => error >= 0;
   bool get warning => error > 0;
