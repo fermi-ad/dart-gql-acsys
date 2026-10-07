@@ -16,8 +16,8 @@ dependencies:
   dart_gql_acsys:
     git:
       url: https://github.com/fermi-ad/dart-gql-acsys.git
-      ref: main
-
+      tag_pattern: v{{version}}
+    version: ^1.5.0
 ```
 
 ## Usage
