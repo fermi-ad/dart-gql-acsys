@@ -109,6 +109,31 @@ void main() {
       expect(v, isA<DevScalar>());
       expect((v as DevScalar).value, equals(42.0));
     });
+
+    // JSON has no NaN: the gateway sends a NaN reading as null.
+    test('ScalarArray decodes a null element as NaN', () {
+      final v = ACSysService.devVal({
+        '__typename': 'ScalarArray',
+        'scalarArrayValue': [1.0, null, 3],
+      });
+
+      expect(v, isA<DevScalarArray>());
+      final a = (v as DevScalarArray).value;
+      expect(a.length, equals(3));
+      expect(a[0], equals(1.0));
+      expect(a[1].isNaN, isTrue);
+      expect(a[2], equals(3.0));
+    });
+
+    test('Scalar decodes null as NaN', () {
+      final v = ACSysService.devVal({
+        '__typename': 'Scalar',
+        'scalarValue': null,
+      });
+
+      expect(v, isA<DevScalar>());
+      expect((v as DevScalar).value.isNaN, isTrue);
+    });
   });
 
   // ---------------------------------------------------------------------------
