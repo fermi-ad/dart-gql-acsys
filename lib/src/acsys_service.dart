@@ -760,8 +760,7 @@ final class ACSysService implements ACSysServiceAPI {
   // dispatch on "__typename" and then pull the single relevant field.
 
   // JSON has no NaN, so the gateway sends a NaN reading as null.
-  static double _toDouble(Object? n) =>
-      n == null ? double.nan : (n as num).toDouble();
+  static double _toDouble(Object? n) => (n as num?)?.toDouble() ?? double.nan;
 
   static DeviceValue devVal(
     Map<String, dynamic> jsonMap,
