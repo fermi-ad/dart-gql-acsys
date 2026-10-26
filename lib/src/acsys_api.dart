@@ -54,36 +54,36 @@ enum AcquisitionMode {
 extension on AcquisitionMode {
   // Serializes to the short string stored in the Dart-side database/JSON.
   String _stringize() => switch (this) {
-    AcquisitionMode.oneShot => "os",
-    AcquisitionMode.oneShotTriggeredOnEvent => "os_on_event",
-    AcquisitionMode.repetitivePeriodic => "rep_periodic",
-    AcquisitionMode.repetitiveTriggeredOnEvent => "rep_on_event",
-    AcquisitionMode.sampleOnEvent => "smp_on_event",
+    .oneShot => "os",
+    .oneShotTriggeredOnEvent => "os_on_event",
+    .repetitivePeriodic => "rep_periodic",
+    .repetitiveTriggeredOnEvent => "rep_on_event",
+    .sampleOnEvent => "smp_on_event",
   };
 }
 
 AcquisitionMode _amFromString(String? val) => switch (val) {
-  "os_on_event" => AcquisitionMode.oneShotTriggeredOnEvent,
-  "rep_periodic" => AcquisitionMode.repetitivePeriodic,
-  "rep_on_event" => AcquisitionMode.repetitiveTriggeredOnEvent,
-  "smp_on_event" => AcquisitionMode.sampleOnEvent,
-  _ => AcquisitionMode.oneShot,
+  "os_on_event" => .oneShotTriggeredOnEvent,
+  "rep_periodic" => .repetitivePeriodic,
+  "rep_on_event" => .repetitiveTriggeredOnEvent,
+  "smp_on_event" => .sampleOnEvent,
+  _ => .oneShot,
 };
 
 enum ReadingMode { array, scalar, arrayAsTimeSeries }
 
 extension on ReadingMode {
   String _stringize() => switch (this) {
-    ReadingMode.array => "array",
-    ReadingMode.scalar => "scalar",
-    ReadingMode.arrayAsTimeSeries => "array_as_time_series",
+    .array => "array",
+    .scalar => "scalar",
+    .arrayAsTimeSeries => "array_as_time_series",
   };
 }
 
 ReadingMode _rmFromString(String? val) => switch (val) {
-  "array_as_time_series" => ReadingMode.arrayAsTimeSeries,
-  "scalar" => ReadingMode.scalar,
-  _ => ReadingMode.array,
+  "array_as_time_series" => .arrayAsTimeSeries,
+  "scalar" => .scalar,
+  _ => .array,
 };
 
 final class const Reading({
