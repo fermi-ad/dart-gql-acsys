@@ -626,13 +626,23 @@ final class ACSysService implements ACSysServiceAPI {
   ) {
     // The GraphQL client wraps the response under the operation field name.
     final plotInfo = eventData['startPlot'] as Map<String, dynamic>;
+    final rawChannels = plotInfo['data'] as List<Object?>;
 
-    final rawChannels = (plotInfo['data'] as List<Object?>)
-        .cast<Map<String, dynamic>>();
+    // Channels are reported in request order, so the index maps back to the
+    // DRF that was requested.
+    if (rawChannels.length > drfs.length) {
+      throw ACSysGraphQLException(
+        'startPlot returned ${rawChannels.length} channels for '
+        '${drfs.length} requested devices',
+      );
+    }
 
-    final channels = rawChannels.indexed
-        .map((entry) => _toPlotChannelData(entry.$2, drfs[entry.$1]))
-        .toList();
+    final channels = List<PlotChannelData>.generate(
+      rawChannels.length,
+      (ii) =>
+          _toPlotChannelData(rawChannels[ii] as Map<String, dynamic>, drfs[ii]),
+      growable: false,
+    );
 
     return PlotReply(
       plotId: plotInfo['plotId'] as String,
@@ -649,25 +659,68 @@ final class ACSysService implements ACSysServiceAPI {
   static PlotChannelData _toPlotChannelData(
     Map<String, dynamic> ch,
     String deviceName,
-  ) {
-    final rawPoints = (ch['channelData'] as List<Object?>)
-        .cast<Map<String, dynamic>>();
+  ) => PlotChannelData(
+    name: deviceName,
+    units: ch['channelUnits'] as String,
+    rate: ch['channelRate'] as String,
+    status: ch['channelStatus'] as int,
+    series: _toPlotSeries(ch['channelData'] as List<Object?>),
+  );
 
-    final points = rawPoints.map((row) {
-      final t = (row['timestamp'] as num).toDouble();
-      final result = row['result'] as Map<String, dynamic>;
+  // Decodes a channel's rows directly into column storage. A channel carries
+  // a single data type, so the first row decides the layout; a row of a
+  // different type is a protocol error.
+  static PlotSeries _toPlotSeries(List<Object?> rows) {
+    final n = rows.length;
+    final t = Float64List(n);
+    final isArray = switch (rows.firstOrNull) {
+      {'result': {'__typename': 'ScalarArray'}} => true,
+      _ => false,
+    };
 
-      return PlotPoint(t: t, value: devVal(result));
-    }).toList();
+    if (isArray) {
+      return ArraySeries(
+        t,
+        List<Float64List>.generate(n, (ii) {
+          final r = _plotRow(rows[ii], t, ii);
 
-    return PlotChannelData(
-      name: deviceName,
-      units: ch['channelUnits'] as String,
-      rate: ch['channelRate'] as String,
-      status: ch['channelStatus'] as int,
-      points: points,
-    );
+          return r['__typename'] == 'ScalarArray'
+              ? _toFloat64List(r['scalarArrayValue'])
+              : throw _mixedPlotRow(r);
+        }, growable: false),
+      );
+    }
+
+    final y = Float64List(n);
+
+    for (var ii = 0; ii < n; ii++) {
+      final r = _plotRow(rows[ii], t, ii);
+
+      y[ii] = r['__typename'] == 'Scalar'
+          ? _toDouble(r['scalarValue'])
+          : throw _mixedPlotRow(r);
+    }
+    return ScalarSeries(t, y);
   }
+
+  // Stores a channelData row's timestamp in `t[ii]` and returns the row's
+  // result map.
+  static Map<String, dynamic> _plotRow(Object? row, Float64List t, int ii) {
+    if (row case {
+      'timestamp': final num ts,
+      'result': final Map<String, dynamic> r,
+    }) {
+      t[ii] = ts.toDouble();
+      return r;
+    }
+    throw ACSysGraphQLException('Unexpected channelData row shape: $row');
+  }
+
+  static ACSysGraphQLException _mixedPlotRow(Map<String, dynamic> r) =>
+      ACSysGraphQLException(
+        'Plot channel mixes data types: unexpected '
+        '__typename=${r['__typename']}',
+      );
 
   // Parses a timestamp field from an alarms row.
   //

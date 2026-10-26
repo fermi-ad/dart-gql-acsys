@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:pure_dart_ui/pure_dart_ui.dart';
 
 import 'exceptions.dart';
@@ -105,17 +107,32 @@ extension type PlotConfigId._(int raw) implements Comparable {
   int compareTo(PlotConfigId other) => raw.compareTo(other.raw);
 }
 
-final class const PlotPoint({
-  required final double t,
-  required final DeviceValue value,
-});
+/// The samples of one plot channel, stored column-wise.
+///
+/// `t[i]` is the timestamp (seconds since the Unix epoch) of sample `i`. The
+/// subclass determines what kind of value accompanies each timestamp. Storing
+/// columns in typed lists means a channel costs a couple of allocations
+/// rather than several objects per sample.
+sealed class const PlotSeries(final Float64List t) {
+  int get length => t.length;
+}
+
+/// A channel whose samples are single floating point values; `y[i]` is the
+/// value at `t[i]`. A NaN reading is stored as `double.nan`.
+final class const ScalarSeries(super.t, final Float64List y)
+    extends PlotSeries {}
+
+/// A channel whose samples are arrays (e.g. waveforms); `y[i]` is the array
+/// acquired at `t[i]`.
+final class const ArraySeries(super.t, final List<Float64List> y)
+    extends PlotSeries {}
 
 final class const PlotChannelData({
   required final String name,
   required final String units,
   required final String rate,
   required final int status,
-  required final List<PlotPoint> points,
+  required final PlotSeries series,
 });
 
 final class const PlotReply({
