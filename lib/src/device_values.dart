@@ -165,7 +165,7 @@ extension RawTimeSeriesToDeviceValue on List<(double, double)> {
   DeviceValue toDevVal() => DevTimeSeries(this);
 }
 
-extension TimeSeriesToDeviceValue on List<(DateTime, double)> {
+extension TimeSeriesToDeviceValue on Iterable<(DateTime, double)> {
   DeviceValue toDevVal() => DevTimeSeries(
     map((e) => (e.$1.millisecondsSinceEpoch / 1000.0, e.$2)).toList(),
   );
@@ -215,16 +215,10 @@ extension FromDeviceValue on DeviceValue {
     _ => null,
   };
 
-  List<(DateTime, double)>? toTimeSeriesWithDates() => switch (this) {
-    DevTimeSeries(value: final v) =>
-      v
-          .map(
-            (e) => (
-              DateTime.fromMillisecondsSinceEpoch((e.$1 * 1000).toInt()),
-              e.$2,
-            ),
-          )
-          .toList(),
+  Iterable<(DateTime, double)>? toTimeSeriesWithDates() => switch (this) {
+    DevTimeSeries(value: final v) => v.map(
+      (e) => (DateTime.fromMillisecondsSinceEpoch((e.$1 * 1000).toInt()), e.$2),
+    ),
     _ => null,
   };
 }
