@@ -127,8 +127,11 @@ final class const DevTextArray(final List<String> value) extends DeviceValue;
 final class const DevTimeSeries(final List<(double, double)> value)
     extends DeviceValue;
 
-// The `ToDeviceValue` extension allows us to convert primitive types into a
-// `DeviceValue`.
+// The `*ToDeviceValue` extension allows us to convert primitive types into a
+// `DeviceValue`. A function which sends a value to the GraphQL API can accept
+// a specific type and try to call `.toDevVal()` on it. If the type is
+// supported, it will be converted. If the type doesn't have a conversion,
+// there will be a compile-time error.
 
 extension ToDeviceValue on DeviceValue {
   DeviceValue toDevVal() => this;
