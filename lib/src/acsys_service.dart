@@ -466,7 +466,7 @@ final class ACSysService implements ACSysServiceAPI {
   // status of the setting.
 
   @override
-  Future<Status> submit({
+  Future<Status> setDevice({
     required String forDRF,
     required DeviceValue newSetting,
   }) =>
@@ -478,9 +478,16 @@ final class ACSysService implements ACSysServiceAPI {
             Status.fromInt(e.data!['setDevice']!['status'] as int),
       );
 
+  @Deprecated('Use setDevice()')
+  @override
+  Future<Status> submit({
+    required String forDRF,
+    required DeviceValue newSetting,
+  }) => setDevice(forDRF: forDRF, newSetting: newSetting);
+
   @override
   Future<Status> sendCommand({required String toDRF, required String value}) =>
-      submit(forDRF: toDRF, newSetting: value.toDevVal());
+      setDevice(forDRF: toDRF, newSetting: value.toDevVal());
 
   @override
   Future<PlotConfigurationSnapshot> savePlotConfiguration({

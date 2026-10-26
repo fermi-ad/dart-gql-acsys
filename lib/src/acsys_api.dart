@@ -365,6 +365,12 @@ abstract interface class ACSysServiceAPI {
 
   /// Takes a device name and a value and sends a request to apply the value to
   /// the device.
+  Future<Status> setDevice({
+    required String forDRF,
+    required DeviceValue newSetting,
+  });
+
+  @Deprecated('Use setDevice() instead')
   Future<Status> submit({
     required String forDRF,
     required DeviceValue newSetting,
