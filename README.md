@@ -78,3 +78,18 @@ consistent with the rest of the project.
 $ dart run build_runner build --delete-conflicting-outputs
 $ dart format lib
 ```
+
+## Releasing
+
+Users get this package through git tags (`tag_pattern: v{{version}}` above), so
+a change reaches them only with a new version and a release:
+
+1. **In the pull request**, raise `version:` in `pubspec.yaml` by
+   [SemVer](https://semver.org): PATCH for a bug fix, MINOR for a new feature
+   that keeps the API compatible, MAJOR for a breaking change. The "Version
+   bump" check fails a pull request that changes `lib/` or `pubspec.yaml`
+   without it. Reviewers check the version too.
+2. **After merging**, create a GitHub release on `main` tagged `vA.B.C` (with
+   the leading `v`), for the version in `pubspec.yaml`. The release creates the
+   tag that `tag_pattern` resolves; without it, `dart pub upgrade` never sees
+   the new version.
