@@ -769,32 +769,53 @@ final class ACSysService implements ACSysServiceAPI {
   // JSON has no NaN, so the gateway sends a NaN reading as null.
   static double _toDouble(Object? n) => (n as num?)?.toDouble() ?? double.nan;
 
-  static DeviceValue devVal(
-    Map<String, dynamic> jsonMap,
-  ) => switch (jsonMap['__typename'] as String?) {
-    'StatusReply' => DevStatusCode(Status.fromInt(jsonMap['status'] as int)),
-    'Scalar' => DevScalar(_toDouble(jsonMap['scalarValue'])),
-    'ScalarArray' => DevScalarArray(
-      Float64List.fromList(
-        (jsonMap['scalarArrayValue'] as List<Object?>).map(_toDouble).toList(),
-      ),
-    ),
-    'IntArray' => DevIntArray(
-      Int32List.fromList(
-        (jsonMap['intArrayValue'] as List<Object?>).cast<int>().toList(),
-      ),
-    ),
-    'Raw' => DevRaw(
-      Uint8List.fromList((jsonMap['rawValue'] as List<Object?>).cast<int>()),
-    ),
-    'Text' => DevText(jsonMap['textValue'] as String),
-    'TextArray' => DevTextArray(
-      (jsonMap['textArrayValue'] as List<Object?>).cast<String>(),
-    ),
-    _ => throw ACSysGraphQLException(
-      "DeviceValue type not found: __typename=${jsonMap['__typename']}",
-    ),
-  };
+  // The following helpers decode a JSON array directly into a pre-sized typed
+  // list. This avoids building an intermediate growable List (of boxed
+  // values) only to copy it again into the typed list.
+
+  static Float64List _toFloat64List(Object? src) {
+    final list = src as List<Object?>;
+    final out = Float64List(list.length);
+
+    for (var ii = 0; ii < list.length; ii++) {
+      out[ii] = _toDouble(list[ii]);
+    }
+    return out;
+  }
+
+  // Fills a pre-sized integer typed list (Int32List, Uint8List, ...) from a
+  // JSON array. [make] allocates the destination with the source's length.
+  static T _toIntList<T extends List<int>>(Object? src, T Function(int) make) {
+    final list = src as List<Object?>;
+    final out = make(list.length);
+
+    for (var ii = 0; ii < list.length; ii++) {
+      out[ii] = list[ii] as int;
+    }
+    return out;
+  }
+
+  static DeviceValue devVal(Map<String, dynamic> jsonMap) =>
+      switch (jsonMap['__typename'] as String?) {
+        'StatusReply' => DevStatusCode(
+          Status.fromInt(jsonMap['status'] as int),
+        ),
+        'Scalar' => DevScalar(_toDouble(jsonMap['scalarValue'])),
+        'ScalarArray' => DevScalarArray(
+          _toFloat64List(jsonMap['scalarArrayValue']),
+        ),
+        'IntArray' => DevIntArray(
+          _toIntList(jsonMap['intArrayValue'], Int32List.new),
+        ),
+        'Raw' => DevRaw(_toIntList(jsonMap['rawValue'], Uint8List.new)),
+        'Text' => DevText(jsonMap['textValue'] as String),
+        'TextArray' => DevTextArray(
+          (jsonMap['textArrayValue'] as List<Object?>).cast<String>(),
+        ),
+        _ => throw ACSysGraphQLException(
+          "DeviceValue type not found: __typename=${jsonMap['__typename']}",
+        ),
+      };
 
   /// Releases resources held by this service.
   ///
