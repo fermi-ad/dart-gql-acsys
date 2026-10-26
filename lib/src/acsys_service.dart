@@ -391,10 +391,10 @@ final class ACSysService implements ACSysServiceAPI {
   // response structure.
   static Reading _rowToReading(Map<String, dynamic> row, int refId) =>
       switch (row) {
-        {"timestamp": double stamp, "result": Map<String, dynamic> result} =>
+        {"timestamp": num stamp, "result": Map<String, dynamic> result} =>
           Reading(
             refId: refId,
-            timestamp: fromFloatTs(stamp),
+            timestamp: fromTs(stamp),
             value: devVal(result),
           ),
         _ => throw ACSysGraphQLException(
@@ -447,7 +447,7 @@ final class ACSysService implements ACSysServiceAPI {
     },
   ).expand(_convertMonitor);
 
-  static DateTime fromFloatTs(double ts) =>
+  static DateTime fromTs(num ts) =>
       DateTime.fromMicrosecondsSinceEpoch((ts * 1000000.0).toInt());
 
   // Convert the incoming GraphQL subscription event into [Reading] objects.
@@ -680,7 +680,7 @@ final class ACSysService implements ACSysServiceAPI {
   // rather than crashing the client.
   static DateTime _parseAlarmTimestamp(Object? value) => switch (value) {
     null => DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
-    final num n => fromFloatTs(n.toDouble()),
+    final num n => fromTs(n.toDouble()),
     final String s => DateTime.parse(s),
     _ => throw ACSysGraphQLException(
       'Unexpected timestamp format in alarm row: $value',

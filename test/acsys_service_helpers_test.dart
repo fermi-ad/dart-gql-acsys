@@ -14,14 +14,14 @@ void main() {
 
   group('ACSysService.fromFloatTs', () {
     test('converts Unix epoch zero to 1970-01-01 UTC', () {
-      final dt = ACSysService.fromFloatTs(0.0);
+      final dt = ACSysService.fromTs(0.0);
 
       expect(dt.microsecondsSinceEpoch, equals(0));
     });
 
     test('converts a whole-second timestamp correctly', () {
       // 1_000_000 seconds after epoch
-      final dt = ACSysService.fromFloatTs(1_000_000.0);
+      final dt = ACSysService.fromTs(1_000_000.0);
 
       expect(
         dt,
@@ -31,7 +31,7 @@ void main() {
 
     test('preserves sub-second precision', () {
       // 1.5 seconds → 1_500_000 microseconds
-      final dt = ACSysService.fromFloatTs(1.5);
+      final dt = ACSysService.fromTs(1.5);
 
       expect(dt.microsecondsSinceEpoch, equals(1_500_000));
     });
