@@ -7,7 +7,6 @@
 library;
 
 import 'dart:convert';
-import 'dart:typed_data';
 import 'dart:developer' as dev;
 
 import 'package:gql/ast.dart' show DocumentNode;
@@ -17,6 +16,7 @@ import 'package:graphql/client.dart';
 import 'exceptions.dart';
 import 'device_values.dart';
 import 'acsys_api.dart';
+import 'decoders.dart' as decode;
 import 'status.dart';
 
 export 'acsys_api.dart';
@@ -386,47 +386,24 @@ final class ACSysService implements ACSysServiceAPI {
         (result) => _checkResult(result, 'Subscription event returned no data'),
       );
 
-  // Converts a single acceleratorData row map into a [Reading]. The [refId]
-  // is passed in from the enclosing entry because it lives one level up in the
-  // response structure.
-  static Reading _rowToReading(Map<String, dynamic> row, int refId) =>
-      switch (row) {
-        {"timestamp": num stamp, "result": Map<String, dynamic> result} =>
-          Reading(
-            refId: refId,
-            timestamp: fromTs(stamp),
-            value: devVal(result),
-          ),
-        _ => throw ACSysGraphQLException(
-          'Unexpected acceleratorData row shape: $row',
-        ),
-      };
-
-  static List<Reading> _convertReading(QueryResult queryResult) =>
-      (queryResult.data?['acceleratorData'] as List<Object?>)
-          .cast<Map<String, dynamic>>()
-          .expand((entry) {
-            final refId = entry['refId'] as int;
-
-            return (entry['data'] as List<Object?>)
-                .cast<Map<String, dynamic>>()
-                .map((row) => _rowToReading(row, refId));
-          })
-          .toList();
-
   @override
   Future<List<Reading>> readDevices(List<String> devices) async =>
-      _convertReading(
-        await _doQuery(
+      decode.readingsFromQuery(
+        (await _doQuery(
           document: _docReadDevices,
           variables: {'devList': devices},
-        ),
+        )).data!,
       );
 
-  static double? toFloatTs(DateTime? dt) => switch (dt) {
-    null => null,
-    final d => d.microsecondsSinceEpoch.toDouble() / 1000000.0,
-  };
+  @Deprecated('Internal helper; will be removed')
+  static double? toFloatTs(DateTime? dt) => decode.toFloatTs(dt);
+
+  @Deprecated('Internal helper; will be removed')
+  static DateTime fromTs(num ts) => decode.fromTs(ts);
+
+  @Deprecated('Internal helper; will be removed')
+  static DeviceValue devVal(Map<String, dynamic> jsonMap) =>
+      decode.devVal(jsonMap);
 
   // Returns a stream of readings for the devices specified in the parameter
   // list. The `Reading` class has a `refId` field which indicates to which
@@ -442,23 +419,10 @@ final class ACSysService implements ACSysServiceAPI {
     document: _docMonitorDevices,
     variables: {
       'drfs': drfs,
-      'startTime': toFloatTs(startTime),
-      'endTime': toFloatTs(endTime),
+      'startTime': decode.toFloatTs(startTime),
+      'endTime': decode.toFloatTs(endTime),
     },
-  ).expand(_convertMonitor);
-
-  static DateTime fromTs(num ts) =>
-      DateTime.fromMicrosecondsSinceEpoch((ts * 1000000.0).toInt());
-
-  // Convert the incoming GraphQL subscription event into [Reading] objects.
-  static Iterable<Reading> _convertMonitor(QueryResult queryResult) {
-    final {"refId": int refId, "data": List<Object?> rawData} =
-        queryResult.data!['acceleratorData'] as Map<String, dynamic>;
-
-    return rawData.cast<Map<String, dynamic>>().map(
-      (row) => _rowToReading(row, refId),
-    );
-  }
+  ).expand((result) => decode.readingsFromSubscription(result.data!));
 
   // Performs a setting request. `forDRF` is the DRF string representing the
   // target device and property to receive the setting. `newSetting` is the
@@ -510,17 +474,6 @@ final class ACSysService implements ACSysServiceAPI {
     );
   }
 
-  // Decodes a single PlotConfig row from the GraphQL response into a
-  // PlotConfigurationSnapshot.
-  static PlotConfigurationSnapshot _snapshotFromRow(Map<String, dynamic> row) {
-    final id = PlotConfigId.fromInt(row['configId'] as int);
-    final name = row['configName'] as String;
-    final configJson =
-        jsonDecode(row['config'] as String) as Map<String, dynamic>;
-
-    return PlotConfigurationSnapshot.fromJson(id, name, configJson);
-  }
-
   @override
   Future<PlotConfigurationSnapshot?> retrievePlotConfiguration({
     required PlotConfigId configurationId,
@@ -530,25 +483,14 @@ final class ACSysService implements ACSysServiceAPI {
       variables: {'id': configurationId.value},
     );
 
-    final rows = (result.data!['plotConfiguration'] as List<Object?>)
-        .cast<Map<String, dynamic>>();
-
-    return rows.isEmpty ? null : _snapshotFromRow(rows.first);
+    return decode.firstPlotConfig(result.data!['plotConfiguration']);
   }
 
   @override
   Future<List<PlotConfigurationListing>> listPlotConfigurations() async {
     final result = await _doQuery(document: _docPlotConfig);
 
-    return (result.data!['plotConfiguration'] as List<Object?>)
-        .cast<Map<String, dynamic>>()
-        .map(
-          (row) => PlotConfigurationListing(
-            configurationId: PlotConfigId.fromInt(row['configId'] as int),
-            configurationName: row['configName'] as String,
-          ),
-        )
-        .toList();
+    return decode.plotListings(result.data!['plotConfiguration']);
   }
 
   @override
@@ -562,21 +504,8 @@ final class ACSysService implements ACSysServiceAPI {
   @override
   Future<PlotConfigurationSnapshot?> retrieveLastUserConfiguration() async {
     final result = await _doQuery(document: _docUsersLastConfig);
-    final raw = result.data!['usersLastConfiguration'];
 
-    if (raw == null) return null;
-
-    // The server returns the configuration as a raw JSON string. Decode it and
-    // reconstruct the snapshot. There is no persisted ID for a user's last
-    // config, so we generate a transient one; the name is left empty since the
-    // server doesn't store one for this record.
-    final configJson = jsonDecode(raw as String) as Map<String, dynamic>;
-
-    return PlotConfigurationSnapshot.fromJson(
-      PlotConfigId.generate(),
-      '',
-      configJson,
-    );
+    return decode.lastUserConfig(result.data!['usersLastConfiguration']);
   }
 
   @override
@@ -600,190 +529,31 @@ final class ACSysService implements ACSysServiceAPI {
     int? triggerEvent,
     int? sampleOnEvent,
     String? chXAxis,
-  }) => _doSubscription(
-    document: _docStartPlot,
-    variables: {
-      'drfList': drfs,
-      'xMin': xMin,
-      'xMax': xMax,
-      'windowSize': windowSize,
-      'nAcquisitions': nAcquisitions,
-      'updateDelay': updateRate,
-      'triggerEvent': triggerEvent,
-      'startTime': startTime,
-      'endTime': endTime,
-      'sampleOnEvent': sampleOnEvent,
-      'chXAxis': chXAxis,
-    },
-  ).map((result) => _toPlotReply(result.data!, drfs, xMin, xMax, windowSize));
-
-  static PlotReply _toPlotReply(
-    Map<String, dynamic> eventData,
-    List<String> drfs,
-    double? xMin,
-    double? xMax,
-    int? windowSize,
-  ) {
-    // The GraphQL client wraps the response under the operation field name.
-    final plotInfo = eventData['startPlot'] as Map<String, dynamic>;
-    final rawChannels = plotInfo['data'] as List<Object?>;
-
-    // Channels are reported in request order, so the index maps back to the
-    // DRF that was requested.
-    if (rawChannels.length > drfs.length) {
-      throw ACSysGraphQLException(
-        'startPlot returned ${rawChannels.length} channels for '
-        '${drfs.length} requested devices',
+  }) =>
+      _doSubscription(
+        document: _docStartPlot,
+        variables: {
+          'drfList': drfs,
+          'xMin': xMin,
+          'xMax': xMax,
+          'windowSize': windowSize,
+          'nAcquisitions': nAcquisitions,
+          'updateDelay': updateRate,
+          'triggerEvent': triggerEvent,
+          'startTime': startTime,
+          'endTime': endTime,
+          'sampleOnEvent': sampleOnEvent,
+          'chXAxis': chXAxis,
+        },
+      ).map(
+        (result) => decode.plotReply(
+          result.data!,
+          drfs,
+          xMin: xMin,
+          xMax: xMax,
+          windowSize: windowSize,
+        ),
       );
-    }
-
-    final channels = List<PlotChannelData>.generate(
-      rawChannels.length,
-      (ii) =>
-          _toPlotChannelData(rawChannels[ii] as Map<String, dynamic>, drfs[ii]),
-      growable: false,
-    );
-
-    return PlotReply(
-      plotId: plotInfo['plotId'] as String,
-      requestTime: (plotInfo['timestamp'] as num).toDouble(),
-      triggerTimestamp: (plotInfo['triggerTimestamp'] as num?)?.toDouble(),
-      xAxisUnits: "Time",
-      xAxisMin: xMin,
-      xAxisMax: xMax,
-      windowSize: windowSize,
-      data: channels,
-    );
-  }
-
-  static PlotChannelData _toPlotChannelData(
-    Map<String, dynamic> ch,
-    String deviceName,
-  ) => PlotChannelData(
-    name: deviceName,
-    units: ch['channelUnits'] as String,
-    rate: ch['channelRate'] as String,
-    status: ch['channelStatus'] as int,
-    series: _toPlotSeries(ch['channelData'] as List<Object?>),
-  );
-
-  // Decodes a channel's rows directly into column storage. A channel carries
-  // a single data type, so the first row decides the layout; a row of a
-  // different type is a protocol error.
-  static PlotSeries _toPlotSeries(List<Object?> rows) {
-    final n = rows.length;
-    final t = Float64List(n);
-    final isArray = switch (rows.firstOrNull) {
-      {'result': {'__typename': 'ScalarArray'}} => true,
-      _ => false,
-    };
-
-    if (isArray) {
-      return ArraySeries(
-        t,
-        List<Float64List>.generate(n, (ii) {
-          final r = _plotRow(rows[ii], t, ii);
-
-          return r['__typename'] == 'ScalarArray'
-              ? _toFloat64List(r['scalarArrayValue'])
-              : throw _mixedPlotRow(r);
-        }, growable: false),
-      );
-    }
-
-    final y = Float64List(n);
-
-    for (var ii = 0; ii < n; ii++) {
-      final r = _plotRow(rows[ii], t, ii);
-
-      y[ii] = r['__typename'] == 'Scalar'
-          ? _toDouble(r['scalarValue'])
-          : throw _mixedPlotRow(r);
-    }
-    return ScalarSeries(t, y);
-  }
-
-  // Stores a channelData row's timestamp in `t[ii]` and returns the row's
-  // result map.
-  static Map<String, dynamic> _plotRow(Object? row, Float64List t, int ii) {
-    if (row case {
-      'timestamp': final num ts,
-      'result': final Map<String, dynamic> r,
-    }) {
-      t[ii] = ts.toDouble();
-      return r;
-    }
-    throw ACSysGraphQLException('Unexpected channelData row shape: $row');
-  }
-
-  static ACSysGraphQLException _mixedPlotRow(Map<String, dynamic> r) =>
-      ACSysGraphQLException(
-        'Plot channel mixes data types: unexpected '
-        '__typename=${r['__typename']}',
-      );
-
-  // Parses a timestamp field from an alarms row.
-  //
-  // The alarms backend has been observed to send timestamps either as a
-  // numeric epoch-seconds value (the same convention used by the acsys
-  // backend, see [fromFloatTs]) or as an ISO-8601 string (e.g.
-  // "2026-08-21T17:53:33+00:00"). Some alarm rows also omit these fields
-  // entirely (e.g. `wake` for alarms that have never been acknowledged), in
-  // which case the field is `null`; that case falls back to the Unix epoch
-  // rather than crashing the client.
-  static DateTime _parseAlarmTimestamp(Object? value) => switch (value) {
-    null => DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
-    final num n => fromTs(n.toDouble()),
-    final String s => DateTime.parse(s),
-    _ => throw ACSysGraphQLException(
-      'Unexpected timestamp format in alarm row: $value',
-    ),
-  };
-
-  // Converts a single alarmsSnapshot row map into an [Alarm].
-  //
-  // The alarms backend sends `source`/`state`/`severity` as upper-case
-  // strings (e.g. "ANALOG", "ALARMED", "LOW"), so the incoming value is
-  // upper-cased before matching to be resilient to any casing the backend
-  // might use.
-  static Alarm _rowToAlarm(Map<String, dynamic> row) {
-    final AlarmSource source = switch ((row['source'] as String?)
-        ?.toUpperCase()) {
-      'ANALOG' => .analog,
-      'DIGITAL' => .digital,
-      'EPICS' => .epics,
-      _ => .unknown,
-    };
-
-    final AlarmState state = switch ((row['state'] as String?)?.toUpperCase()) {
-      'OK' => .ok,
-      'ALARMED' => .alarmed,
-      'BYPASSED' => .bypassed,
-      'LATCHED' => .latched,
-      'ACKNOWLEDGED' => .acknowledged,
-      'UNBYPASSED' => .unbypassed,
-      _ => .unknown,
-    };
-
-    final AlarmSeverity severity = switch ((row['severity'] as String?)
-        ?.toUpperCase()) {
-      'LOW' => .low,
-      'HIGH' => .high,
-      _ => .unknown,
-    };
-
-    return Alarm(
-      device: row['device'] as String,
-      source: source,
-      state: state,
-      severity: severity,
-      acknowledgeable: row['acknowledgeable'] as bool,
-      time: _parseAlarmTimestamp(row['time']),
-      epicsType: row['epicsType'] as String,
-      user: row['user'] as String,
-      wake: _parseAlarmTimestamp(row['wake']),
-    );
-  }
 
   @override
   Stream<Alarm> monitorAlarms() =>
@@ -791,7 +561,8 @@ final class ACSysService implements ACSysServiceAPI {
         // Each subscription event carries a single changed alarm (not a
         // list of all alarms), so the "alarms" field in the response is a
         // single row object.
-        (result) => _rowToAlarm(result.data!['alarms'] as Map<String, dynamic>),
+        (result) =>
+            decode.alarmFromRow(result.data!['alarms'] as Map<String, dynamic>),
       );
 
   @override
@@ -801,10 +572,7 @@ final class ACSysService implements ACSysServiceAPI {
       client: _alarmsClient,
     );
 
-    return (result.data!['alarmsSnapshot'] as List<Object?>)
-        .cast<Map<String, dynamic>>()
-        .map(_rowToAlarm)
-        .toList();
+    return decode.alarmsFromList(result.data!['alarmsSnapshot']);
   }
 
   @override
@@ -812,63 +580,6 @@ final class ACSysService implements ACSysServiceAPI {
       Stream.error(
         UnimplementedError('monitorAnalogAlarmProperty is not implemented yet'),
       );
-
-  // Converts the map value to a DeviceValue type.
-  //
-  // The graphql client normalizes inline fragments into a flat map containing
-  // only the fields that were actually selected, plus a "__typename" key. We
-  // dispatch on "__typename" and then pull the single relevant field.
-
-  // JSON has no NaN, so the gateway sends a NaN reading as null.
-  static double _toDouble(Object? n) => (n as num?)?.toDouble() ?? double.nan;
-
-  // The following helpers decode a JSON array directly into a pre-sized typed
-  // list. This avoids building an intermediate growable List (of boxed
-  // values) only to copy it again into the typed list.
-
-  static Float64List _toFloat64List(Object? src) {
-    final list = src as List<Object?>;
-    final out = Float64List(list.length);
-
-    for (var ii = 0; ii < list.length; ii++) {
-      out[ii] = _toDouble(list[ii]);
-    }
-    return out;
-  }
-
-  // Fills a pre-sized integer typed list (Int32List, Uint8List, ...) from a
-  // JSON array. [make] allocates the destination with the source's length.
-  static T _toIntList<T extends List<int>>(Object? src, T Function(int) make) {
-    final list = src as List<Object?>;
-    final out = make(list.length);
-
-    for (var ii = 0; ii < list.length; ii++) {
-      out[ii] = list[ii] as int;
-    }
-    return out;
-  }
-
-  static DeviceValue devVal(Map<String, dynamic> jsonMap) =>
-      switch (jsonMap['__typename'] as String?) {
-        'StatusReply' => DevStatusCode(
-          Status.fromInt(jsonMap['status'] as int),
-        ),
-        'Scalar' => DevScalar(_toDouble(jsonMap['scalarValue'])),
-        'ScalarArray' => DevScalarArray(
-          _toFloat64List(jsonMap['scalarArrayValue']),
-        ),
-        'IntArray' => DevIntArray(
-          _toIntList(jsonMap['intArrayValue'], Int32List.new),
-        ),
-        'Raw' => DevRaw(_toIntList(jsonMap['rawValue'], Uint8List.new)),
-        'Text' => DevText(jsonMap['textValue'] as String),
-        'TextArray' => DevTextArray(
-          (jsonMap['textArrayValue'] as List<Object?>).cast<String>(),
-        ),
-        _ => throw ACSysGraphQLException(
-          "DeviceValue type not found: __typename=${jsonMap['__typename']}",
-        ),
-      };
 
   /// Releases resources held by this service.
   ///
