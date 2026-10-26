@@ -1,0 +1,66 @@
+# A pull request that changes what users of this package get (lib/ or
+# pubspec.yaml) must raise `version:` in pubspec.yaml above main's, by SemVer.
+# Users resolve this package through git tags (`tag_pattern: v{{version}}`), so
+# a change that ships without a new version can never be released.
+#
+# It runs on every pull request to main, so it can be a required check: a
+# workflow skipped by a `paths:` filter would leave a required check waiting.
+name: Version bump
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  version-bump:
+    name: pubspec version bumped
+    runs-on: ubuntu-latest
+    steps:
+      # A pull_request run checks out the merge of the PR into main: its first
+      # parent is main, so the diff against HEAD^1 is exactly what the PR changes.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Compare with main
+        run: |
+          base=$(git show HEAD^1:pubspec.yaml | sed -n 's/^version:[[:space:]]*//p')
+          head=$(sed -n 's/^version:[[:space:]]*//p' pubspec.yaml)
+          changed=$(git diff --name-only HEAD^1 HEAD -- lib pubspec.yaml)
+          python3 - "$base" "$head" "$changed" <<'EOF'
+          import os, re, sys
+
+          base, head, changed = sys.argv[1], sys.argv[2], sys.argv[3].split()
+          SEMVER = re.compile(
+              r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
+              r"(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?"
+              r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?")
+
+          def precedence(v):
+              """SemVer 2.0 precedence: a pre-release sorts below its release,
+              and build metadata is ignored."""
+              m = SEMVER.fullmatch(v)
+              if not m:
+                  sys.exit("::error file=pubspec.yaml::version '%s' is not SemVer (MAJOR.MINOR.PATCH)" % v)
+              core = tuple(int(x) for x in m.group(1, 2, 3))
+              if m.group(4) is None:
+                  return core, (1,)
+              ids = [(0, int(p), "") if p.isdigit() else (1, 0, p) for p in m.group(4).split(".")]
+              return core, (0, *ids)
+
+          summary = open(os.environ["GITHUB_STEP_SUMMARY"], "a")
+          if not changed:
+              print("No change to lib/ or pubspec.yaml: no new version needed.")
+              sys.exit(0)
+          print("Changed:", *changed, sep="\n  ")
+          if precedence(head) <= precedence(base):
+              sys.exit("::error file=pubspec.yaml::This PR changes lib/ or pubspec.yaml, so raise "
+                       "`version:` above main's %s (SemVer: PATCH for a fix, MINOR for a "
+                       "new feature, MAJOR for a breaking change)." % base)
+          print("version %s -> %s" % (base, head))
+          summary.write("Version %s -> %s. After merging, publish a GitHub release "
+                        "tagged `v%s` on main.\n" % (base, head, head))
+          EOF
