@@ -759,17 +759,17 @@ final class ACSysService implements ACSysServiceAPI {
   // only the fields that were actually selected, plus a "__typename" key. We
   // dispatch on "__typename" and then pull the single relevant field.
 
+  // JSON has no NaN, so the gateway sends a NaN reading as null.
+  static double _toDouble(Object? n) => (n as num?)?.toDouble() ?? double.nan;
+
   static DeviceValue devVal(
     Map<String, dynamic> jsonMap,
   ) => switch (jsonMap['__typename'] as String?) {
     'StatusReply' => DevStatusCode(Status.fromInt(jsonMap['status'] as int)),
-    'Scalar' => DevScalar((jsonMap['scalarValue'] as num).toDouble()),
+    'Scalar' => DevScalar(_toDouble(jsonMap['scalarValue'])),
     'ScalarArray' => DevScalarArray(
       Float64List.fromList(
-        (jsonMap['scalarArrayValue'] as List<Object?>)
-            .cast<num>()
-            .map((n) => n.toDouble())
-            .toList(),
+        (jsonMap['scalarArrayValue'] as List<Object?>).map(_toDouble).toList(),
       ),
     ),
     'Raw' => DevRaw(
