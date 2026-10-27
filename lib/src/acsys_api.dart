@@ -146,16 +146,11 @@ final class const PlotReply({
   required final List<PlotChannelData> data,
 });
 
-final class PlotConfigurationListing {
-  final PlotConfigId? configurationId;
-  final String configurationName;
-
-  const PlotConfigurationListing({
-    this.configurationId,
-    required this.configurationName,
-  });
-
-  factory PlotConfigurationListing.fromJson(Map<String, dynamic> json) {
+final class const PlotConfigurationListing({
+  final PlotConfigId? configurationId,
+  required final String configurationName,
+}) {
+  factory fromJson(Map<String, dynamic> json) {
     if (json case {"id": int id, "name": String name}) {
       return PlotConfigurationListing(
         configurationId: PlotConfigId.fromInt(id),
