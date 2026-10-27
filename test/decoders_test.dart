@@ -169,6 +169,17 @@ void main() {
 
       expect((v as DevTextArray).value, equals(['a', 'b', 'c']));
     });
+
+    test('TextArray is a copy, independent of the JSON list', () {
+      final src = <Object?>['a', 'b'];
+      final v = decode.devVal({
+        '__typename': 'TextArray',
+        'textArrayValue': src,
+      });
+
+      src[0] = 'changed';
+      expect((v as DevTextArray).value, equals(['a', 'b']));
+    });
   });
 
   group('devVal — errors', () {
@@ -189,6 +200,18 @@ void main() {
     test('non-numeric element in ScalarArray', () {
       expect(
         () => decode.devVal(_array([1.0, 'x'])),
+        throwsA(isA<TypeError>()),
+      );
+    });
+
+    // A non-string element must fail while decoding, not later when the
+    // caller first reads that element.
+    test('non-string element in TextArray fails at decode time', () {
+      expect(
+        () => decode.devVal({
+          '__typename': 'TextArray',
+          'textArrayValue': ['a', 1],
+        }),
         throwsA(isA<TypeError>()),
       );
     });

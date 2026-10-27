@@ -81,8 +81,13 @@ DeviceValue devVal(Map<String, dynamic> jsonMap) =>
       ),
       'Raw' => DevRaw(_toIntList(jsonMap['rawValue'], Uint8List.new)),
       'Text' => DevText(jsonMap['textValue'] as String),
+      // Copy (rather than `cast`) so each element is type-checked once, here,
+      // instead of on every later read, and the JSON list isn't kept alive.
       'TextArray' => DevTextArray(
-        (jsonMap['textArrayValue'] as List<Object?>).cast<String>(),
+        List<String>.from(
+          jsonMap['textArrayValue'] as List<Object?>,
+          growable: false,
+        ),
       ),
       _ => throw ACSysGraphQLException(
         "DeviceValue type not found: __typename=${jsonMap['__typename']}",
