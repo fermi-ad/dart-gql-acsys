@@ -338,13 +338,13 @@ void main() {
       ]);
 
       expect(s, isA<ScalarSeries>());
-      final ScalarSeries(:t, :y) = s as ScalarSeries;
+      final ScalarSeries ss = s as ScalarSeries;
 
-      expect(s.length, equals(3));
-      expect(t, equals([1.0, 2.0, 3.5]));
-      expect(y[0], equals(10.0));
-      expect(y[1], equals(20.0));
-      expect(y[2].isNaN, isTrue);
+      expect(ss.length, equals(3));
+      expect(ss.timestamps, equals([1.0, 2.0, 3.5]));
+      expect(ss.data[0], equals(10.0));
+      expect(ss.data[1], equals(20.0));
+      expect(ss.data[2].isNaN, isTrue);
     });
 
     test('decodes array rows into an ArraySeries', () {
@@ -354,14 +354,14 @@ void main() {
       ]);
 
       expect(s, isA<ArraySeries>());
-      final ArraySeries(:t, :y) = s as ArraySeries;
+      final ArraySeries sa = s as ArraySeries;
 
-      expect(t, equals([1.0, 2.0]));
-      expect(y, hasLength(2));
-      expect(y[0], equals([1.0, 2.0]));
-      expect(y[1][0], equals(3.0));
-      expect(y[1][1].isNaN, isTrue);
-      expect(y[1][2], equals(5.0));
+      expect(sa.timestamps, equals([1.0, 2.0]));
+      expect(sa.data, hasLength(2));
+      expect(sa.data[0], equals([1.0, 2.0]));
+      expect(sa.data[1][0], equals(3.0));
+      expect(sa.data[1][1].isNaN, isTrue);
+      expect(sa.data[1][2], equals(5.0));
     });
 
     test('an empty channel is an empty ScalarSeries', () {
@@ -369,7 +369,7 @@ void main() {
 
       expect(s, isA<ScalarSeries>());
       expect(s.length, equals(0));
-      expect((s as ScalarSeries).y, isEmpty);
+      expect((s as ScalarSeries).data, isEmpty);
     });
 
     test('rejects an array row in a scalar channel', () {

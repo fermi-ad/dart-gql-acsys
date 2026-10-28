@@ -20,13 +20,13 @@ Future<void> main() async {
         // stored column-wise: `t[i]` is the timestamp of `y[i]`.
 
         switch (data.series) {
-          case ScalarSeries(:final t, :final y):
-            for (var ii = 0; ii < t.length; ii++) {
-              print("${t[ii]}, ${y[ii]}");
+          case ScalarSeries ss:
+            for (final (:t, :y) in ss.samples) {
+              print("$t, $y");
             }
-          case ArraySeries(:final t, :final y):
-            for (var ii = 0; ii < t.length; ii++) {
-              print("${t[ii]}, ${y[ii]}");
+          case ArraySeries sa:
+            for (final (:t, :y) in sa.samples) {
+              print("$t, $y");
             }
         }
       }
