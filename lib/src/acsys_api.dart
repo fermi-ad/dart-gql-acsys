@@ -120,9 +120,13 @@ sealed class const PlotSeries(final Float64List _t) {
 
 /// A channel whose samples are single floating point values; `y[i]` is the
 /// value at `t[i]`. A NaN reading is stored as `double.nan`.
-final class const ScalarSeries(super.t, final Float64List _data)
+final class const ScalarSeries._(super.t, final Float64List _data)
     extends PlotSeries {
   Float64List get data => _data;
+
+  factory build(Float64List t, Float64List d) => t.length == d.length
+      ? ScalarSeries._(t, d)
+      : throw ACSysGraphQLException('mismatched lengths');
 
   /// Access sample by index.
   ({double t, double y}) operator [](int i) => (t: _t[i], y: _data[i]);
@@ -137,9 +141,13 @@ final class const ScalarSeries(super.t, final Float64List _data)
 
 /// A channel whose samples are arrays (e.g. waveforms); `y[i]` is the array
 /// acquired at `t[i]`.
-final class const ArraySeries(super.t, final List<Float64List> _data)
+final class const ArraySeries._(super.t, final List<Float64List> _data)
     extends PlotSeries {
   List<Float64List> get data => _data;
+
+  factory build(Float64List t, List<Float64List> d) => t.length == d.length
+      ? ArraySeries._(t, d)
+      : throw ACSysGraphQLException('mismatched lengths');
 
   /// Access sample by index.
   ({double t, Float64List y}) operator [](int i) => (t: _t[i], y: _data[i]);

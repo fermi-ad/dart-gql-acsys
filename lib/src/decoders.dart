@@ -196,13 +196,9 @@ PlotChannelData _plotChannel(Map<String, dynamic> ch, String name) =>
 PlotSeries plotSeries(List<Object?> rows) {
   final n = rows.length;
   final t = Float64List(n);
-  final isArray = switch (rows.firstOrNull) {
-    {'result': {'__typename': 'ScalarArray'}} => true,
-    _ => false,
-  };
 
-  if (isArray) {
-    return ArraySeries(
+  if (rows.firstOrNull case {'result': {'__typename': 'ScalarArray'}}) {
+    return ArraySeries.build(
       t,
       List<Float64List>.generate(n, (ii) {
         final r = _plotRow(rows[ii], t, ii);
@@ -212,18 +208,18 @@ PlotSeries plotSeries(List<Object?> rows) {
             : throw _mixedPlotRow(r);
       }, growable: false),
     );
+  } else {
+    final y = Float64List(n);
+
+    for (var ii = 0; ii < n; ii++) {
+      final r = _plotRow(rows[ii], t, ii);
+
+      y[ii] = r['__typename'] == 'Scalar'
+          ? _toDouble(r['scalarValue'])
+          : throw _mixedPlotRow(r);
+    }
+    return ScalarSeries.build(t, y);
   }
-
-  final y = Float64List(n);
-
-  for (var ii = 0; ii < n; ii++) {
-    final r = _plotRow(rows[ii], t, ii);
-
-    y[ii] = r['__typename'] == 'Scalar'
-        ? _toDouble(r['scalarValue'])
-        : throw _mixedPlotRow(r);
-  }
-  return ScalarSeries(t, y);
 }
 
 // Stores a channelData row's timestamp in `t[ii]` and returns the row's
