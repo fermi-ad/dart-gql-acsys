@@ -95,6 +95,8 @@ extension type PlotConfigId._(int raw) implements Comparable {
 sealed class const PlotSeries(final Float64List _t) {
   Float64List get timestamps => _t;
   int get length => _t.length;
+  bool get isEmpty => length == 0;
+  bool get isNotEmpty => length != 0;
 }
 
 /// A channel whose samples are single floating point values; `y[i]` is the
@@ -102,9 +104,6 @@ sealed class const PlotSeries(final Float64List _t) {
 final class const ScalarSeries._(super.t, final Float64List _data)
     extends PlotSeries {
   Float64List get data => _data;
-
-  bool get isEmpty => _data.isEmpty;
-  bool get isNotEmpty => _data.isNotEmpty;
 
   factory build(Float64List t, Float64List d) => t.length == d.length
       ? ScalarSeries._(t, d)
@@ -126,9 +125,6 @@ final class const ScalarSeries._(super.t, final Float64List _data)
 final class const ArraySeries._(super.t, final List<Float64List> _data)
     extends PlotSeries {
   List<Float64List> get data => _data;
-
-  bool get isEmpty => _data.isEmpty;
-  bool get isNotEmpty => _data.isNotEmpty;
 
   factory build(Float64List t, List<Float64List> d) => t.length == d.length
       ? ArraySeries._(t, d)
