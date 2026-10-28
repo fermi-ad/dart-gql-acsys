@@ -103,6 +103,9 @@ final class const ScalarSeries._(super.t, final Float64List _data)
     extends PlotSeries {
   Float64List get data => _data;
 
+  bool get isEmpty => _data.isEmpty;
+  bool get isNotEmpty => _data.isNotEmpty;
+
   factory build(Float64List t, Float64List d) => t.length == d.length
       ? ScalarSeries._(t, d)
       : throw ACSysGraphQLException('mismatched lengths');
@@ -123,6 +126,9 @@ final class const ScalarSeries._(super.t, final Float64List _data)
 final class const ArraySeries._(super.t, final List<Float64List> _data)
     extends PlotSeries {
   List<Float64List> get data => _data;
+
+  bool get isEmpty => _data.isEmpty;
+  bool get isNotEmpty => _data.isNotEmpty;
 
   factory build(Float64List t, List<Float64List> d) => t.length == d.length
       ? ArraySeries._(t, d)
