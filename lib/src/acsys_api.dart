@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:pure_dart_ui/pure_dart_ui.dart';
 
 import 'exceptions.dart';
@@ -43,48 +45,27 @@ final class const AnalogAlarmStatus({
   required final AnalogAlarmState state,
 });
 
-enum AcquisitionMode {
-  oneShot,
-  oneShotTriggeredOnEvent,
-  repetitivePeriodic,
-  repetitiveTriggeredOnEvent,
-  sampleOnEvent,
+enum const AcquisitionMode(final String serializedName) {
+  oneShot("os"),
+  oneShotTriggeredOnEvent("os_on_event"),
+  repetitivePeriodic("rep_periodic"),
+  repetitiveTriggeredOnEvent("rep_on_event"),
+  sampleOnEvent("smp_on_event");
+
+  factory fromString(String val) => .values.firstWhere(
+    (e) => e.serializedName == val,
+    orElse: () => .oneShot,
+  );
 }
 
-extension on AcquisitionMode {
-  // Serializes to the short string stored in the Dart-side database/JSON.
-  String _stringize() => switch (this) {
-    AcquisitionMode.oneShot => "os",
-    AcquisitionMode.oneShotTriggeredOnEvent => "os_on_event",
-    AcquisitionMode.repetitivePeriodic => "rep_periodic",
-    AcquisitionMode.repetitiveTriggeredOnEvent => "rep_on_event",
-    AcquisitionMode.sampleOnEvent => "smp_on_event",
-  };
+enum const ReadingMode(final String serializedName) {
+  array("array"),
+  scalar("scalar"),
+  arrayAsTimeSeries("array_as_time_series");
+
+  factory fromString(String val) =>
+      .values.firstWhere((e) => e.serializedName == val, orElse: () => .array);
 }
-
-AcquisitionMode _amFromString(String? val) => switch (val) {
-  "os_on_event" => AcquisitionMode.oneShotTriggeredOnEvent,
-  "rep_periodic" => AcquisitionMode.repetitivePeriodic,
-  "rep_on_event" => AcquisitionMode.repetitiveTriggeredOnEvent,
-  "smp_on_event" => AcquisitionMode.sampleOnEvent,
-  _ => AcquisitionMode.oneShot,
-};
-
-enum ReadingMode { array, scalar, arrayAsTimeSeries }
-
-extension on ReadingMode {
-  String _stringize() => switch (this) {
-    ReadingMode.array => "array",
-    ReadingMode.scalar => "scalar",
-    ReadingMode.arrayAsTimeSeries => "array_as_time_series",
-  };
-}
-
-ReadingMode _rmFromString(String? val) => switch (val) {
-  "array_as_time_series" => ReadingMode.arrayAsTimeSeries,
-  "scalar" => ReadingMode.scalar,
-  _ => ReadingMode.array,
-};
 
 final class const Reading({
   required final int refId,
@@ -105,17 +86,67 @@ extension type PlotConfigId._(int raw) implements Comparable {
   int compareTo(PlotConfigId other) => raw.compareTo(other.raw);
 }
 
-final class const PlotPoint({
-  required final double t,
-  required final DeviceValue value,
-});
+/// The samples of one plot channel, stored column-wise.
+///
+/// `t[i]` is the timestamp (seconds since the Unix epoch) of sample `i`. The
+/// subclass determines what kind of value accompanies each timestamp. Storing
+/// columns in typed lists means a channel costs a couple of allocations
+/// rather than several objects per sample.
+sealed class const PlotSeries(final Float64List _t) {
+  Float64List get timestamps => _t;
+  int get length => _t.length;
+  bool get isEmpty => length == 0;
+  bool get isNotEmpty => length != 0;
+}
+
+/// A channel whose samples are single floating point values; `y[i]` is the
+/// value at `t[i]`. A NaN reading is stored as `double.nan`.
+final class const ScalarSeries._(super.t, final Float64List _data)
+    extends PlotSeries {
+  Float64List get data => _data;
+
+  factory build(Float64List t, Float64List d) => t.length == d.length
+      ? ScalarSeries._(t, d)
+      : throw ACSysGraphQLException('mismatched lengths');
+
+  /// Access sample by index.
+  ({double t, double y}) operator [](int i) => (t: _t[i], y: _data[i]);
+
+  /// Lazily iterate over samples.
+  Iterable<({double t, double y})> get samples =>
+      Iterable.generate(length, (i) => this[i]);
+
+  /// Iterate over samples. Usable in for loops.
+  Iterator<({double t, double y})> get iterator => samples.iterator;
+}
+
+/// A channel whose samples are arrays (e.g. waveforms); `y[i]` is the array
+/// acquired at `t[i]`.
+final class const ArraySeries._(super.t, final List<Float64List> _data)
+    extends PlotSeries {
+  List<Float64List> get data => _data;
+
+  factory build(Float64List t, List<Float64List> d) => t.length == d.length
+      ? ArraySeries._(t, d)
+      : throw ACSysGraphQLException('mismatched lengths');
+
+  /// Access sample by index.
+  ({double t, Float64List y}) operator [](int i) => (t: _t[i], y: _data[i]);
+
+  /// Lazily iterate over samples.
+  Iterable<({double t, Float64List y})> get samples =>
+      Iterable.generate(length, (i) => this[i]);
+
+  /// Iterate over samples. Usable in for loops.
+  Iterator<({double t, Float64List y})> get iterator => samples.iterator;
+}
 
 final class const PlotChannelData({
   required final String name,
   required final String units,
   required final String rate,
   required final int status,
-  required final List<PlotPoint> points,
+  required final PlotSeries series,
 });
 
 final class const PlotReply({
@@ -129,16 +160,11 @@ final class const PlotReply({
   required final List<PlotChannelData> data,
 });
 
-final class PlotConfigurationListing {
-  final PlotConfigId? configurationId;
-  final String configurationName;
-
-  const PlotConfigurationListing({
-    this.configurationId,
-    required this.configurationName,
-  });
-
-  factory PlotConfigurationListing.fromJson(Map<String, dynamic> json) {
+final class const PlotConfigurationListing({
+  final PlotConfigId? configurationId,
+  required final String configurationName,
+}) {
+  factory fromJson(Map<String, dynamic> json) {
     if (json case {"id": int id, "name": String name}) {
       return PlotConfigurationListing(
         configurationId: PlotConfigId.fromInt(id),
@@ -298,9 +324,9 @@ final class PlotConfigurationSnapshot({
       tclkEvent: tclkEvent is int ? tclkEvent : null,
       sampleOnEvent: sampleOnEvent is int ? sampleOnEvent : null,
       acquisitionMode: acquisitionMode is String
-          ? _amFromString(acquisitionMode)
+          ? .fromString(acquisitionMode)
           : null,
-      readingMode: readingMode is String ? _rmFromString(readingMode) : null,
+      readingMode: readingMode is String ? .fromString(readingMode) : null,
       waveformDuration: waveformDuration is num
           ? waveformDuration.toDouble()
           : null,
@@ -327,8 +353,8 @@ final class PlotConfigurationSnapshot({
     "sampleOnEvent": sampleOnEvent,
     "xAxis": xAxis,
     "dataLimit": dataLimit,
-    "acquisitionMode": acquisitionMode?._stringize(),
-    "readingMode": readingMode?._stringize(),
+    "acquisitionMode": acquisitionMode?.serializedName,
+    "readingMode": readingMode?.serializedName,
     "waveformDuration": waveformDuration,
   };
 }
@@ -365,6 +391,12 @@ abstract interface class ACSysServiceAPI {
 
   /// Takes a device name and a value and sends a request to apply the value to
   /// the device.
+  Future<Status> setDevice({
+    required String forDRF,
+    required DeviceValue newSetting,
+  });
+
+  @Deprecated('Use setDevice() instead')
   Future<Status> submit({
     required String forDRF,
     required DeviceValue newSetting,

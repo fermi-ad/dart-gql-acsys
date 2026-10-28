@@ -2,6 +2,7 @@
 // data is collected as 1 Hz.
 
 import 'dart:io';
+
 import 'package:dart_gql_acsys/dart_gql_acsys.dart';
 
 Future<void> main() async {
@@ -15,10 +16,18 @@ Future<void> main() async {
       // each device.
 
       for (final data in reply.data) {
-        // For a given device, loop through its data points.
+        // For a given device, loop through its data points. Samples are
+        // stored column-wise: `t[i]` is the timestamp of `y[i]`.
 
-        for (final point in data.points) {
-          print("${point.t}, ${point.value.toDouble()}");
+        switch (data.series) {
+          case ScalarSeries ss:
+            for (final (:t, :y) in ss.samples) {
+              print("$t, $y");
+            }
+          case ArraySeries sa:
+            for (final (:t, :y) in sa.samples) {
+              print("$t, $y");
+            }
         }
       }
     }
