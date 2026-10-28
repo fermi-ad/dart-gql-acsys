@@ -45,48 +45,27 @@ final class const AnalogAlarmStatus({
   required final AnalogAlarmState state,
 });
 
-enum AcquisitionMode {
-  oneShot,
-  oneShotTriggeredOnEvent,
-  repetitivePeriodic,
-  repetitiveTriggeredOnEvent,
-  sampleOnEvent,
+enum const AcquisitionMode(final String serializedName) {
+  oneShot("os"),
+  oneShotTriggeredOnEvent("os_on_event"),
+  repetitivePeriodic("rep_periodic"),
+  repetitiveTriggeredOnEvent("rep_on_event"),
+  sampleOnEvent("smp_on_event");
+
+  factory fromString(String? val) => .values.firstWhere(
+    (e) => e.serializedName == val,
+    orElse: () => .oneShot,
+  );
 }
 
-extension on AcquisitionMode {
-  // Serializes to the short string stored in the Dart-side database/JSON.
-  String _stringize() => switch (this) {
-    .oneShot => "os",
-    .oneShotTriggeredOnEvent => "os_on_event",
-    .repetitivePeriodic => "rep_periodic",
-    .repetitiveTriggeredOnEvent => "rep_on_event",
-    .sampleOnEvent => "smp_on_event",
-  };
+enum const ReadingMode(final String serializedName) {
+  array("array"),
+  scalar("scalar"),
+  arrayAsTimeSeries("array_as_time_series");
+
+  factory fromString(String? val) =>
+      .values.firstWhere((e) => e.serializedName == val, orElse: () => .array);
 }
-
-AcquisitionMode _amFromString(String? val) => switch (val) {
-  "os_on_event" => .oneShotTriggeredOnEvent,
-  "rep_periodic" => .repetitivePeriodic,
-  "rep_on_event" => .repetitiveTriggeredOnEvent,
-  "smp_on_event" => .sampleOnEvent,
-  _ => .oneShot,
-};
-
-enum ReadingMode { array, scalar, arrayAsTimeSeries }
-
-extension on ReadingMode {
-  String _stringize() => switch (this) {
-    .array => "array",
-    .scalar => "scalar",
-    .arrayAsTimeSeries => "array_as_time_series",
-  };
-}
-
-ReadingMode _rmFromString(String? val) => switch (val) {
-  "array_as_time_series" => .arrayAsTimeSeries,
-  "scalar" => .scalar,
-  _ => .array,
-};
 
 final class const Reading({
   required final int refId,
@@ -343,9 +322,9 @@ final class PlotConfigurationSnapshot({
       tclkEvent: tclkEvent is int ? tclkEvent : null,
       sampleOnEvent: sampleOnEvent is int ? sampleOnEvent : null,
       acquisitionMode: acquisitionMode is String
-          ? _amFromString(acquisitionMode)
+          ? .fromString(acquisitionMode)
           : null,
-      readingMode: readingMode is String ? _rmFromString(readingMode) : null,
+      readingMode: readingMode is String ? .fromString(readingMode) : null,
       waveformDuration: waveformDuration is num
           ? waveformDuration.toDouble()
           : null,
@@ -372,8 +351,8 @@ final class PlotConfigurationSnapshot({
     "sampleOnEvent": sampleOnEvent,
     "xAxis": xAxis,
     "dataLimit": dataLimit,
-    "acquisitionMode": acquisitionMode?._stringize(),
-    "readingMode": readingMode?._stringize(),
+    "acquisitionMode": acquisitionMode?.serializedName,
+    "readingMode": readingMode?.serializedName,
     "waveformDuration": waveformDuration,
   };
 }
