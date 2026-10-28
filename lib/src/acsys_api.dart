@@ -113,19 +113,44 @@ extension type PlotConfigId._(int raw) implements Comparable {
 /// subclass determines what kind of value accompanies each timestamp. Storing
 /// columns in typed lists means a channel costs a couple of allocations
 /// rather than several objects per sample.
-sealed class const PlotSeries(final Float64List t) {
-  int get length => t.length;
+sealed class const PlotSeries(final Float64List _t) {
+  Float64List get timestamps => _t;
+  int get length => _t.length;
 }
 
 /// A channel whose samples are single floating point values; `y[i]` is the
 /// value at `t[i]`. A NaN reading is stored as `double.nan`.
-final class const ScalarSeries(super.t, final Float64List y)
-    extends PlotSeries {}
+final class const ScalarSeries(super.t, final Float64List _data)
+    extends PlotSeries {
+  Float64List get data => _data;
+
+  /// Access sample by index.
+  ({double t, double y}) operator [](int i) => (t: _t[i], y: _data[i]);
+
+  /// Lazily iterate over samples.
+  Iterable<({double t, double y})> get samples =>
+      Iterable.generate(length, (i) => this[i]);
+
+  /// Iterate over samples. Usable in for loops.
+  Iterator<({double t, double y})> get iterator => samples.iterator;
+}
 
 /// A channel whose samples are arrays (e.g. waveforms); `y[i]` is the array
 /// acquired at `t[i]`.
-final class const ArraySeries(super.t, final List<Float64List> y)
-    extends PlotSeries {}
+final class const ArraySeries(super.t, final List<Float64List> _data)
+    extends PlotSeries {
+  List<Float64List> get data => _data;
+
+  /// Access sample by index.
+  ({double t, Float64List y}) operator [](int i) => (t: _t[i], y: _data[i]);
+
+  /// Lazily iterate over samples.
+  Iterable<({double t, Float64List y})> get samples =>
+      Iterable.generate(length, (i) => this[i]);
+
+  /// Iterate over samples. Usable in for loops.
+  Iterator<({double t, Float64List y})> get iterator => samples.iterator;
+}
 
 final class const PlotChannelData({
   required final String name,
