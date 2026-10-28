@@ -86,6 +86,15 @@ extension type PlotConfigId._(int raw) implements Comparable {
   int compareTo(PlotConfigId other) => raw.compareTo(other.raw);
 }
 
+/// A single plot point with time and value.
+///
+/// This type is from an older API. Newer code should directly use the series
+/// types.
+final class const PlotPoint({
+  required final double t,
+  required final DeviceValue value,
+});
+
 /// The samples of one plot channel, stored column-wise.
 ///
 /// `t[i]` is the timestamp (seconds since the Unix epoch) of sample `i`. The
@@ -97,6 +106,9 @@ sealed class const PlotSeries(final Float64List _t) {
   int get length => _t.length;
   bool get isEmpty => length == 0;
   bool get isNotEmpty => length != 0;
+
+  List<PlotPoint> toPoints();
+  void append(PlotSeries s);
 }
 
 /// A channel whose samples are single floating point values; `y[i]` is the
@@ -109,6 +121,8 @@ final class const ScalarSeries._(super.t, final Float64List _data)
       ? ScalarSeries._(t, d)
       : throw ACSysGraphQLException('mismatched lengths');
 
+  factory empty() => ScalarSeries._(Float64List(0), Float64List(0));
+
   /// Access sample by index.
   ({double t, double y}) operator [](int i) => (t: _t[i], y: _data[i]);
 
@@ -118,6 +132,18 @@ final class const ScalarSeries._(super.t, final Float64List _data)
 
   /// Iterate over samples. Usable in for loops.
   Iterator<({double t, double y})> get iterator => samples.iterator;
+
+  @override
+  void append(PlotSeries s) {
+    if (s is ScalarSeries) {
+      _t.addAll(s.timestamps);
+      _data.addAll(s.data);
+    }
+  }
+
+  @override
+  List<PlotPoint> toPoints() =>
+      samples.map((s) => PlotPoint(t: s.t, value: s.y.toDevVal())).toList();
 }
 
 /// A channel whose samples are arrays (e.g. waveforms); `y[i]` is the array
@@ -130,6 +156,8 @@ final class const ArraySeries._(super.t, final List<Float64List> _data)
       ? ArraySeries._(t, d)
       : throw ACSysGraphQLException('mismatched lengths');
 
+  factory empty() => ArraySeries._(Float64List(0), []);
+
   /// Access sample by index.
   ({double t, Float64List y}) operator [](int i) => (t: _t[i], y: _data[i]);
 
@@ -139,6 +167,18 @@ final class const ArraySeries._(super.t, final List<Float64List> _data)
 
   /// Iterate over samples. Usable in for loops.
   Iterator<({double t, Float64List y})> get iterator => samples.iterator;
+
+  @override
+  void append(PlotSeries s) {
+    if (s is ArraySeries) {
+      _t.addAll(s.timestamps);
+      _data.addAll(s.data);
+    }
+  }
+
+  @override
+  List<PlotPoint> toPoints() =>
+      samples.map((s) => PlotPoint(t: s.t, value: s.y.toDevVal())).toList();
 }
 
 final class const PlotChannelData({
@@ -147,7 +187,9 @@ final class const PlotChannelData({
   required final String rate,
   required final int status,
   required final PlotSeries series,
-});
+}) {
+  List<PlotPoint> get points => series.toPoints();
+}
 
 final class const PlotReply({
   required final String plotId,
