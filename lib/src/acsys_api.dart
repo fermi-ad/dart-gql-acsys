@@ -52,7 +52,7 @@ enum const AcquisitionMode(final String serializedName) {
   repetitiveTriggeredOnEvent("rep_on_event"),
   sampleOnEvent("smp_on_event");
 
-  factory fromString(String? val) => .values.firstWhere(
+  factory fromString(String val) => .values.firstWhere(
     (e) => e.serializedName == val,
     orElse: () => .oneShot,
   );
@@ -63,7 +63,7 @@ enum const ReadingMode(final String serializedName) {
   scalar("scalar"),
   arrayAsTimeSeries("array_as_time_series");
 
-  factory fromString(String? val) =>
+  factory fromString(String val) =>
       .values.firstWhere((e) => e.serializedName == val, orElse: () => .array);
 }
 
