@@ -28,6 +28,10 @@ Future<void> main() async {
             for (final (:t, :y) in sa.samples) {
               print("$t, $y");
             }
+          case TimeSeriesSeries sts:
+            for (final (:t, :y) in sts.samples) {
+              print("$t, ${y.value}");
+            }
         }
       }
     }

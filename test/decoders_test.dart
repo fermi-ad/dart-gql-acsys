@@ -38,6 +38,13 @@ Map<String, dynamic> _array(List<Object?> v) => {
   'scalarArrayValue': v,
 };
 
+Map<String, dynamic> _timeSeries(List<(num, Object?)> v) => {
+  '__typename': 'TimeSeries',
+  'timeSeriesValue': [
+    for (final (t, y) in v) {'timestamp': t, 'value': y},
+  ],
+};
+
 void main() {
   // -------------------------------------------------------------------------
   // Timestamps
@@ -362,6 +369,47 @@ void main() {
       expect(sa.data[1][0], equals(3.0));
       expect(sa.data[1][1].isNaN, isTrue);
       expect(sa.data[1][2], equals(5.0));
+    });
+
+    test('decodes time series rows into a TimeSeriesSeries', () {
+      final s = decode.plotSeries([
+        _row(1.0, _timeSeries([(0.5, 1.0), (0.75, null)])),
+        _row(2.0, _timeSeries([])),
+      ]);
+
+      expect(s, isA<TimeSeriesSeries>());
+      final TimeSeriesSeries sts = s as TimeSeriesSeries;
+
+      expect(sts.timestamps, equals([1.0, 2.0]));
+      expect(sts.data, hasLength(2));
+      expect(sts.data[0].timestamps, equals([0.5, 0.75]));
+      expect(sts.data[0].values[0], equals(1.0));
+      expect(sts.data[0].values[1].isNaN, isTrue);
+      expect(sts.data[1].length, equals(0));
+    });
+
+    test('rejects a scalar row in a time series channel', () {
+      expect(
+        () => decode.plotSeries([
+          _row(1.0, _timeSeries([(0.5, 1.0)])),
+          _row(2.0, _scalar(1.0)),
+        ]),
+        _gqlError('__typename=Scalar'),
+      );
+    });
+
+    test('rejects a malformed time series element', () {
+      expect(
+        () => decode.plotSeries([
+          _row(1.0, {
+            '__typename': 'TimeSeries',
+            'timeSeriesValue': [
+              {'value': 1.0},
+            ],
+          }),
+        ]),
+        _gqlError('time series element shape'),
+      );
     });
 
     test('an empty channel is an empty ScalarSeries', () {

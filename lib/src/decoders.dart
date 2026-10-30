@@ -190,49 +190,88 @@ PlotChannelData _plotChannel(Map<String, dynamic> ch, String name) =>
 /// Decodes a channel's `channelData` rows directly into column storage.
 ///
 /// A channel carries a single data type, so the first row decides the
-/// layout: [ArraySeries] for `ScalarArray`, otherwise [ScalarSeries] (which
-/// is also what an empty channel produces). Any row of a different type, or
-/// a malformed row, throws [ACSysGraphQLException].
+/// layout: [ArraySeries] for `ScalarArray`, [TimeSeriesSeries] for
+/// `TimeSeries`, otherwise [ScalarSeries] (which is also what an empty
+/// channel produces). Any row of a different type, or a malformed row, throws
+/// [ACSysGraphQLException].
 PlotSeries plotSeries(List<Object?> rows) {
-  final n = rows.length;
-  final t = Float64List(n);
+  final t = Float64List(rows.length);
 
-  if (rows.firstOrNull case {'result': {'__typename': 'ScalarArray'}}) {
-    return ArraySeries.build(
+  return switch (rows.firstOrNull) {
+    {'result': {'__typename': 'ScalarArray'}} => ArraySeries.build(
       t,
-      List<Float64List>.generate(n, (ii) {
-        final r = _plotRow(rows[ii], t, ii);
-
-        return r['__typename'] == 'ScalarArray'
-            ? _toFloat64List(r['scalarArrayValue'])
-            : throw _mixedPlotRow(r);
-      }, growable: false),
-    );
-  } else {
-    final y = Float64List(n);
-
-    for (var ii = 0; ii < n; ii++) {
-      final r = _plotRow(rows[ii], t, ii);
-
-      y[ii] = r['__typename'] == 'Scalar'
-          ? _toDouble(r['scalarValue'])
-          : throw _mixedPlotRow(r);
-    }
-    return ScalarSeries.build(t, y);
-  }
+      _plotColumn(rows, t, 'ScalarArray', 'scalarArrayValue', _toFloat64List),
+    ),
+    {'result': {'__typename': 'TimeSeries'}} => TimeSeriesSeries.build(
+      t,
+      _plotColumn(rows, t, 'TimeSeries', 'timeSeriesValue', _toDevTimeSeries),
+    ),
+    _ => _scalarSeries(rows, t),
+  };
 }
 
+ScalarSeries _scalarSeries(List<Object?> rows, Float64List t) {
+  final y = Float64List(rows.length);
+
+  for (var ii = 0; ii < rows.length; ii++) {
+    y[ii] = _toDouble(_plotValue(rows[ii], t, ii, 'Scalar', 'scalarValue'));
+  }
+  return ScalarSeries.build(t, y);
+}
+
+// Decodes every row's [field] with [decode] into a fixed-length list. Used by
+// the series whose per-sample value is an object rather than a double.
+List<Y> _plotColumn<Y>(
+  List<Object?> rows,
+  Float64List t,
+  String type,
+  String field,
+  Y Function(Object?) decode,
+) => List<Y>.generate(
+  rows.length,
+  (ii) => decode(_plotValue(rows[ii], t, ii, type, field)),
+  growable: false,
+);
+
 // Stores a channelData row's timestamp in `t[ii]` and returns the row's
-// result map.
-Map<String, dynamic> _plotRow(Object? row, Float64List t, int ii) {
+// [field] value, checking that the row's `__typename` is [type].
+Object? _plotValue(
+  Object? row,
+  Float64List t,
+  int ii,
+  String type,
+  String field,
+) {
   if (row case {
     'timestamp': final num ts,
     'result': final Map<String, dynamic> r,
   }) {
+    if (r['__typename'] != type) throw _mixedPlotRow(r);
     t[ii] = ts.toDouble();
-    return r;
+    return r[field];
   }
   throw ACSysGraphQLException('Unexpected channelData row shape: $row');
+}
+
+// Decodes a JSON time series. ASSUMED wire shape (unverified against the
+// schema): `[{"timestamp": num, "value": num|null}, ...]`. A null value is a
+// NaN reading.
+DevTimeSeries _toDevTimeSeries(Object? src) {
+  final list = src as List<Object?>;
+  final ts = Float64List(list.length);
+  final vs = Float64List(list.length);
+
+  for (var ii = 0; ii < list.length; ii++) {
+    if (list[ii] case {'timestamp': final num t, 'value': final v}) {
+      ts[ii] = t.toDouble();
+      vs[ii] = _toDouble(v);
+    } else {
+      throw ACSysGraphQLException(
+        'Unexpected time series element shape: ${list[ii]}',
+      );
+    }
+  }
+  return DevTimeSeries.columns(ts, vs);
 }
 
 ACSysGraphQLException _mixedPlotRow(Map<String, dynamic> r) =>

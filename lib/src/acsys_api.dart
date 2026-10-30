@@ -175,6 +175,41 @@ final class const ArraySeries._(super.t, final List<Float64List> _data)
       samples.map((s) => PlotPoint(t: s.t, value: s.y.toDevVal()));
 }
 
+/// A channel whose samples are time series; `y[i]` is the [DevTimeSeries]
+/// acquired at `t[i]`.
+final class const TimeSeriesSeries._(super.t, final List<DevTimeSeries> _data)
+    extends PlotSeries {
+  List<DevTimeSeries> get data => _data;
+
+  /// Builds a series from two parallel lists. The lists must be same length.
+  factory build(Float64List t, List<DevTimeSeries> d) => t.length == d.length
+      ? TimeSeriesSeries._(t, d)
+      : throw ACSysGraphQLException('mismatched lengths');
+
+  /// Build an empty series.
+  factory empty() => TimeSeriesSeries._(Float64List(0), []);
+
+  /// Access sample by index.
+  ({double t, DevTimeSeries y}) operator [](int i) => (t: _t[i], y: _data[i]);
+
+  /// Lazily iterate over samples.
+  Iterable<({double t, DevTimeSeries y})> get samples =>
+      Iterable.generate(length, (i) => this[i]);
+
+  @override
+  void append(PlotSeries s) {
+    if (s is TimeSeriesSeries) {
+      _t.addAll(s.timestamps);
+      _data.addAll(s.data);
+    }
+  }
+
+  // DevTimeSeries is already a DeviceValue, so no conversion is needed.
+  @override
+  Iterable<PlotPoint> toPoints() =>
+      samples.map((s) => PlotPoint(t: s.t, value: s.y));
+}
+
 final class const PlotChannelData({
   required final String name,
   required final String units,
