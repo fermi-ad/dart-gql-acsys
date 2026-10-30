@@ -130,9 +130,6 @@ final class const ScalarSeries._(super.t, final Float64List _data)
   Iterable<({double t, double y})> get samples =>
       Iterable.generate(length, (i) => this[i]);
 
-  /// Iterate over samples. Usable in for loops.
-  Iterator<({double t, double y})> get iterator => samples.iterator;
-
   @override
   void append(PlotSeries s) {
     if (s is ScalarSeries) {
@@ -164,9 +161,6 @@ final class const ArraySeries._(super.t, final List<Float64List> _data)
   /// Lazily iterate over samples.
   Iterable<({double t, Float64List y})> get samples =>
       Iterable.generate(length, (i) => this[i]);
-
-  /// Iterate over samples. Usable in for loops.
-  Iterator<({double t, Float64List y})> get iterator => samples.iterator;
 
   @override
   void append(PlotSeries s) {
