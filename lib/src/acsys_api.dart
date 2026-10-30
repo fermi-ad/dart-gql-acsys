@@ -107,7 +107,7 @@ sealed class const PlotSeries(final Float64List _t) {
   bool get isEmpty => length == 0;
   bool get isNotEmpty => length != 0;
 
-  List<PlotPoint> toPoints();
+  Iterable<PlotPoint> toPoints();
   void append(PlotSeries s);
 }
 
@@ -139,8 +139,8 @@ final class const ScalarSeries._(super.t, final Float64List _data)
   }
 
   @override
-  List<PlotPoint> toPoints() =>
-      samples.map((s) => PlotPoint(t: s.t, value: s.y.toDevVal())).toList();
+  Iterable<PlotPoint> toPoints() =>
+      samples.map((s) => PlotPoint(t: s.t, value: s.y.toDevVal()));
 }
 
 /// A channel whose samples are arrays (e.g. waveforms); `y[i]` is the array
@@ -171,8 +171,8 @@ final class const ArraySeries._(super.t, final List<Float64List> _data)
   }
 
   @override
-  List<PlotPoint> toPoints() =>
-      samples.map((s) => PlotPoint(t: s.t, value: s.y.toDevVal())).toList();
+  Iterable<PlotPoint> toPoints() =>
+      samples.map((s) => PlotPoint(t: s.t, value: s.y.toDevVal()));
 }
 
 final class const PlotChannelData({
@@ -182,7 +182,7 @@ final class const PlotChannelData({
   required final int status,
   required final PlotSeries series,
 }) {
-  List<PlotPoint> get points => series.toPoints();
+  Iterable<PlotPoint> get points => series.toPoints();
 }
 
 final class const PlotReply({
