@@ -114,6 +114,49 @@ void main() {
       );
     });
 
+    test("TimeSeries stores columns and keeps the pair-list API", () {
+      final ts = DevTimeSeries([(1.0, 2.0), (3.0, 4.0)]);
+
+      expect(ts.length, equals(2));
+      expect(ts.timestamps, equals([1.0, 3.0]));
+      expect(ts.values, equals([2.0, 4.0]));
+      expect(ts.value, equals([(1.0, 2.0), (3.0, 4.0)]));
+      expect(ts.toTimeSeries(), equals([(1.0, 2.0), (3.0, 4.0)]));
+
+      // Pattern matching on `value` still works.
+      final DeviceValue dv = ts;
+      expect(switch (dv) {
+        DevTimeSeries(value: [_, (final t, final v)]) => (t, v),
+        _ => null,
+      }, equals((3.0, 4.0)));
+
+      // The view writes through to the columns.
+      ts.value[0] = (5.0, 6.0);
+      expect(ts.timestamps[0], equals(5.0));
+      expect(ts.values[0], equals(6.0));
+      expect(() => ts.value.add((7.0, 8.0)), throwsUnsupportedError);
+
+      expect(
+        DevTimeSeries.columns(
+          Float64List.fromList([5.0, 3.0]),
+          Float64List.fromList([6.0, 4.0]),
+        ),
+        equals(ts),
+      );
+      expect(
+        () => DevTimeSeries.columns(Float64List(2), Float64List(1)),
+        throwsArgumentError,
+      );
+    });
+
+    test("TimeSeries converts to and from DateTime pairs", () {
+      final when = DateTime.fromMillisecondsSinceEpoch(1500);
+      final dv = [(when, 9.0)].toDevVal();
+
+      expect(dv, equals(DevTimeSeries([(1.5, 9.0)])));
+      expect(dv.toTimeSeriesWithDates(), equals([(when, 9.0)]));
+    });
+
     test("StatusCode compares the status", () {
       expect(
         const DevStatusCode(Status.SUCCESS),

@@ -598,8 +598,11 @@ extension on DeviceValue {
     DevRaw(value: var raw) => {'rawVal': raw},
     DevText(value: var t) => {'textVal': t},
     DevTextArray(value: var arr) => {'textArrayVal': arr},
-    DevTimeSeries(value: var ts) => {
-      'timeSeriesVal': ts.map((e) => {'stamp': e.$1, 'value': e.$2}).toList(),
+    DevTimeSeries(:final timestamps, :final values) => {
+      'timeSeriesVal': [
+        for (var ii = 0; ii < timestamps.length; ii++)
+          {'stamp': timestamps[ii], 'value': values[ii]},
+      ],
     },
     DevIntArray(value: var _) => throw ACSysGraphQLException(
       'Integer arrays aren\'t supported in the API',

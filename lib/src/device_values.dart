@@ -27,6 +27,8 @@
 /// ```
 library;
 
+import 'dart:collection';
+import 'dart:core';
 import 'dart:typed_data';
 
 import 'status.dart';
@@ -59,18 +61,6 @@ bool _listEq<T>(List<T> a, List<T> b) {
   if (a.length != b.length) return false;
   for (var ii = 0; ii < a.length; ii++) {
     if (a[ii] != b[ii]) return false;
-  }
-  return true;
-}
-
-bool _seriesEq(List<(double, double)> a, List<(double, double)> b) {
-  if (identical(a, b)) return true;
-  if (a.length != b.length) return false;
-  for (var ii = 0; ii < a.length; ii++) {
-    final (at, av) = a[ii];
-    final (bt, bv) = b[ii];
-
-    if (!_dEq(at, bt) || !_dEq(av, bv)) return false;
   }
   return true;
 }
@@ -190,15 +180,83 @@ final class const DevTextArray(final List<String> value) extends DeviceValue {
 }
 
 /// Represents time-series data (i.e. a list of timestamp/value pairs.)
+///
+/// Samples are stored column-wise: `timestamps[i]` (seconds since the Unix
+/// epoch) is the time of `values[i]`. This costs two allocations per series
+/// instead of one boxed record per sample.
 
-final class const DevTimeSeries(final List<(double, double)> value)
-    extends DeviceValue {
+final class const DevTimeSeries._(
+  final Float64List timestamps,
+  final Float64List values,
+) extends DeviceValue {
+  /// Builds a series directly from its columns (no copying.) Both lists must
+  /// have the same length.
+  factory columns(Float64List timestamps, Float64List values) {
+    if (timestamps.length != values.length) {
+      throw ArgumentError(
+        'timestamps (${timestamps.length}) and values (${values.length}) '
+        'must have the same length',
+      );
+    } else {
+      return DevTimeSeries._(timestamps, values);
+    }
+  }
+
+  /// Builds a series from `(timestamp, value)` pairs. Kept for compatibility;
+  /// prefer [DevTimeSeries.columns] which doesn't copy.
+  factory DevTimeSeries(Iterable<(double, double)> value) {
+    final list = value is List<(double, double)> ? value : value.toList();
+    final n = list.length;
+    final t = Float64List(n);
+    final v = Float64List(n);
+
+    for (var ii = 0; ii < n; ii++) {
+      t[ii] = list[ii].$1;
+      v[ii] = list[ii].$2;
+    }
+    return DevTimeSeries.columns(t, v);
+  }
+
+  /// Number of samples in the series.
+  int get length => timestamps.length;
+
+  /// A fixed-length `(timestamp, value)` view of the series, for compatibility
+  /// with the old API. Nothing is copied: records are created on element
+  /// access and writes go through to [timestamps] and [values].
+  List<(double, double)> get value => _TimeSeriesView(timestamps, values);
+
   @override
   bool operator ==(Object other) =>
-      other is DevTimeSeries && _seriesEq(other.value, value);
+      other is DevTimeSeries &&
+      _f64Eq(other.timestamps, timestamps) &&
+      _f64Eq(other.values, values);
 
   @override
-  int get hashCode => _listHash(value);
+  int get hashCode => Object.hash(_listHash(timestamps), _listHash(values));
+}
+
+// Fixed-length list view pairing up the columns of a `DevTimeSeries`.
+final class _TimeSeriesView extends ListBase<(double, double)> {
+  final Float64List _t;
+  final Float64List _v;
+
+  _TimeSeriesView(this._t, this._v);
+
+  @override
+  int get length => _t.length;
+
+  @override
+  set length(int _) =>
+      throw UnsupportedError('Cannot change the length of a time series');
+
+  @override
+  (double, double) operator [](int index) => (_t[index], _v[index]);
+
+  @override
+  void operator []=(int index, (double, double) e) {
+    _t[index] = e.$1;
+    _v[index] = e.$2;
+  }
 }
 
 // The `*ToDeviceValue` extension allows us to convert primitive types into a
@@ -240,9 +298,8 @@ extension RawTimeSeriesToDeviceValue on List<(double, double)> {
 }
 
 extension TimeSeriesToDeviceValue on Iterable<(DateTime, double)> {
-  DeviceValue toDevVal() => DevTimeSeries(
-    map((e) => (e.$1.millisecondsSinceEpoch / 1000.0, e.$2)).toList(),
-  );
+  DeviceValue toDevVal() =>
+      DevTimeSeries(map((e) => (e.$1.millisecondsSinceEpoch / 1000.0, e.$2)));
 }
 
 // The `FromDeviceValue` extension allows us to convert a `DeviceValue` into a
@@ -290,8 +347,12 @@ extension FromDeviceValue on DeviceValue {
   };
 
   Iterable<(DateTime, double)>? toTimeSeriesWithDates() => switch (this) {
-    DevTimeSeries(value: final v) => v.map(
-      (e) => (DateTime.fromMillisecondsSinceEpoch((e.$1 * 1000).toInt()), e.$2),
+    DevTimeSeries(:final timestamps, :final values) => Iterable.generate(
+      timestamps.length,
+      (ii) => (
+        DateTime.fromMillisecondsSinceEpoch((timestamps[ii] * 1000).toInt()),
+        values[ii],
+      ),
     ),
     _ => null,
   };
