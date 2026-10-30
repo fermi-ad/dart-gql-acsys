@@ -127,6 +127,10 @@ final class const ScalarSeries._(super.t, final Float64List _data)
   /// Build an empty series.
   factory empty() => ScalarSeries._(Float64List(0), Float64List(0));
 
+  /// Creates a scalar series from a DevTimeSeries value.
+  factory fromPoints(DevTimeSeries ts) =>
+      ScalarSeries._(ts.timestamps, ts.values);
+
   /// Access sample by index.
   ({double t, double y}) operator [](int i) => (t: _t[i], y: _data[i]);
 
