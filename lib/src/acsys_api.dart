@@ -117,10 +117,14 @@ final class const ScalarSeries._(super.t, final Float64List _data)
     extends PlotSeries {
   Float64List get data => _data;
 
+  /// Build from columns.
+  ///
+  /// Builds a series from two parallel lists. The lists must be same length.
   factory build(Float64List t, Float64List d) => t.length == d.length
       ? ScalarSeries._(t, d)
       : throw ACSysGraphQLException('mismatched lengths');
 
+  /// Build an empty series.
   factory empty() => ScalarSeries._(Float64List(0), Float64List(0));
 
   /// Access sample by index.
@@ -130,6 +134,10 @@ final class const ScalarSeries._(super.t, final Float64List _data)
   Iterable<({double t, double y})> get samples =>
       Iterable.generate(length, (i) => this[i]);
 
+  /// Append another series to this one.
+  ///
+  /// This method does not verify that the combined series has monotonically
+  /// increasing timestamps.
   @override
   void append(PlotSeries s) {
     if (s is ScalarSeries) {
@@ -149,10 +157,14 @@ final class const ArraySeries._(super.t, final List<Float64List> _data)
     extends PlotSeries {
   List<Float64List> get data => _data;
 
+  /// Build from columns.
+  ///
+  /// The lists must be same length.
   factory build(Float64List t, List<Float64List> d) => t.length == d.length
       ? ArraySeries._(t, d)
       : throw ACSysGraphQLException('mismatched lengths');
 
+  /// Creates an empty array series.
   factory empty() => ArraySeries._(Float64List(0), []);
 
   /// Access sample by index.
@@ -162,6 +174,7 @@ final class const ArraySeries._(super.t, final List<Float64List> _data)
   Iterable<({double t, Float64List y})> get samples =>
       Iterable.generate(length, (i) => this[i]);
 
+  /// Append another series to this one.
   @override
   void append(PlotSeries s) {
     if (s is ArraySeries) {
@@ -170,6 +183,7 @@ final class const ArraySeries._(super.t, final List<Float64List> _data)
     }
   }
 
+  /// Convert to points.
   @override
   Iterable<PlotPoint> toPoints() =>
       samples.map((s) => PlotPoint(t: s.t, value: s.y.toDevVal()));
