@@ -236,12 +236,8 @@ final class const DevTimeSeries._(
 }
 
 // Fixed-length list view pairing up the columns of a `DevTimeSeries`.
-final class _TimeSeriesView extends ListBase<(double, double)> {
-  final Float64List _t;
-  final Float64List _v;
-
-  _TimeSeriesView(this._t, this._v);
-
+final class const _TimeSeriesView(final Float64List _t, final Float64List _v)
+    extends ListBase<(double, double)> {
   @override
   int get length => _t.length;
 
