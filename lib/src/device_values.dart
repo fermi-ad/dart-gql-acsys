@@ -266,35 +266,35 @@ extension ToDeviceValue on DeviceValue {
 }
 
 extension DoubleToDeviceValue on double {
-  DeviceValue toDevVal() => DevScalar(this);
+  DevScalar toDevVal() => DevScalar(this);
 }
 
 extension TextToDeviceValue on String {
-  DeviceValue toDevVal() => DevText(this);
+  DevText toDevVal() => DevText(this);
 }
 
 extension RawToDeviceValue on Uint8List {
-  DeviceValue toDevVal() => DevRaw(this);
+  DevRaw toDevVal() => DevRaw(this);
 }
 
 extension DoubleArrayToDeviceValue on Float64List {
-  DeviceValue toDevVal() => DevScalarArray(this);
+  DevScalarArray toDevVal() => DevScalarArray(this);
 }
 
 extension IntArrayToDeviceValue on Int32List {
-  DeviceValue toDevVal() => DevIntArray(this);
+  DevIntArray toDevVal() => DevIntArray(this);
 }
 
 extension TextArrayToDeviceValue on List<String> {
-  DeviceValue toDevVal() => DevTextArray(this);
+  DevTextArray toDevVal() => DevTextArray(this);
 }
 
-extension RawTimeSeriesToDeviceValue on List<(double, double)> {
-  DeviceValue toDevVal() => DevTimeSeries(this);
+extension RawTimeSeriesToDeviceValue on Iterable<(double, double)> {
+  DevTimeSeries toDevVal() => DevTimeSeries(this);
 }
 
 extension TimeSeriesToDeviceValue on Iterable<(DateTime, double)> {
-  DeviceValue toDevVal() =>
+  DevTimeSeries toDevVal() =>
       DevTimeSeries(map((e) => (e.$1.millisecondsSinceEpoch / 1000.0, e.$2)));
 }
 
