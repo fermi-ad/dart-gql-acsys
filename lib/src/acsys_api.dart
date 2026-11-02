@@ -101,7 +101,7 @@ final class const PlotPoint({
 /// subclass determines what kind of value accompanies each timestamp. Storing
 /// columns in typed lists means a channel costs a couple of allocations
 /// rather than several objects per sample.
-sealed class const PlotSeries(final Float64List _t) {
+sealed class PlotSeries(var Float64List _t) {
   Float64List get timestamps => _t;
   int get length => _t.length;
   bool get isEmpty => length == 0;
@@ -109,12 +109,51 @@ sealed class const PlotSeries(final Float64List _t) {
 
   Iterable<PlotPoint> toPoints();
   void append(PlotSeries s);
+
+  /// Adds the points to the end of the series.
+  ///
+  /// The payload of every point must be the type of value this series holds
+  /// (`DevScalar` for [ScalarSeries], `DevScalarArray` for [ArraySeries] and
+  /// `DevTimeSeries` for [TimeSeriesSeries].) An [ArgumentError] is thrown
+  /// -- and the series is left untouched -- if any point has a different
+  /// payload. As with [append], monotonic timestamps aren't verified.
+  void addAll(List<PlotPoint> pts);
+
+  // Throws if any point's payload isn't a `T`. Subclasses call this before
+  // modifying anything so a bad point can't leave the columns mismatched.
+  void _checkPayloads<T extends DeviceValue>(List<PlotPoint> pts) {
+    for (final p in pts) {
+      if (p.value is! T) {
+        throw ArgumentError.value(
+          p.value,
+          'pts',
+          'expected a point with a $T payload for $runtimeType',
+        );
+      }
+    }
+  }
+
+  // Replaces the timestamp column with one that has room for `pts` and fills
+  // in the new entries. Returns the index of the first new sample.
+  int _extendTimes(List<PlotPoint> pts) {
+    final start = _t.length;
+    final t = _grown(_t, pts.length);
+
+    for (var i = 0; i < pts.length; i++) {
+      t[start + i] = pts[i].t;
+    }
+    _t = t;
+    return start;
+  }
 }
+
+// Copies `src` into a new list with room for `extra` more elements.
+Float64List _grown(Float64List src, int extra) =>
+    Float64List(src.length + extra)..setRange(0, src.length, src);
 
 /// A channel whose samples are single floating point values; `y[i]` is the
 /// value at `t[i]`. A NaN reading is stored as `double.nan`.
-final class const ScalarSeries._(super.t, final Float64List _data)
-    extends PlotSeries {
+final class ScalarSeries._(super.t, var Float64List _data) extends PlotSeries {
   Float64List get data => _data;
 
   /// Build from columns.
@@ -128,8 +167,10 @@ final class const ScalarSeries._(super.t, final Float64List _data)
   factory empty() => ScalarSeries._(Float64List(0), Float64List(0));
 
   /// Creates a scalar series from a DevTimeSeries value.
-  factory fromPoints(DevTimeSeries ts) =>
+  factory fromTimeSeries(DevTimeSeries ts) =>
       ScalarSeries._(ts.timestamps, ts.values);
+
+  factory fromPoints(List<PlotPoint> pts) => ScalarSeries.empty()..addAll(pts);
 
   /// Access sample by index.
   ({double t, double y}) operator [](int i) => (t: _t[i], y: _data[i]);
@@ -151,13 +192,26 @@ final class const ScalarSeries._(super.t, final Float64List _data)
   }
 
   @override
+  void addAll(List<PlotPoint> pts) {
+    _checkPayloads<DevScalar>(pts);
+
+    final d = _grown(_data, pts.length);
+    final start = _extendTimes(pts);
+
+    for (var i = 0; i < pts.length; i++) {
+      d[start + i] = (pts[i].value as DevScalar).value;
+    }
+    _data = d;
+  }
+
+  @override
   Iterable<PlotPoint> toPoints() =>
       samples.map((s) => PlotPoint(t: s.t, value: s.y.toDevVal()));
 }
 
 /// A channel whose samples are arrays (e.g. waveforms); `y[i]` is the array
 /// acquired at `t[i]`.
-final class const ArraySeries._(super.t, final List<Float64List> _data)
+final class ArraySeries._(super.t, var List<Float64List> _data)
     extends PlotSeries {
   List<Float64List> get data => _data;
 
@@ -187,6 +241,13 @@ final class const ArraySeries._(super.t, final List<Float64List> _data)
     }
   }
 
+  @override
+  void addAll(List<PlotPoint> pts) {
+    _checkPayloads<DevScalarArray>(pts);
+    _data = [..._data, for (final p in pts) (p.value as DevScalarArray).value];
+    _extendTimes(pts);
+  }
+
   /// Convert to points.
   @override
   Iterable<PlotPoint> toPoints() =>
@@ -195,7 +256,7 @@ final class const ArraySeries._(super.t, final List<Float64List> _data)
 
 /// A channel whose samples are time series; `y[i]` is the [DevTimeSeries]
 /// acquired at `t[i]`.
-final class const TimeSeriesSeries._(super.t, final List<DevTimeSeries> _data)
+final class TimeSeriesSeries._(super.t, var List<DevTimeSeries> _data)
     extends PlotSeries {
   List<DevTimeSeries> get data => _data;
 
@@ -220,6 +281,13 @@ final class const TimeSeriesSeries._(super.t, final List<DevTimeSeries> _data)
       _t.addAll(s.timestamps);
       _data.addAll(s.data);
     }
+  }
+
+  @override
+  void addAll(List<PlotPoint> pts) {
+    _checkPayloads<DevTimeSeries>(pts);
+    _data = [..._data, for (final p in pts) p.value as DevTimeSeries];
+    _extendTimes(pts);
   }
 
   // DevTimeSeries is already a DeviceValue, so no conversion is needed.
