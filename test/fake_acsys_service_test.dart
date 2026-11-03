@@ -23,7 +23,7 @@ final class FakeACSysService implements ACSysServiceAPI {
   // Canned device readings returned by readDevices / monitorDevices.
   List<Reading> cannedReadings = [];
 
-  // Canned status returned by submit / sendCommand.
+  // Canned status returned by setDevice / sendCommand.
   Status cannedStatus = Status.SUCCESS;
 
   // Canned alarms returned by getAlarmsSnapshot.
@@ -56,10 +56,16 @@ final class FakeACSysService implements ACSysServiceAPI {
   }) => const Stream.empty();
 
   @override
-  Future<Status> submit({
+  Future<Status> setDevice({
     required String forDRF,
     required DeviceValue newSetting,
   }) async => cannedStatus;
+
+  @override
+  Future<Status> submit({
+    required String forDRF,
+    required DeviceValue newSetting,
+  }) async => setDevice(forDRF: forDRF, newSetting: newSetting);
 
   @override
   Future<Status> sendCommand({
@@ -198,12 +204,12 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // submit / sendCommand
+  // setDevice / sendCommand
   // -------------------------------------------------------------------------
 
-  group('submit', () {
+  group('setDevice', () {
     test('returns canned SUCCESS status', () async {
-      final status = await svc.submit(
+      final status = await svc.setDevice(
         forDRF: 'M:OUTTMP.SETTING',
         newSetting: DevScalar(25.0),
       );
@@ -213,7 +219,7 @@ void main() {
 
     test('returns canned error status', () async {
       svc.cannedStatus = Status.DPM_NO_SUCH_PROP;
-      final status = await svc.submit(
+      final status = await svc.setDevice(
         forDRF: 'M:BOGUS.SETTING',
         newSetting: DevScalar(0.0),
       );

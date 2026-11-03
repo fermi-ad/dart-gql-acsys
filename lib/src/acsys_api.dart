@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:pure_dart_ui/pure_dart_ui.dart';
 
 import 'exceptions.dart';
@@ -43,48 +45,27 @@ final class const AnalogAlarmStatus({
   required final AnalogAlarmState state,
 });
 
-enum AcquisitionMode {
-  oneShot,
-  oneShotTriggeredOnEvent,
-  repetitivePeriodic,
-  repetitiveTriggeredOnEvent,
-  sampleOnEvent,
+enum const AcquisitionMode(final String serializedName) {
+  oneShot("os"),
+  oneShotTriggeredOnEvent("os_on_event"),
+  repetitivePeriodic("rep_periodic"),
+  repetitiveTriggeredOnEvent("rep_on_event"),
+  sampleOnEvent("smp_on_event");
+
+  factory fromString(String val) => .values.firstWhere(
+    (e) => e.serializedName == val,
+    orElse: () => .oneShot,
+  );
 }
 
-extension on AcquisitionMode {
-  // Serializes to the short string stored in the Dart-side database/JSON.
-  String _stringize() => switch (this) {
-    AcquisitionMode.oneShot => "os",
-    AcquisitionMode.oneShotTriggeredOnEvent => "os_on_event",
-    AcquisitionMode.repetitivePeriodic => "rep_periodic",
-    AcquisitionMode.repetitiveTriggeredOnEvent => "rep_on_event",
-    AcquisitionMode.sampleOnEvent => "smp_on_event",
-  };
+enum const ReadingMode(final String serializedName) {
+  array("array"),
+  scalar("scalar"),
+  arrayAsTimeSeries("array_as_time_series");
+
+  factory fromString(String val) =>
+      .values.firstWhere((e) => e.serializedName == val, orElse: () => .array);
 }
-
-AcquisitionMode _amFromString(String? val) => switch (val) {
-  "os_on_event" => AcquisitionMode.oneShotTriggeredOnEvent,
-  "rep_periodic" => AcquisitionMode.repetitivePeriodic,
-  "rep_on_event" => AcquisitionMode.repetitiveTriggeredOnEvent,
-  "smp_on_event" => AcquisitionMode.sampleOnEvent,
-  _ => AcquisitionMode.oneShot,
-};
-
-enum ReadingMode { array, scalar, arrayAsTimeSeries }
-
-extension on ReadingMode {
-  String _stringize() => switch (this) {
-    ReadingMode.array => "array",
-    ReadingMode.scalar => "scalar",
-    ReadingMode.arrayAsTimeSeries => "array_as_time_series",
-  };
-}
-
-ReadingMode _rmFromString(String? val) => switch (val) {
-  "array_as_time_series" => ReadingMode.arrayAsTimeSeries,
-  "scalar" => ReadingMode.scalar,
-  _ => ReadingMode.array,
-};
 
 final class const Reading({
   required final int refId,
@@ -105,18 +86,225 @@ extension type PlotConfigId._(int raw) implements Comparable {
   int compareTo(PlotConfigId other) => raw.compareTo(other.raw);
 }
 
+/// A single plot point with time and value.
+///
+/// This type is from an older API. Newer code should directly use the series
+/// types.
 final class const PlotPoint({
   required final double t,
   required final DeviceValue value,
 });
+
+/// The samples of one plot channel, stored column-wise.
+///
+/// `t[i]` is the timestamp (seconds since the Unix epoch) of sample `i`. The
+/// subclass determines what kind of value accompanies each timestamp. Storing
+/// columns in typed lists means a channel costs a couple of allocations
+/// rather than several objects per sample.
+sealed class PlotSeries(var Float64List _t) {
+  Float64List get timestamps => _t;
+  int get length => _t.length;
+  bool get isEmpty => length == 0;
+  bool get isNotEmpty => length != 0;
+
+  Iterable<PlotPoint> toPoints();
+  void append(PlotSeries s);
+
+  /// Adds the points to the end of the series.
+  ///
+  /// The payload of every point must be the type of value this series holds
+  /// (`DevScalar` for [ScalarSeries], `DevScalarArray` for [ArraySeries] and
+  /// `DevTimeSeries` for [TimeSeriesSeries].) An [ArgumentError] is thrown
+  /// -- and the series is left untouched -- if any point has a different
+  /// payload. As with [append], monotonic timestamps aren't verified.
+  void addAll(List<PlotPoint> pts);
+
+  // Throws if any point's payload isn't a `T`. Subclasses call this before
+  // modifying anything so a bad point can't leave the columns mismatched.
+  void _checkPayloads<T extends DeviceValue>(List<PlotPoint> pts) {
+    for (final p in pts) {
+      if (p.value is! T) {
+        throw ArgumentError.value(
+          p.value,
+          'pts',
+          'expected a point with a $T payload for $runtimeType',
+        );
+      }
+    }
+  }
+
+  // Replaces the timestamp column with one that has room for `pts` and fills
+  // in the new entries. Returns the index of the first new sample.
+  int _extendTimes(List<PlotPoint> pts) {
+    final start = _t.length;
+    final t = _grown(_t, pts.length);
+
+    for (var i = 0; i < pts.length; i++) {
+      t[start + i] = pts[i].t;
+    }
+    _t = t;
+    return start;
+  }
+}
+
+// Copies `src` into a new list with room for `extra` more elements.
+Float64List _grown(Float64List src, int extra) =>
+    Float64List(src.length + extra)..setRange(0, src.length, src);
+
+/// A channel whose samples are single floating point values; `y[i]` is the
+/// value at `t[i]`. A NaN reading is stored as `double.nan`.
+final class ScalarSeries._(super.t, var Float64List _data) extends PlotSeries {
+  Float64List get data => _data;
+
+  /// Build from columns.
+  ///
+  /// Builds a series from two parallel lists. The lists must be same length.
+  factory build(Float64List t, Float64List d) => t.length == d.length
+      ? ScalarSeries._(t, d)
+      : throw ACSysGraphQLException('mismatched lengths');
+
+  /// Build an empty series.
+  factory empty() => ScalarSeries._(Float64List(0), Float64List(0));
+
+  /// Creates a scalar series from a DevTimeSeries value.
+  factory fromTimeSeries(DevTimeSeries ts) =>
+      ScalarSeries._(ts.timestamps, ts.values);
+
+  factory fromPoints(List<PlotPoint> pts) => ScalarSeries.empty()..addAll(pts);
+
+  /// Access sample by index.
+  ({double t, double y}) operator [](int i) => (t: _t[i], y: _data[i]);
+
+  /// Lazily iterate over samples.
+  Iterable<({double t, double y})> get samples =>
+      Iterable.generate(length, (i) => this[i]);
+
+  /// Append another series to this one.
+  ///
+  /// This method does not verify that the combined series has monotonically
+  /// increasing timestamps.
+  @override
+  void append(PlotSeries s) {
+    if (s is ScalarSeries) {
+      _t.addAll(s.timestamps);
+      _data.addAll(s.data);
+    }
+  }
+
+  @override
+  void addAll(List<PlotPoint> pts) {
+    _checkPayloads<DevScalar>(pts);
+
+    final d = _grown(_data, pts.length);
+    final start = _extendTimes(pts);
+
+    for (var i = 0; i < pts.length; i++) {
+      d[start + i] = (pts[i].value as DevScalar).value;
+    }
+    _data = d;
+  }
+
+  @override
+  Iterable<PlotPoint> toPoints() =>
+      samples.map((s) => PlotPoint(t: s.t, value: s.y.toDevVal()));
+}
+
+/// A channel whose samples are arrays (e.g. waveforms); `y[i]` is the array
+/// acquired at `t[i]`.
+final class ArraySeries._(super.t, var List<Float64List> _data)
+    extends PlotSeries {
+  List<Float64List> get data => _data;
+
+  /// Build from columns.
+  ///
+  /// The lists must be same length.
+  factory build(Float64List t, List<Float64List> d) => t.length == d.length
+      ? ArraySeries._(t, d)
+      : throw ACSysGraphQLException('mismatched lengths');
+
+  /// Creates an empty array series.
+  factory empty() => ArraySeries._(Float64List(0), []);
+
+  /// Access sample by index.
+  ({double t, Float64List y}) operator [](int i) => (t: _t[i], y: _data[i]);
+
+  /// Lazily iterate over samples.
+  Iterable<({double t, Float64List y})> get samples =>
+      Iterable.generate(length, (i) => this[i]);
+
+  /// Append another series to this one.
+  @override
+  void append(PlotSeries s) {
+    if (s is ArraySeries) {
+      _t.addAll(s.timestamps);
+      _data.addAll(s.data);
+    }
+  }
+
+  @override
+  void addAll(List<PlotPoint> pts) {
+    _checkPayloads<DevScalarArray>(pts);
+    _data = [..._data, for (final p in pts) (p.value as DevScalarArray).value];
+    _extendTimes(pts);
+  }
+
+  /// Convert to points.
+  @override
+  Iterable<PlotPoint> toPoints() =>
+      samples.map((s) => PlotPoint(t: s.t, value: s.y.toDevVal()));
+}
+
+/// A channel whose samples are time series; `y[i]` is the [DevTimeSeries]
+/// acquired at `t[i]`.
+final class TimeSeriesSeries._(super.t, var List<DevTimeSeries> _data)
+    extends PlotSeries {
+  List<DevTimeSeries> get data => _data;
+
+  /// Builds a series from two parallel lists. The lists must be same length.
+  factory build(Float64List t, List<DevTimeSeries> d) => t.length == d.length
+      ? TimeSeriesSeries._(t, d)
+      : throw ACSysGraphQLException('mismatched lengths');
+
+  /// Build an empty series.
+  factory empty() => TimeSeriesSeries._(Float64List(0), []);
+
+  /// Access sample by index.
+  ({double t, DevTimeSeries y}) operator [](int i) => (t: _t[i], y: _data[i]);
+
+  /// Lazily iterate over samples.
+  Iterable<({double t, DevTimeSeries y})> get samples =>
+      Iterable.generate(length, (i) => this[i]);
+
+  @override
+  void append(PlotSeries s) {
+    if (s is TimeSeriesSeries) {
+      _t.addAll(s.timestamps);
+      _data.addAll(s.data);
+    }
+  }
+
+  @override
+  void addAll(List<PlotPoint> pts) {
+    _checkPayloads<DevTimeSeries>(pts);
+    _data = [..._data, for (final p in pts) p.value as DevTimeSeries];
+    _extendTimes(pts);
+  }
+
+  // DevTimeSeries is already a DeviceValue, so no conversion is needed.
+  @override
+  Iterable<PlotPoint> toPoints() =>
+      samples.map((s) => PlotPoint(t: s.t, value: s.y));
+}
 
 final class const PlotChannelData({
   required final String name,
   required final String units,
   required final String rate,
   required final int status,
-  required final List<PlotPoint> points,
-});
+  required final PlotSeries series,
+}) {
+  Iterable<PlotPoint> get points => series.toPoints();
+}
 
 final class const PlotReply({
   required final String plotId,
@@ -129,16 +317,11 @@ final class const PlotReply({
   required final List<PlotChannelData> data,
 });
 
-final class PlotConfigurationListing {
-  final PlotConfigId? configurationId;
-  final String configurationName;
-
-  const PlotConfigurationListing({
-    this.configurationId,
-    required this.configurationName,
-  });
-
-  factory PlotConfigurationListing.fromJson(Map<String, dynamic> json) {
+final class const PlotConfigurationListing({
+  final PlotConfigId? configurationId,
+  required final String configurationName,
+}) {
+  factory fromJson(Map<String, dynamic> json) {
     if (json case {"id": int id, "name": String name}) {
       return PlotConfigurationListing(
         configurationId: PlotConfigId.fromInt(id),
@@ -298,9 +481,9 @@ final class PlotConfigurationSnapshot({
       tclkEvent: tclkEvent is int ? tclkEvent : null,
       sampleOnEvent: sampleOnEvent is int ? sampleOnEvent : null,
       acquisitionMode: acquisitionMode is String
-          ? _amFromString(acquisitionMode)
+          ? .fromString(acquisitionMode)
           : null,
-      readingMode: readingMode is String ? _rmFromString(readingMode) : null,
+      readingMode: readingMode is String ? .fromString(readingMode) : null,
       waveformDuration: waveformDuration is num
           ? waveformDuration.toDouble()
           : null,
@@ -327,8 +510,8 @@ final class PlotConfigurationSnapshot({
     "sampleOnEvent": sampleOnEvent,
     "xAxis": xAxis,
     "dataLimit": dataLimit,
-    "acquisitionMode": acquisitionMode?._stringize(),
-    "readingMode": readingMode?._stringize(),
+    "acquisitionMode": acquisitionMode?.serializedName,
+    "readingMode": readingMode?.serializedName,
     "waveformDuration": waveformDuration,
   };
 }
@@ -365,6 +548,12 @@ abstract interface class ACSysServiceAPI {
 
   /// Takes a device name and a value and sends a request to apply the value to
   /// the device.
+  Future<Status> setDevice({
+    required String forDRF,
+    required DeviceValue newSetting,
+  });
+
+  @Deprecated('Use setDevice() instead')
   Future<Status> submit({
     required String forDRF,
     required DeviceValue newSetting,
