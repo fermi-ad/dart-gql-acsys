@@ -29,12 +29,6 @@ export 'exceptions.dart';
 /// widget which manages an object of this class.
 
 final class ACSysService implements ACSysServiceAPI {
-  // Endpoint hosts for the two GraphQL backends this service talks to.
-  static const String _acsysWsUrl = "wss://ad-api.fnal.gov/acsys/s";
-  static const String _acsysHttpUrl = "https://ad-api.fnal.gov/acsys";
-  static const String _alarmsWsUrl = "wss://ad-api-dev.fnal.gov/alarms/s";
-  static const String _alarmsHttpUrl = "https://ad-api-dev.fnal.gov/alarms";
-
   final GraphQLClient _client;
   final GraphQLClient _alarmsClient;
 
@@ -243,6 +237,10 @@ final class ACSysService implements ACSysServiceAPI {
     cache: GraphQLCache(store: InMemoryStore()),
   );
 
+  // Endpoint hosts for the two GraphQL backends this service talks to.
+  static const String _acsysUrl = "ad-api.fnal.gov";
+  static const String _alarmsUrl = "ad-api-dev.fnal.gov";
+
   // Constructor. This creates the HTTP and WebSocket links needed to
   // communicate with our GraphQL endpoints, then splits them so that
   // subscriptions go over WebSocket and everything else goes over HTTP.
@@ -251,15 +249,19 @@ final class ACSysService implements ACSysServiceAPI {
   // (device data, plot configuration, settings) and `_alarmsClient` talks to
   // the separate "alarms" backend.
 
-  ACSysService({String? jwt})
+  ACSysService({String? jwt, String? host, int? port})
     : _client = _buildClient(
-        wsUrl: _acsysWsUrl,
-        httpUrl: _acsysHttpUrl,
+        wsUrl:
+            "wss://${host ?? _acsysUrl}${port != null ? ":$port" : ""}/acsys/s",
+        httpUrl:
+            "https://${host ?? _acsysUrl}${port != null ? ":$port" : ""}/acsys",
         jwt: jwt,
       ),
       _alarmsClient = _buildClient(
-        wsUrl: _alarmsWsUrl,
-        httpUrl: _alarmsHttpUrl,
+        wsUrl:
+            "wss://${host ?? _alarmsUrl}${port != null ? ":$port" : ""}/alarms/s",
+        httpUrl:
+            "https://${host ?? _alarmsUrl}${port != null ? ":$port" : ""}/alarms",
         jwt: jwt,
       );
 
